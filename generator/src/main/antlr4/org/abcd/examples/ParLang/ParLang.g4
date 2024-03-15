@@ -4,13 +4,24 @@
 grammar ParLang;
 
 /** A rule called init that matches comma-separated values between {...}. */
-init  : CURLY_OPEN value (COMMA value)* CURLY_CLOSE ;  // must match at least one value
+init  : CURLY_OPEN value (COMMA value)* CURLY_CLOSE;  // must match at least one value
 
 /** A value can be either a nested array/struct or a simple integer (INT) */
 value : init
-      | INT
-      | ASSIGN
-      ;
+    | exp
+    | number
+    ;
+
+exp : term (PLUS | MINUS) term
+    | PARAN_OPEN exp PARAN_CLOSE
+    ;
+
+term : factor ((MULTIPLY | DIVIDE) factor)*;
+
+factor : number
+       | PARAN_OPEN exp PARAN_CLOSE;
+
+number : INT;
 
 // parser rules start with lowercase letters, lexer rules with uppercase
 
@@ -45,14 +56,15 @@ QUOTATION               : '\'';
 
 
 //fragments used to ease other definitions
-fragment IDstart : ( [a-z] | [A-Z] | '_' );
-fragment IDpart : IDstart | [0-9];
-fragment DIGIT : [0-9]+;
-fragment POS_DIGIT : [1-9]+;
+fragment DIGIT : [0-9];
+fragment POS_DIGIT : [1-9]; //Strictly positive digit
+fragment IDstart : ( [a-z] | [A-Z] | '_' ); //since identifier cannot start with a digit
+fragment IDpart : IDstart | DIGIT;
 
-INT :   (MINUS | ) DIGIT ;  // Define token INT as one or more digits
+
+INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive
-DOUBLE : DIGIT DOT DIGIT; // Define token for decimal number
+DOUBLE : DIGIT+ DOT DIGIT+; // Define token for decimal number
 BOOL_LITERAL : 'TRUE' | 'FALSE'; // Define values of a boolean
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
