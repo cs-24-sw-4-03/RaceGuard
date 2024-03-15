@@ -8,34 +8,25 @@ init  : value EOF;  // must match at least one value
 
 /** A value can be either a nested array/struct or a simple integer (INT) */
 value : boolExp
-    | arithExp
+    | compareExp
     | exp
     ;
-
-/*boolExp : arithExp LOGIC_OR arithExp
-    | arithExp LOGIC_AND arithExp
-    | LOGIC_NEGATION boolExp
-    | PARAN_OPEN boolExp PARAN_CLOSE
-    | arithExp
-    ;*/
 
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*;
 
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*;
 
-boolTerm :
-    | LOGIC_NEGATION boolExp
+boolTerm : LOGIC_NEGATION boolExp
     | PARAN_OPEN boolExp PARAN_CLOSE
-    | arithExp
+    | compareExp
     ;
 
-arithExp : exp EQUAL exp
+compareExp : exp EQUAL exp
     | exp NOTEQUAL exp
     | exp GREATER_OR_EQUAL exp
     | exp GREATER exp
     | exp LESSTHAN_OR_EQUAL exp
     | exp LESSTHAN exp
-    | exp
     ;
 
 exp : term ((PLUS | MINUS) term)*
@@ -53,7 +44,6 @@ number : INT
 
 // parser rules start with lowercase letters, lexer rules with uppercase
 
-STARTER : 'start:';
 ASSIGN                  : '=';
 COMMA                   : ',';
 CURLY_OPEN              : '{';
