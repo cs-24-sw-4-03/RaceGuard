@@ -4,14 +4,12 @@
 grammar ParLang;
 
 /** A rule called init that matches comma-separated values between {...}. */
-init  : CURLY_OPEN value (COMMA value)* CURLY_CLOSE;  // must match at least one value
+init  : value EOF;  // must match at least one value
 
 /** A value can be either a nested array/struct or a simple integer (INT) */
-value : init
-    | boolExp
+value : boolExp
     | arithExp
     | exp
-    | number
     ;
 
 boolExp : arithExp LOGIC_OR arithExp
@@ -45,6 +43,7 @@ number : INT
 
 // parser rules start with lowercase letters, lexer rules with uppercase
 
+STARTER : 'start:';
 ASSIGN                  : '=';
 COMMA                   : ',';
 CURLY_OPEN              : '{';
