@@ -12,8 +12,18 @@ value : boolExp
     | exp
     ;
 
-boolExp : arithExp LOGIC_OR arithExp
+/*boolExp : arithExp LOGIC_OR arithExp
     | arithExp LOGIC_AND arithExp
+    | LOGIC_NEGATION boolExp
+    | PARAN_OPEN boolExp PARAN_CLOSE
+    | arithExp
+    ;*/
+
+boolExp : boolAndExp (LOGIC_OR boolAndExp)*;
+
+boolAndExp : boolTerm (LOGIC_AND boolTerm)*;
+
+boolTerm :
     | LOGIC_NEGATION boolExp
     | PARAN_OPEN boolExp PARAN_CLOSE
     | arithExp
