@@ -8,23 +8,42 @@ init  : CURLY_OPEN value (COMMA value)* CURLY_CLOSE;  // must match at least one
 
 /** A value can be either a nested array/struct or a simple integer (INT) */
 value : init
+    | boolExp
+    | arithExp
     | exp
     | number
     ;
 
-exp : term (PLUS | MINUS) term
+boolExp : arithExp LOGIC_OR arithExp
+    | arithExp LOGIC_AND arithExp
+    | LOGIC_NEGATION boolExp
+    | PARAN_OPEN boolExp PARAN_CLOSE
+    | arithExp
+    ;
+
+arithExp : exp EQUAL exp
+    | exp NOTEQUAL exp
+    | exp GREATER_OR_EQUAL exp
+    | exp GREATER exp
+    | exp LESSTHAN_OR_EQUAL exp
+    | exp LESSTHAN exp
+    | exp
+    ;
+
+exp : term ((PLUS | MINUS) term)*
     | PARAN_OPEN exp PARAN_CLOSE
     ;
 
-term : factor ((MULTIPLY | DIVIDE) factor)*;
+term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*;
 
 factor : number
-       | PARAN_OPEN exp PARAN_CLOSE;
+    | PARAN_OPEN exp PARAN_CLOSE;
 
-number : INT;
+number : INT
+    |DOUBLE
+    ;
 
 // parser rules start with lowercase letters, lexer rules with uppercase
-
 
 ASSIGN                  : '=';
 COMMA                   : ',';
@@ -42,7 +61,7 @@ GREATER_OR_EQUAL        : '>=';
 LESSTHAN                : '<';
 LESSTHAN_OR_EQUAL       : '<=';
 EQUAL                   : '==';
-LOGIC_NOTEQUAL          : '!=';
+NOTEQUAL                : '!=';
 LOGIC_NEGATION          : '!';
 LOGIC_AND               : '&&';
 LOGIC_OR                : '||';
@@ -54,13 +73,11 @@ MODULUS                 : '%';
 DOUBLE_QUOTATION        : '"';
 QUOTATION               : '\'';
 
-
 //fragments used to ease other definitions
 fragment DIGIT : [0-9];
 fragment POS_DIGIT : [1-9]; //Strictly positive digit
 fragment IDstart : ( [a-z] | [A-Z] | '_' ); //since identifier cannot start with a digit
 fragment IDpart : IDstart | DIGIT;
-
 
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive
