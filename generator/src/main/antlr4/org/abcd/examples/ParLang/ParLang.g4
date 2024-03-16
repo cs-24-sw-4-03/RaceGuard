@@ -27,8 +27,10 @@ boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and
     | BOOL_FALSE
     ;
 
+
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;
+
 
 // arithmetic expressions
 arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence of arithmetic operators
@@ -58,6 +60,8 @@ compareOther : GREATER // Other compare operators have same precedence
     | LESSTHAN_OR_EQUAL
     | LESSTHAN
     ;
+//--------------------------------------------------------------------------------------------------
+
 
 //LEXER RULES -------------------------------------------------------------------------------------
 
