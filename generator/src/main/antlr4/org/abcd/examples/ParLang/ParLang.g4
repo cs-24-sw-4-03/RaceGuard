@@ -21,18 +21,25 @@ declaration : INT_TYPE IDENTIFIER (ASSIGN integer)? // optinal to assign value f
     | DOUBLE_TYPE IDENTIFIER (ASSIGN DOUBLE)? // when defining a variable the assignment type msut match
     | STRING_TYPE IDENTIFIER (ASSIGN STRING)?
     | BOOL_TYPE IDENTIFIER (ASSIGN (BOOL_FALSE | BOOL_TRUE))?
-    | ARRAY_TYPE IDENTIFIER ASSIGN arrayAssign
+    | arrayAssign
     ;
 
-arrayAssign : SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE // can define the length of the array
-    | CURLY_OPEN typeList CURLY_CLOSE // can specify the array with curly braces
+// can define the length of the array or specify the array elements in between curly braces
+arrayAssign : ARRAY_TYPE_INT arrayAssignLength
+    | ARRAY_TYPE_DOUBLE arrayAssignLength
+    | ARRAY_TYPE_BOOL arrayAssignLength
+    | ARRAY_TYPE_STRING arrayAssignLength
+    | ARRAY_TYPE_INT CURLY_OPEN integerList CURLY_CLOSE
+    | ARRAY_TYPE_DOUBLE CURLY_OPEN doubleList CURLY_CLOSE
+    | ARRAY_TYPE_BOOL CURLY_OPEN boolList CURLY_CLOSE
+    | ARRAY_TYPE_STRING CURLY_OPEN stringList CURLY_CLOSE
     ;
+arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
 
-typeList : integer (COMMA integer)* // the types in an array must be the same
-    | DOUBLE (COMMA DOUBLE)*
-    | boolLiteral (COMMA boolLiteral)*
-    | STRING (COMMA STRING)*
-    ;
+integerList : integer (COMMA integer)*;
+doubleList : DOUBLE (COMMA DOUBLE)*;
+boolList : boolLiteral (COMMA boolLiteral)*;
+stringList : STRING (COMMA STRING)*;
 
 
 // Expression evaluating boolean value of a boolean expression
@@ -88,8 +95,7 @@ primitiveType : INT_TYPE
 primitive : INT
     | DOUBLE
     | STRING
-    | BOOL_FALSE
-    | BOOL_TRUE
+    | boolLiteral
     ;
     
 integer : INT
@@ -149,7 +155,10 @@ DOUBLE_TYPE : 'double';
 BOOL_TYPE : 'bool';
 STRING_TYPE : 'string';
 NULL_TYPE : 'null';
-ARRAY_TYPE : (INT_TYPE | DOUBLE_TYPE | BOOL_TYPE | STRING_TYPE) SQUARE_OPEN SQUARE_CLOSE;
+ARRAY_TYPE_INT : INT_TYPE SQUARE_OPEN SQUARE_CLOSE;
+ARRAY_TYPE_BOOL : BOOL_TYPE SQUARE_OPEN SQUARE_CLOSE;
+ARRAY_TYPE_DOUBLE : DOUBLE_TYPE SQUARE_OPEN SQUARE_CLOSE;
+ARRAY_TYPE_STRING : STRING_TYPE SQUARE_OPEN SQUARE_CLOSE;
 COLLECTION : 'collection';
 
 //Control structures
@@ -163,12 +172,12 @@ FOR : 'for';
 STRICT_POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
-STRING : DOUBLE_QUOTATION ~["\\\t\r\n]* DOUBLE_QUOTATION;
+STRING : DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION;
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
-WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
 WAIT : 'wait' ; // Token used to wait for threads to finish executing
 RETURN : 'return' ; // Token for returning from a function
 FORK : 'fork' ; // Token used to define a multithreaded function does not have to return before continuing
 COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
+WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
