@@ -16,21 +16,21 @@ value : boolExp
     | declaration
     ;
 
-
-declaration : INT_TYPE IDENTIFIER (ASSIGN integer)?
-    | DOUBLE_TYPE IDENTIFIER (ASSIGN DOUBLE)?
+// Declaration used to declare variables
+declaration : INT_TYPE IDENTIFIER (ASSIGN integer)? // optinal to assign value from the declaration
+    | DOUBLE_TYPE IDENTIFIER (ASSIGN DOUBLE)? // when defining a variable the assignment type msut match
     | STRING_TYPE IDENTIFIER (ASSIGN STRING)?
     | BOOL_TYPE IDENTIFIER (ASSIGN (BOOL_FALSE | BOOL_TRUE))?
     | ARRAY_TYPE IDENTIFIER ASSIGN arrayAssign
     ;
 
-arrayAssign : SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE // dont know if it can cause problems that an array can be difed as [0]
-    | CURLY_OPEN typeList CURLY_CLOSE
+arrayAssign : SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE // can define the length of the array
+    | CURLY_OPEN typeList CURLY_CLOSE // can specify the array with curly braces
     ;
 
-typeList : integer (COMMA integer)*
+typeList : integer (COMMA integer)* // the types in an array must be the same
     | DOUBLE (COMMA DOUBLE)*
-    | (BOOL_TRUE | BOOL_FALSE) (COMMA (BOOL_TRUE | BOOL_FALSE))*
+    | boolLiteral (COMMA boolLiteral)*
     | STRING (COMMA STRING)*
     ;
 
@@ -43,8 +43,7 @@ boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than O
 boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
     | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
-    | BOOL_TRUE //boolTerm can be a simple boolean TRUE or FALSE
-    | BOOL_FALSE
+    | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     ;
 
 
@@ -92,8 +91,13 @@ primitive : INT
     | BOOL_FALSE
     | BOOL_TRUE
     ;
+    
 integer : INT
     | STRICT_POS_INT
+    ;
+
+boolLiteral : BOOL_TRUE
+    | BOOL_FALSE
     ;
 
 //--------------------------------------------------------------------------------------------------
