@@ -19,14 +19,10 @@ boolAndExp : boolTerm (LOGIC_AND boolTerm)*;
 boolTerm : LOGIC_NEGATION boolExp
     | PARAN_OPEN boolExp PARAN_CLOSE
     | compareExp
+    | BOOL_LITERAL
     ;
 
-compareExp : exp EQUAL exp
-    | exp NOTEQUAL exp
-    | exp GREATER_OR_EQUAL exp
-    | exp GREATER exp
-    | exp LESSTHAN_OR_EQUAL exp
-    | exp LESSTHAN exp
+compareExp : exp compareOperator exp
     ;
 
 exp : term ((PLUS | MINUS) term)*
@@ -40,6 +36,14 @@ factor : number
 
 number : INT
     |DOUBLE
+    ;
+
+compareOperator : EQUAL
+    | NOTEQUAL
+    | GREATER
+    | GREATER_OR_EQUAL
+    | LESSTHAN_OR_EQUAL
+    | LESSTHAN
     ;
 
 // parser rules start with lowercase letters, lexer rules with uppercase
