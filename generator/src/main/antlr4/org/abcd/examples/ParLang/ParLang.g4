@@ -3,52 +3,64 @@
  */
 grammar ParLang;
 // parser rules start with lowercase letters, lexer rules with uppercase
-//PARSER RULES
+
+//PARSER RULES -----------------------------------------------------------------------
+
 /** A rule called init that matches comma-separated values between {...}. */
 init  : value EOF;  // must match at least one value
 
-/** A value can be either a nested array/struct or a simple integer (INT) */
+/** ACCEPTS: boolean expressions, or arithmetic expressions */
 value : boolExp
     | compareExp
-    | exp
+    | arithExp
     ;
 
-boolExp : boolAndExp (LOGIC_OR boolAndExp)*;
+// Expression evaluating boolean value of a boolean expression
+boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
 
 boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
     | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
-    | BOOL_LITERAL
+    | BOOL_TRUE //boolTerm can be a simple boolean TRUE or FALSE
+    | BOOL_FALSE
     ;
 
-compareExp : exp compareEqNEg exp;
+// expression evaluating boolean value of two arithmetic expressions based on compare operator
+compareExp : arithExp compareOperator arithExp;
 
-exp : term ((PLUS | MINUS) term)*
-    | PARAN_OPEN exp PARAN_CLOSE
+// arithmetic expressions
+arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence of arithmetic operators
+    | PARAN_OPEN arithExp PARAN_CLOSE
     ;
 
-term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*;
+term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest
+                                                        // precedence of arithmetic operators
 
 factor : number
-    | PARAN_OPEN exp PARAN_CLOSE;
+    | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
 number : INT
     |DOUBLE
     ;
 
-compareEqNEg : EQUAL // all comparing operators have same precedence
+// operator to compare two arithmetic expressions
+compareOperator : compareEqNEg;
+
+compareEqNEg : EQUAL // EQUAL and NOTEQUAL have lower precedence than other compare operators
     | NOTEQUAL
     | compareOther
     ;
-compareOther : GREATER
+
+compareOther : GREATER // Other compare operators have same precedence
     | GREATER_OR_EQUAL
     | LESSTHAN_OR_EQUAL
     | LESSTHAN
     ;
 
-//LEXER RULES
+//LEXER RULES -------------------------------------------------------------------------------------
+
 ASSIGN                  : '=';
 COMMA                   : ',';
 CURLY_OPEN              : '{';
@@ -86,7 +98,8 @@ fragment IDpart : IDstart | DIGIT;
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive
 DOUBLE : DIGIT+ DOT DIGIT+; // Define token for decimal number
-BOOL_LITERAL : 'TRUE' | 'FALSE'; // Define values of a boolean
+BOOL_TRUE : 'TRUE'; // define value of boolean TRUE
+BOOL_FALSE : 'FALSE'; // define value of boolean FALSE
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
 WAIT : 'wait';
