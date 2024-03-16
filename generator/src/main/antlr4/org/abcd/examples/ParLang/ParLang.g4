@@ -6,7 +6,7 @@ grammar ParLang;
 
 //PARSER RULES -----------------------------------------------------------------------
 
-/** A rule called init that matches comma-separated values between {...}. */
+/** init used as start non-terminal for parser */
 init  : value EOF;  // must match at least one value
 
 /** ACCEPTS: boolean expressions, or arithmetic expressions */
@@ -14,6 +14,7 @@ value : boolExp
     | compareExp
     | arithExp
     ;
+
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -39,7 +40,6 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest
                                                         // precedence of arithmetic operators
-
 factor : number
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
@@ -100,15 +100,16 @@ fragment IDstart : ( [a-z] | [A-Z] | '_' ); //since identifier cannot start with
 fragment IDpart : IDstart | DIGIT;
 
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
-POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive
-DOUBLE : DIGIT+ DOT DIGIT+; // Define token for decimal number
-BOOL_TRUE : 'TRUE'; // define value of boolean TRUE
-BOOL_FALSE : 'FALSE'; // define value of boolean FALSE
+POS_INT : DIGIT+ ;
+STRICT_POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
+DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
+BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
+BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
-WAIT : 'wait';
-RETURN : 'return';
-FORK : 'fork';
+WAIT : 'wait' ; // Token used to wait for threads to finish executing
+RETURN : 'return' ; // Token for returning from a function
+FORK : 'fork' ; // Token used to define a multithreaded function does not have to return before continuing
 COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
 
 //Types in language
