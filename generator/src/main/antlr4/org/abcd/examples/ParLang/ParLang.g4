@@ -34,8 +34,10 @@ arrayAssign : ARRAY_TYPE_INT arrayAssignLength
     | ARRAY_TYPE_BOOL CURLY_OPEN boolList CURLY_CLOSE
     | ARRAY_TYPE_STRING CURLY_OPEN stringList CURLY_CLOSE
     ;
+// assignment of the length af an array
 arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
 
+// commaseperated lists of primitives
 integerList : integer (COMMA integer)*;
 doubleList : DOUBLE (COMMA DOUBLE)*;
 boolList : boolLiteral (COMMA boolLiteral)*;
