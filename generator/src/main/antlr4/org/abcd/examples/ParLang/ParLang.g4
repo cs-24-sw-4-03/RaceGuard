@@ -2,7 +2,8 @@
  *  ArrayInit and must match the filename: ParLang.g4
  */
 grammar ParLang;
-
+// parser rules start with lowercase letters, lexer rules with uppercase
+//PARSER RULES
 /** A rule called init that matches comma-separated values between {...}. */
 init  : value EOF;  // must match at least one value
 
@@ -46,8 +47,7 @@ compareOperator : EQUAL
     | LESSTHAN
     ;
 
-// parser rules start with lowercase letters, lexer rules with uppercase
-
+//LEXER RULES
 ASSIGN                  : '=';
 COMMA                   : ',';
 CURLY_OPEN              : '{';
