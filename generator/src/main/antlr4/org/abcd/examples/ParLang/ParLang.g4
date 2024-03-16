@@ -17,7 +17,22 @@ value : boolExp
     ;
 
 
-declaration : primitiveType IDENTIFIER ASSIGN (boolExp | arithExp | compareExp);
+declaration : INT_TYPE IDENTIFIER (ASSIGN integer)?
+    | DOUBLE_TYPE IDENTIFIER (ASSIGN DOUBLE)?
+    | STRING_TYPE IDENTIFIER (ASSIGN STRING)?
+    | BOOL_TYPE IDENTIFIER (ASSIGN (BOOL_FALSE | BOOL_TRUE))?
+    | ARRAY_TYPE IDENTIFIER ASSIGN arrayAssign
+    ;
+
+arrayAssign : SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE // dont know if it can cause problems that an array can be difed as [0]
+    | CURLY_OPEN typeList CURLY_CLOSE
+    ;
+
+typeList : integer (COMMA integer)*
+    | DOUBLE (COMMA DOUBLE)*
+    | (BOOL_TRUE | BOOL_FALSE) (COMMA (BOOL_TRUE | BOOL_FALSE))*
+    | STRING (COMMA STRING)*
+    ;
 
 
 // Expression evaluating boolean value of a boolean expression
@@ -47,7 +62,7 @@ term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and M
 factor : number
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
-number : INT
+number : integer
     |DOUBLE
     ;
 
@@ -70,10 +85,30 @@ primitiveType : INT_TYPE
     | STRING_TYPE
     | BOOL_TYPE
     ;
+
+primitive : INT
+    | DOUBLE
+    | STRING
+    | BOOL_FALSE
+    | BOOL_TRUE
+    ;
+integer : INT
+    | STRICT_POS_INT
+    ;
+
 //--------------------------------------------------------------------------------------------------
 
 
 //LEXER RULES -------------------------------------------------------------------------------------
+
+//fragments used to ease other definitions
+fragment DIGIT : [0-9];
+fragment POS_DIGIT : [1-9]; //Strictly positive digit
+fragment SMALL_LETTER : [a-z];
+fragment CAP_LETTER : [A_Z];
+fragment LETTER : SMALL_LETTER | CAP_LETTER;
+fragment IDstart : ( LETTER | '_' ); //since identifier cannot start with a digit
+fragment IDpart : IDstart | DIGIT;
 
 ASSIGN                  : '=';
 COMMA                   : ',';
@@ -103,11 +138,6 @@ MODULUS                 : '%';
 DOUBLE_QUOTATION        : '"';
 QUOTATION               : '\'';
 
-//fragments used to ease other definitions
-fragment DIGIT : [0-9];
-fragment POS_DIGIT : [1-9]; //Strictly positive digit
-fragment IDstart : ( [a-z] | [A-Z] | '_' ); //since identifier cannot start with a digit
-fragment IDpart : IDstart | DIGIT;
 
 //Types in language
 INT_TYPE : 'int';
@@ -115,7 +145,7 @@ DOUBLE_TYPE : 'double';
 BOOL_TYPE : 'bool';
 STRING_TYPE : 'string';
 NULL_TYPE : 'null';
-ARRAY_TYPE : SQUARE_OPEN SQUARE_CLOSE;
+ARRAY_TYPE : (INT_TYPE | DOUBLE_TYPE | BOOL_TYPE | STRING_TYPE) SQUARE_OPEN SQUARE_CLOSE;
 COLLECTION : 'collection';
 
 //Control structures
@@ -126,10 +156,10 @@ WHILE : 'while';
 DO_WHILE : 'do while';
 FOR : 'for';
 
-INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
-POS_INT : DIGIT+ ;
 STRICT_POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
+INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
+STRING : DOUBLE_QUOTATION ~["\\\t\r\n]* DOUBLE_QUOTATION;
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
