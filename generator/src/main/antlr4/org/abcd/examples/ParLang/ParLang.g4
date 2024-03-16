@@ -15,16 +15,15 @@ value : boolExp
 
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*;
 
-boolAndExp : boolTerm (LOGIC_AND boolTerm)*;
+boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
 
-boolTerm : LOGIC_NEGATION boolExp
-    | PARAN_OPEN boolExp PARAN_CLOSE
+boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
+    | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | BOOL_LITERAL
     ;
 
-compareExp : exp compareOperator exp
-    ;
+compareExp : exp compareEqNEg exp;
 
 exp : term ((PLUS | MINUS) term)*
     | PARAN_OPEN exp PARAN_CLOSE
@@ -39,9 +38,11 @@ number : INT
     |DOUBLE
     ;
 
-compareOperator : EQUAL
+compareEqNEg : EQUAL // all comparing operators have same precedence
     | NOTEQUAL
-    | GREATER
+    | compareOther
+    ;
+compareOther : GREATER
     | GREATER_OR_EQUAL
     | LESSTHAN_OR_EQUAL
     | LESSTHAN
