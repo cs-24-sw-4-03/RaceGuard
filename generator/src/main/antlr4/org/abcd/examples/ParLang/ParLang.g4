@@ -163,6 +163,13 @@ ARRAY_TYPE_DOUBLE : DOUBLE_TYPE SQUARE_OPEN SQUARE_CLOSE;
 ARRAY_TYPE_STRING : STRING_TYPE SQUARE_OPEN SQUARE_CLOSE;
 COLLECTION : 'collection';
 
+//Actor specific keywords
+SPAWN : 'Spawn';
+STATE : 'State';
+KNOWS : 'Knows';
+ON_MSG : 'on';
+SEND_MSG : '<-';
+
 //Control structures
 IF : 'if';
 IF_ELSE : 'if else';
