@@ -178,7 +178,7 @@ WHILE : 'while';
 DO_WHILE : 'do while';
 FOR : 'for';
 
-STRICT_POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
+STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
 STRING : DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION;
