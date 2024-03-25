@@ -7,9 +7,10 @@ grammar ParLang;
 //PARSER RULES -----------------------------------------------------------------------
 
 /** init used as start non-terminal for parser */
-init  : actor* mainFunc actor* EOF;  // must match at least one value
+init  : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
-/** ACCEPTS: boolean expressions, or arithmetic expressions */
+/** ACCEPTS: boolean expressions, arithmetic expressions,
+comparison of arithmetic expressions declarations, and sending of messages*/
 statement : boolExp
     | compareExp
     | arithExp
@@ -17,20 +18,23 @@ statement : boolExp
     | sendMsg
     ;
 
-//main function here the program should start
+//main function, here the program should start
 mainFunc : MAIN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 // defines the arguments of a function
 arguments : PARAN_OPEN (allTypes IDENTIFIER (COMMA allTypes IDENTIFIER)*)? PARAN_CLOSE;
 
-//instanziation of actor
+//declaration of an actor
 actor : ACTOR_TYPE IDENTIFIER CURLY_OPEN actorState actorKnows actorSpawn actorMethod* CURLY_CLOSE;
 // state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
+
 // defines which actors this actor knows
 actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
+
 // defines how to create an instance of this actor type
 actorSpawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+
 // methods of this actor
 actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
@@ -197,7 +201,6 @@ IF : 'if';
 IF_ELSE : 'if else';
 ELSE : 'else';
 WHILE : 'while';
-DO_WHILE : 'do while';
 FOR : 'for';
 
 MAIN : 'main';
@@ -208,8 +211,5 @@ STRING : DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION;
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
-WAIT : 'wait' ; // Token used to wait for threads to finish executing
-RETURN : 'return' ; // Token for returning from a function
-FORK : 'fork' ; // Token used to define a multithreaded function does not have to return before continuing
 COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
