@@ -6,11 +6,11 @@ grammar ParLang;
 
 //PARSER RULES -----------------------------------------------------------------------
 
-/** init used as start non-terminal for parser */
+// init used as start non-terminal for parser
 init  : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
-/** ACCEPTS: boolean expressions, arithmetic expressions,
-comparison of arithmetic expressions declarations, and sending of messages*/
+//ACCEPTS: boolean expressions, arithmetic expressions,
+//comparison of arithmetic expressions declarations, and sending of messages
 statement : boolExp
     | compareExp
     | arithExp
@@ -91,7 +91,7 @@ factor : number
 
 number : integer
     |DOUBLE
-    ;
+    ; //number can be either integer or double
 
 // operator to compare two arithmetic expressions
 compareOperator : compareEqNEg;
@@ -186,7 +186,6 @@ STRING_TYPE : 'string';
 NULL_TYPE : 'null';
 ARRAY_TYPE : '[]';
 ACTOR_TYPE : 'Actor';
-COLLECTION : 'collection';
 
 //Actor specific keywords
 SPAWN : 'Spawn';
@@ -198,7 +197,7 @@ SEND_MSG : '<-';
 
 //Control structures
 IF : 'if';
-IF_ELSE : 'if else';
+IF_ELSE : 'if-else';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
@@ -207,7 +206,7 @@ MAIN : 'main';
 STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
-STRING : DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION;
+STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
