@@ -20,19 +20,17 @@ statement : boolExp
 mainFunc : MAIN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 // defines the arguments of a function
-arguments : PARAN_OPEN (primitiveType (ARRAY_TYPE)? IDENTIFIER (COMMA primitiveType (ARRAY_TYPE)? IDENTIFIER)*)? PARAN_CLOSE;
+arguments : PARAN_OPEN (allTypes IDENTIFIER (COMMA allTypes IDENTIFIER)*)? PARAN_CLOSE;
 
 //instanziation of actor
-actor : ACTOR IDENTIFIER CURLY_OPEN actorStuff CURLY_CLOSE;
-
-actorStuff : actorState actorKnows actorSpawn actorMethod* ;
-
+actor : ACTOR_TYPE IDENTIFIER CURLY_OPEN actorState actorKnows actorSpawn actorMethod* CURLY_CLOSE;
+// state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
-
+// defines which actors this actor knows
 actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
-
+// defines how to create an instance of this actor type
 actorSpawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
-
+// methods of this actor
 actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 
@@ -110,6 +108,11 @@ compareOther : GREATER // Other compare operators have same precedence
     | LESSTHAN
     ;
 
+allTypes : primitiveType
+    | primitiveType ARRAY_TYPE
+    | ACTOR_TYPE
+    ;
+
 primitiveType : INT_TYPE
     | DOUBLE_TYPE
     | STRING_TYPE
@@ -180,6 +183,7 @@ BOOL_TYPE : 'bool';
 STRING_TYPE : 'string';
 NULL_TYPE : 'null';
 ARRAY_TYPE : '[]';
+ACTOR_TYPE : 'Actor';
 COLLECTION : 'collection';
 
 //Actor specific keywords
@@ -189,7 +193,6 @@ KNOWS : 'Knows';
 ON_METHOD : 'on';
 LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
-ACTOR : 'Actor';
 
 //Control structures
 IF : 'if';
