@@ -7,7 +7,7 @@ grammar ParLang;
 //PARSER RULES -----------------------------------------------------------------------
 
 /** init used as start non-terminal for parser */
-init  : ((statement SEMICOLON) | actor )+ EOF;  // must match at least one value
+init  : actor* mainFunc actor* EOF;  // must match at least one value
 
 /** ACCEPTS: boolean expressions, or arithmetic expressions */
 statement : boolExp
@@ -15,6 +15,12 @@ statement : boolExp
     | arithExp
     | declaration
     ;
+
+//main function here the program should start
+mainFunc : MAIN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+
+// defines the arguments of a function
+arguments : PARAN_OPEN (primitiveType (ARRAY_TYPE)? IDENTIFIER (COMMA primitiveType (ARRAY_TYPE)? IDENTIFIER)*)? PARAN_CLOSE;
 
 //instanziation of actor
 actor : ACTOR IDENTIFIER CURLY_OPEN actorStuff CURLY_CLOSE;
@@ -25,9 +31,9 @@ actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 
 actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
 
-actorSpawn : ON_METHOD SPAWN CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+actorSpawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
-actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 
 // Declaration used to declare variables
@@ -39,17 +45,18 @@ declaration : INT_TYPE IDENTIFIER (ASSIGN integer)? // optinal to assign value f
     ;
 
 // can define the length of the array or specify the array elements in between curly braces
-arrayAssign : ARRAY_TYPE_INT arrayAssignLength
-    | ARRAY_TYPE_DOUBLE arrayAssignLength
-    | ARRAY_TYPE_BOOL arrayAssignLength
-    | ARRAY_TYPE_STRING arrayAssignLength
-    | ARRAY_TYPE_INT CURLY_OPEN integerList CURLY_CLOSE
-    | ARRAY_TYPE_DOUBLE CURLY_OPEN doubleList CURLY_CLOSE
-    | ARRAY_TYPE_BOOL CURLY_OPEN boolList CURLY_CLOSE
-    | ARRAY_TYPE_STRING CURLY_OPEN stringList CURLY_CLOSE
+arrayAssign : primitiveType ARRAY_TYPE arrayAssignLength
+    | primitiveType ARRAY_TYPE CURLY_OPEN list CURLY_CLOSE
     ;
 // assignment of the length af an array
 arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
+
+//arbritatry lsit of either ints, doubles, bools, or strings
+list : integerList
+    | doubleList
+    | boolList
+    | stringList
+    ;
 
 // commaseperated lists of primitives
 integerList : integer (COMMA integer)*;
@@ -172,10 +179,7 @@ DOUBLE_TYPE : 'double';
 BOOL_TYPE : 'bool';
 STRING_TYPE : 'string';
 NULL_TYPE : 'null';
-ARRAY_TYPE_INT : INT_TYPE SQUARE_OPEN SQUARE_CLOSE;
-ARRAY_TYPE_BOOL : BOOL_TYPE SQUARE_OPEN SQUARE_CLOSE;
-ARRAY_TYPE_DOUBLE : DOUBLE_TYPE SQUARE_OPEN SQUARE_CLOSE;
-ARRAY_TYPE_STRING : STRING_TYPE SQUARE_OPEN SQUARE_CLOSE;
+ARRAY_TYPE : '[]';
 COLLECTION : 'collection';
 
 //Actor specific keywords
@@ -195,6 +199,7 @@ WHILE : 'while';
 DO_WHILE : 'do while';
 FOR : 'for';
 
+MAIN : 'main';
 STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
