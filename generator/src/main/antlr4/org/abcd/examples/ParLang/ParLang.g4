@@ -14,6 +14,7 @@ statement : boolExp
     | compareExp
     | arithExp
     | declaration
+    | sendMsg
     ;
 
 //main function here the program should start
@@ -33,27 +34,29 @@ actorSpawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 // methods of this actor
 actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
+//send a message to Actor and request use of method
+sendMsg : IDENTIFIER SEND_MSG IDENTIFIER arguments;
 
 // Declaration used to declare variables
-declaration : INT_TYPE IDENTIFIER (ASSIGN integer)? // optinal to assign value from the declaration
-    | DOUBLE_TYPE IDENTIFIER (ASSIGN DOUBLE)? // when defining a variable the assignment type msut match
-    | STRING_TYPE IDENTIFIER (ASSIGN STRING)?
-    | BOOL_TYPE IDENTIFIER (ASSIGN (BOOL_FALSE | BOOL_TRUE))?
-    | arrayAssign
-    ;
+declaration : allTypes IDENTIFIER (ARRAY_TYPE)? (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER));
 
 // can define the length of the array or specify the array elements in between curly braces
-arrayAssign : primitiveType ARRAY_TYPE arrayAssignLength
-    | primitiveType ARRAY_TYPE CURLY_OPEN list CURLY_CLOSE
+arrayAssign : arrayAssignLength
+    | list
     ;
 // assignment of the length af an array
 arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
 
 //arbritatry lsit of either ints, doubles, bools, or strings
-list : integerList
-    | doubleList
-    | boolList
-    | stringList
+list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
+
+// items that can be listed
+listItem : integer
+    | DOUBLE
+    | STRING
+    | IDENTIFIER
+    | boolLiteral
+    | list
     ;
 
 // commaseperated lists of primitives
@@ -61,7 +64,6 @@ integerList : integer (COMMA integer)*;
 doubleList : DOUBLE (COMMA DOUBLE)*;
 boolList : boolLiteral (COMMA boolLiteral)*;
 stringList : STRING (COMMA STRING)*;
-
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -74,10 +76,8 @@ boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     ;
 
-
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;
-
 
 // arithmetic expressions
 arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence of arithmetic operators
@@ -108,27 +108,31 @@ compareOther : GREATER // Other compare operators have same precedence
     | LESSTHAN
     ;
 
+// can be any type defined in language
 allTypes : primitiveType
     | primitiveType ARRAY_TYPE
     | ACTOR_TYPE
     ;
 
+//can be any primitive type in language
 primitiveType : INT_TYPE
     | DOUBLE_TYPE
     | STRING_TYPE
     | BOOL_TYPE
     ;
 
+//can be any primitive value
 primitive : INT
     | DOUBLE
     | STRING
     | boolLiteral
     ;
-    
+
 integer : INT
     | STRICT_POS_INT
     ;
 
+//either boolean value true of false
 boolLiteral : BOOL_TRUE
     | BOOL_FALSE
     ;
@@ -142,7 +146,7 @@ boolLiteral : BOOL_TRUE
 fragment DIGIT : [0-9];
 fragment POS_DIGIT : [1-9]; //Strictly positive digit
 fragment SMALL_LETTER : [a-z];
-fragment CAP_LETTER : [A_Z];
+fragment CAP_LETTER : [A-Z];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
 fragment IDstart : ( LETTER | '_' ); //since identifier cannot start with a digit
 fragment IDpart : IDstart | DIGIT;
@@ -174,7 +178,6 @@ DIVIDE                  : '/';
 MODULUS                 : '%';
 DOUBLE_QUOTATION        : '"';
 QUOTATION               : '\'';
-
 
 //Types in language
 INT_TYPE : 'int';
