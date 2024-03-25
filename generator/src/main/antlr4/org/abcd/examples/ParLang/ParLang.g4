@@ -38,12 +38,13 @@ actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statem
 sendMsg : IDENTIFIER SEND_MSG IDENTIFIER arguments;
 
 // Declaration used to declare variables
-declaration : allTypes IDENTIFIER (ARRAY_TYPE)? (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER));
+declaration : allTypes IDENTIFIER (ARRAY_TYPE)? (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER))?;
 
 // can define the length of the array or specify the array elements in between curly braces
 arrayAssign : arrayAssignLength
     | list
     ;
+
 // assignment of the length af an array
 arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
 
