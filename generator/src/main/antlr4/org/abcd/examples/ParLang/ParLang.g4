@@ -157,34 +157,6 @@ fragment LETTER : SMALL_LETTER | CAP_LETTER;
 fragment IDstart : ( LETTER | '_' ); //since identifier cannot start with a digit
 fragment IDpart : IDstart | DIGIT;
 
-ASSIGN                  : '=';
-COMMA                   : ',';
-CURLY_OPEN              : '{';
-CURLY_CLOSE             : '}';
-COLON                   : ':';
-SEMICOLON               : ';';
-PARAN_OPEN              : '(';
-PARAN_CLOSE             : ')';
-SQUARE_OPEN             : '[';
-SQUARE_CLOSE            : ']';
-DOT                     : '.';
-GREATER                 : '>';
-GREATER_OR_EQUAL        : '>=';
-LESSTHAN                : '<';
-LESSTHAN_OR_EQUAL       : '<=';
-EQUAL                   : '==';
-NOTEQUAL                : '!=';
-LOGIC_NEGATION          : '!';
-LOGIC_AND               : '&&';
-LOGIC_OR                : '||';
-PLUS                    : '+';
-MINUS                   : '-';
-MULTIPLY                : '*';
-DIVIDE                  : '/';
-MODULUS                 : '%';
-DOUBLE_QUOTATION        : '"';
-QUOTATION               : '\'';
-
 //Types in language
 INT_TYPE : 'int';
 DOUBLE_TYPE : 'double';
@@ -220,3 +192,31 @@ BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
 COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
+
+ASSIGN                  : '=';
+COMMA                   : ',';
+CURLY_OPEN              : '{';
+CURLY_CLOSE             : '}';
+COLON                   : ':';
+SEMICOLON               : ';';
+PARAN_OPEN              : '(';
+PARAN_CLOSE             : ')';
+SQUARE_OPEN             : '[';
+SQUARE_CLOSE            : ']';
+DOT                     : '.';
+GREATER                 : '>';
+GREATER_OR_EQUAL        : '>=';
+LESSTHAN                : '<';
+LESSTHAN_OR_EQUAL       : '<=';
+EQUAL                   : '==';
+NOTEQUAL                : '!=';
+LOGIC_NEGATION          : '!';
+LOGIC_AND               : '&&';
+LOGIC_OR                : '||';
+PLUS                    : '+';
+MINUS                   : '-';
+MULTIPLY                : '*';
+DIVIDE                  : '/';
+MODULUS                 : '%';
+DOUBLE_QUOTATION        : '"';
+QUOTATION               : '\'';
