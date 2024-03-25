@@ -9,6 +9,13 @@ grammar ParLang;
 // init used as start non-terminal for parser
 init  : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
+
+/** TO DO !!!!!!!!!!!!!!!!
+    Control Structures
+    Actor specific statements, eg. self.varable or self.someActor <- someFunc()
+*/
+
+
 //ACCEPTS: boolean expressions, arithmetic expressions,
 //comparison of arithmetic expressions declarations, and sending of messages
 statement : boolExp
