@@ -7,14 +7,28 @@ grammar ParLang;
 //PARSER RULES -----------------------------------------------------------------------
 
 /** init used as start non-terminal for parser */
-init  : (value SEMICOLON)+ EOF;  // must match at least one value
+init  : ((statement SEMICOLON) | actor )+ EOF;  // must match at least one value
 
 /** ACCEPTS: boolean expressions, or arithmetic expressions */
-value : boolExp
+statement : boolExp
     | compareExp
     | arithExp
     | declaration
     ;
+
+//instanziation of actor
+actor : ACTOR IDENTIFIER CURLY_OPEN actorStuff CURLY_CLOSE;
+
+actorStuff : actorState actorKnows actorSpawn actorMethod* ;
+
+actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
+
+actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
+
+actorSpawn : ON_METHOD SPAWN CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+
+actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+
 
 // Declaration used to declare variables
 declaration : INT_TYPE IDENTIFIER (ASSIGN integer)? // optinal to assign value from the declaration
@@ -68,6 +82,7 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest
                                                         // precedence of arithmetic operators
 factor : number
+    | IDENTIFIER
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
 number : integer
@@ -167,8 +182,10 @@ COLLECTION : 'collection';
 SPAWN : 'Spawn';
 STATE : 'State';
 KNOWS : 'Knows';
-ON_MSG : 'on';
+ON_METHOD : 'on';
+LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
+ACTOR : 'Actor';
 
 //Control structures
 IF : 'if';
