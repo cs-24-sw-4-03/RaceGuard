@@ -59,12 +59,6 @@ listItem : integer
     | list
     ;
 
-// commaseperated lists of primitives
-integerList : integer (COMMA integer)*;
-doubleList : DOUBLE (COMMA DOUBLE)*;
-boolList : boolLiteral (COMMA boolLiteral)*;
-stringList : STRING (COMMA STRING)*;
-
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 
