@@ -38,8 +38,8 @@ controlStructure : ifElse
     | whileLoop
     ;
 
-// for loop can take an identifier or declare one and have an evaluation expression and something that should happen at the end of each loop
-forLoop : FOR PARAN_OPEN (IDENTIFIER | declaration)? SEMICOLON boolExp SEMICOLON (statement)? PARAN_CLOSE body;
+// for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
+forLoop : FOR PARAN_OPEN (IDENTIFIER | declaration)? SEMICOLON boolExp SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
 whileLoop : WHILE PARAN_OPEN boolExp PARAN_CLOSE body;
 
@@ -51,7 +51,7 @@ elsePart : elseIf* ELSE body;
 elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
-declaration : allTypes? (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess | spawnActor))?;
+declaration : (allTypes | IDENTIFIER)? (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess | spawnActor))?;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -101,6 +101,12 @@ statement : boolExp SEMICOLON
     | declaration SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
+    ;
+
+//a for loop can only send messages, make a declaration, or make an arithmetic axpression in the lop-end statement
+forStatement : arithExp
+    | sendMsg
+    | declaration
     ;
 
 // body is a piece of code
@@ -213,7 +219,7 @@ FOR : 'for';
 MAIN : 'main';
 STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
-DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
+DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 //strings are inside either quotation marks or double quotation marks
 STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
