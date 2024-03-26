@@ -22,8 +22,10 @@ statement : boolExp
     | arithExp
     | declaration
     | sendMsg
+    | controlStructure
     ;
 
+//Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
     ;
@@ -33,9 +35,10 @@ mainFunc : MAIN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 // defines the arguments of a function
 arguments : PARAN_OPEN (allTypes IDENTIFIER (COMMA allTypes IDENTIFIER)*)? PARAN_CLOSE;
+parameters : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //declaration of an actor
-actor : ACTOR_TYPE IDENTIFIER CURLY_OPEN actorState actorKnows actorSpawn actorMethod* CURLY_CLOSE;
+actor : ACTOR_TYPE IDENTIFIER CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
 // state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 
@@ -43,16 +46,29 @@ actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
 
 // defines how to create an instance of this actor type
-actorSpawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+spawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 // methods of this actor
 actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : IDENTIFIER SEND_MSG IDENTIFIER arguments;
+sendMsg : IDENTIFIER SEND_MSG IDENTIFIER parameters;
+
+
+controlStructure : ifElse
+    ;
+
+//if statements must contain an if part
+ifElse : IF PARAN_OPEN boolExp PARAN_CLOSE CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE elsePart?;
+//the else part of an if statement is optional
+elsePart : elseIf* ELSE CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+//else if parts are also optional
+elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
 
 // Declaration used to declare variables
-declaration : allTypes (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess))?;
+declaration : allTypes? (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess | spawnActor))?;
+
+spawnActor : SPAWN ACTOR_TYPE parameters;
 
 // can define the length of the array or specify the array elements in between curly braces
 arrayAssign : arrayAssignLength
@@ -130,6 +146,8 @@ primitiveType : INT_TYPE
     | STRING_TYPE
     | BOOL_TYPE
     ;
+// values can be any type in the language
+value : (primitive | IDENTIFIER | arithExp | STRICT_POS_INT);
 
 //can be any primitive value
 primitive : INT
@@ -180,7 +198,7 @@ SEND_MSG : '<-';
 
 //Control structures
 IF : 'if';
-IF_ELSE : 'if-else';
+ELSE_IF : 'else-if';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
