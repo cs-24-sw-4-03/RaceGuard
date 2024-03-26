@@ -7,7 +7,7 @@ grammar ParLang;
 //PARSER RULES -----------------------------------------------------------------------
 
 // init used as start non-terminal for parser
-init  : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
+init : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
 
 /** TO DO !!!!!!!!!!!!!!!!
