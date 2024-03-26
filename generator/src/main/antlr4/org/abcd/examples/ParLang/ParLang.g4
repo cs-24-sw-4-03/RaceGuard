@@ -11,84 +11,47 @@ init  : actor* mainFunc actor* EOF;  // must have a main function end on an end 
 
 
 /** TO DO !!!!!!!!!!!!!!!!
-    Control Structures
+
 */
 
-
-//ACCEPTS: boolean expressions, arithmetic expressions,
-//comparison of arithmetic expressions declarations, and sending of messages
-statement : boolExp
-    | compareExp
-    | arithExp
-    | declaration
-    | sendMsg
-    | controlStructure
-    ;
-
-//Ways to acces either the state of an actor or access the actors known of the current actor
-actorAccess : STATE DOT IDENTIFIER
-    | KNOWS DOT IDENTIFIER
-    ;
-
 //main function, here the program should start
-mainFunc : MAIN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
-
-// defines the arguments of a function
-arguments : PARAN_OPEN (allTypes IDENTIFIER (COMMA allTypes IDENTIFIER)*)? PARAN_CLOSE;
-parameters : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
+mainFunc : MAIN arguments body;
 
 //declaration of an actor
 actor : ACTOR_TYPE IDENTIFIER CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
 // state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
-
 // defines which actors this actor knows
 actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
-
 // defines how to create an instance of this actor type
-spawn : SPAWN arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
-
+spawn : SPAWN arguments body;
 // methods of this actor
-actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
-
-//send a message to Actor and request use of method
-sendMsg : IDENTIFIER SEND_MSG IDENTIFIER parameters;
-
-
-controlStructure : ifElse
+actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments body;
+//Ways to acces either the state of an actor or access the actors known of the current actor
+actorAccess : STATE DOT IDENTIFIER
+    | KNOWS DOT IDENTIFIER
     ;
 
+//the different control structures in the language
+controlStructure : ifElse
+    | forLoop
+    | whileLoop
+    ;
+
+// for loop can take an identifier or declare one and have an evaluation expression and something that should happen at the end of each loop
+forLoop : FOR PARAN_OPEN (IDENTIFIER | declaration)? SEMICOLON boolExp SEMICOLON (statement)? PARAN_CLOSE body;
+//while loop only having a evaluation before each loop
+whileLoop : WHILE PARAN_OPEN boolExp PARAN_CLOSE body;
+
 //if statements must contain an if part
-ifElse : IF PARAN_OPEN boolExp PARAN_CLOSE CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE elsePart?;
+ifElse : IF PARAN_OPEN boolExp PARAN_CLOSE body elsePart?;
 //the else part of an if statement is optional
-elsePart : elseIf* ELSE CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+elsePart : elseIf* ELSE body;
 //else if parts are also optional
-elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE CURLY_OPEN (statement SEMICOLON)* CURLY_CLOSE;
+elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
 declaration : allTypes? (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess | spawnActor))?;
-
-spawnActor : SPAWN ACTOR_TYPE parameters;
-
-// can define the length of the array or specify the array elements in between curly braces
-arrayAssign : arrayAssignLength
-    | list
-    ;
-
-// assignment of the length af an array
-arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
-
-//arbritatry lsit of either ints, doubles, bools, or strings
-list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
-
-// items that can be listed
-listItem : integer
-    | DOUBLE
-    | STRING
-    | IDENTIFIER
-    | boolLiteral
-    | list
-    ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -116,10 +79,6 @@ factor : number
     | actorAccess
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
-number : integer
-    |DOUBLE
-    ; //number can be either integer or double
-
 // operator to compare two arithmetic expressions
 compareOperator : compareEqNEg;
 
@@ -132,6 +91,50 @@ compareOther : GREATER // Other compare operators have same precedence
     | GREATER_OR_EQUAL
     | LESSTHAN_OR_EQUAL
     | LESSTHAN
+    ;
+
+//ACCEPTS: boolean expressions, arithmetic expressions,
+//comparison of arithmetic expressions declarations, control structures, and sending of messages
+statement : boolExp SEMICOLON
+    | compareExp SEMICOLON
+    | arithExp SEMICOLON
+    | declaration SEMICOLON
+    | sendMsg SEMICOLON
+    | controlStructure
+    ;
+
+// body is a piece of code
+body : CURLY_OPEN statement* CURLY_CLOSE;
+
+// defines the arguments of a function
+arguments : PARAN_OPEN (allTypes IDENTIFIER (COMMA allTypes IDENTIFIER)*)? PARAN_CLOSE;
+// the paramerters passed when calling function
+parameters : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
+
+//send a message to Actor and request use of method
+sendMsg : IDENTIFIER SEND_MSG IDENTIFIER parameters;
+
+// to instanziate a new actor of a defined type
+spawnActor : SPAWN IDENTIFIER parameters;
+
+// can define the length of the array or specify the array elements in between curly braces
+arrayAssign : arrayAssignLength
+    | list
+    ;
+
+// assignment of the length af an array
+arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
+
+//arbritatry lsit of either ints, doubles, bools, or strings
+list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
+
+// items that can be listed
+listItem : integer
+    | DOUBLE
+    | STRING
+    | IDENTIFIER
+    | boolLiteral
+    | list
     ;
 
 // can be any type defined in language
@@ -148,6 +151,10 @@ primitiveType : INT_TYPE
     ;
 // values can be any type in the language
 value : (primitive | IDENTIFIER | arithExp | STRICT_POS_INT);
+
+number : integer
+    |DOUBLE
+    ; //number can be either integer or double
 
 //can be any primitive value
 primitive : INT
