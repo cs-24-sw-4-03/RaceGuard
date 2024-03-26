@@ -11,6 +11,7 @@ package org.abcd.examples.ParLang;
 // import ANTLR's runtime libraries
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
+import org.abcd.examples.ParLang.AST.AstNode;
 
 public class ParLang {
     public static void main(String[] args) throws Exception {
@@ -26,7 +27,10 @@ public class ParLang {
         // create a parser that feeds off the tokens buffer
         ParLangParser parser = new ParLangParser(tokens);
 
-        ParseTree tree = parser.init(); // begin parsing at init rule
+        ParseTree tree = parser.init(); // begin parsing at init
+
+        AstNode ast=tree.accept(new ParLangAstVisitor());
+
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }
 }
