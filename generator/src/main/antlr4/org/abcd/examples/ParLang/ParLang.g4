@@ -12,7 +12,6 @@ init  : actor* mainFunc actor* EOF;  // must have a main function end on an end 
 
 /** TO DO !!!!!!!!!!!!!!!!
     Control Structures
-    Actor specific statements, eg. self.varable or self.someActor <- someFunc()
 */
 
 
@@ -23,6 +22,10 @@ statement : boolExp
     | arithExp
     | declaration
     | sendMsg
+    ;
+
+actorAccess : STATE DOT IDENTIFIER
+    | KNOWS DOT IDENTIFIER
     ;
 
 //main function, here the program should start
@@ -49,7 +52,7 @@ actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments CURLY_OPEN (statem
 sendMsg : IDENTIFIER SEND_MSG IDENTIFIER arguments;
 
 // Declaration used to declare variables
-declaration : allTypes IDENTIFIER (ARRAY_TYPE)? (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER))?;
+declaration : allTypes (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess))?;
 
 // can define the length of the array or specify the array elements in between curly braces
 arrayAssign : arrayAssignLength
@@ -94,6 +97,7 @@ term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and M
                                                         // precedence of arithmetic operators
 factor : number
     | IDENTIFIER
+    | actorAccess
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
 number : integer
