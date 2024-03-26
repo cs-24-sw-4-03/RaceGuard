@@ -186,8 +186,8 @@ boolLiteral : BOOL_TRUE
 //fragments used to ease other definitions
 fragment DIGIT : [0-9];
 fragment POS_DIGIT : [1-9]; //Strictly positive digit
-fragment SMALL_LETTER : [a-z];
-fragment CAP_LETTER : [A-Z];
+fragment SMALL_LETTER : [a-zæøå];
+fragment CAP_LETTER : [A-ZÆØÅ];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
 fragment IDstart : ( LETTER | '_' ); //since identifier cannot start with a digit
 fragment IDpart : IDstart | DIGIT;
