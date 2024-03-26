@@ -1,6 +1,6 @@
 package org.abcd.examples.ParLang.AST;
 
-import org.abcd.examples.ParLang.ParLangAstVisitor;
+import org.abcd.examples.ParLang.AstVisitor;
 
 public class ArithExpression extends Expression{
     public enum Type {
@@ -42,7 +42,7 @@ public class ArithExpression extends Expression{
     }
 
     @Override
-    public  AstNode accept(ParLangAstVisitor visitor){
+    public  AstNode accept(AstVisitor visitor){
         return visitor.visitArithExp(this);
     }
 

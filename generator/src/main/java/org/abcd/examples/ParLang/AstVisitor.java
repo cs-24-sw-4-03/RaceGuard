@@ -1,13 +1,25 @@
 package org.abcd.examples.ParLang;
 
-import org.abcd.examples.ParLang.AST.AstNode;
 
+import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.abcd.examples.ParLang.AST.*;
 
-public class ParLangAstVisitor extends ParLangBaseVisitor<AstNode> {
-    @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
-
+public class AstVisitor<T> extends ParLangBaseVisitor<T> {
+    @Override public T visitInit(ParLangParser.InitContext ctx) {
         return visitChildren(ctx);
     }
+
+    private AstNode childVisitor(AstNode node, ParseTree[] children){
+        for(ParseTree c:children){
+            if(c.getPayload() instanceof CommonToken){
+                continue;
+            }
+            node.children.add((AstNode) visit(c));
+        }
+        return node;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -98,7 +110,45 @@ public class ParLangAstVisitor extends ParLangBaseVisitor<AstNode> {
      * <p>The default implementation returns the result of calling
      * {@link #visitChildren} on {@code ctx}.</p>
      */
-    @Override public T visitArithExp(ParLangParser.ArithExpContext ctx) { return visitChildren(ctx); }
+    @Override public T visitArithExp(ParLangParser.ArithExpContext ctx) {
+        if(ctx.getChildCount()==1){
+            return visit(ctx.term(0));
+        }else{
+            return (T) visitArithExpChild(ctx.getChild(1),ctx,1);
+        }
+    }
+
+    private AstNode visitArithExpChild(ParseTree child, ParLangParser.ArithExpContext parent, int operatorIndex){
+        AstNode node;
+
+        //index of first term
+        int termIndex=(operatorIndex-1)/2;
+        int nextOperator=operatorIndex+2;
+
+        switch (child.getText()){
+            case "+":
+                node=new AddNode();
+                break;
+            case "-":
+                node=new SubNode();
+                break;
+            default:
+                return null;
+        }
+
+        //Are there more operators in the tree?
+        if(parent.getChild(nextOperator)!= null){
+            //add left child(term)
+            node.children.add((AstNode) visitTerm(parent.term(termIndex)));
+            //add right child (operator)
+            node.children.add((AstNode) visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator));
+        }else {
+            node.children.add((AstNode) visitTerm(parent.term(termIndex)));
+            node.children.add((AstNode) visitTerm(parent.term(termIndex+1)));
+        }
+
+        return node;
+    }
     /**
      * {@inheritDoc}
      *

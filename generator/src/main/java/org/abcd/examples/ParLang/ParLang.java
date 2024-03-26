@@ -29,7 +29,12 @@ public class ParLang {
 
         ParseTree tree = parser.init(); // begin parsing at init
 
-        AstNode ast=tree.accept(new ParLangAstVisitor());
+        ParLangBaseVisitor<AstNode> visitor=new AstVisitor<>();
+
+        AstNode ast=(AstNode) visitor.visit(tree);
+
+        //alternative but unsure how accept mehtod woroks here:
+        //AstNode ast=tree.accept(visitor);
 
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }
