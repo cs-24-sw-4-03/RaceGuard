@@ -18,15 +18,15 @@ init  : actor* mainFunc actor* EOF;  // must have a main function end on an end 
 mainFunc : MAIN arguments body;
 
 //declaration of an actor
-actor : ACTOR_TYPE IDENTIFIER CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
+actor : ACTOR_TYPE identifier CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
 // state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 // defines which actors this actor knows
-actorKnows : KNOWS CURLY_OPEN (IDENTIFIER (COMMA IDENTIFIER)*)? CURLY_CLOSE;
+actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifier)*)? CURLY_CLOSE;
 // defines how to create an instance of this actor type
 spawn : SPAWN arguments body;
 // methods of this actor
-actorMethod : (ON_METHOD | LOCAL_METHOD) IDENTIFIER arguments body;
+actorMethod : (ON_METHOD | LOCAL_METHOD) identifier arguments body;
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
@@ -39,19 +39,19 @@ controlStructure : ifElse
     ;
 
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
-forLoop : FOR PARAN_OPEN (IDENTIFIER | declaration)? SEMICOLON boolExp SEMICOLON forStatement? PARAN_CLOSE body;
+forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
-whileLoop : WHILE PARAN_OPEN boolExp PARAN_CLOSE body;
+whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
 
 //if statements must contain an if part
-ifElse : IF PARAN_OPEN boolExp PARAN_CLOSE body elsePart?;
+ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body elsePart?;
 //the else part of an if statement is optional
 elsePart : elseIf* ELSE body;
 //else if parts are also optional
 elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
-declaration : (allTypes | IDENTIFIER)? (IDENTIFIER (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | IDENTIFIER | actorAccess | spawnActor))?;
+declaration : (allTypes | identifier)? (identifier (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor))?;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -75,7 +75,7 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest
                                                         // precedence of arithmetic operators
 factor : number
-    | IDENTIFIER
+    | identifier
     | actorAccess
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
 
@@ -101,6 +101,7 @@ statement : boolExp SEMICOLON
     | declaration SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
+    | methodCall
     ;
 
 //a for loop can only send messages, make a declaration, or make an arithmetic axpression in the lop-end statement
@@ -113,15 +114,18 @@ forStatement : arithExp
 body : CURLY_OPEN statement* CURLY_CLOSE;
 
 // defines the arguments of a function
-arguments : PARAN_OPEN (allTypes IDENTIFIER (COMMA allTypes IDENTIFIER)*)? PARAN_CLOSE;
+arguments : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
 // the paramerters passed when calling function
 parameters : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : IDENTIFIER SEND_MSG IDENTIFIER parameters;
+sendMsg : (identifier | SELF) SEND_MSG identifier parameters;
+
+//way to call a method
+methodCall : identifier parameters SEMICOLON;
 
 // to instanziate a new actor of a defined type
-spawnActor : SPAWN IDENTIFIER parameters;
+spawnActor : SPAWN identifier parameters;
 
 // can define the length of the array or specify the array elements in between curly braces
 arrayAssign : arrayAssignLength
@@ -129,7 +133,7 @@ arrayAssign : arrayAssignLength
     ;
 
 // assignment of the length af an array
-arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
+arrayAssignLength : identifier ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
 
 //arbritatry lsit of either ints, doubles, bools, or strings
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
@@ -138,9 +142,13 @@ list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
 listItem : integer
     | DOUBLE
     | STRING
-    | IDENTIFIER
+    | identifier
     | boolLiteral
     | list
+    ;
+
+identifier : IDENTIFIER
+    | actorAccess
     ;
 
 // can be any type defined in language
@@ -156,7 +164,7 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | IDENTIFIER | arithExp | STRICT_POS_INT);
+value : (primitive | identifier | arithExp | STRICT_POS_INT);
 
 number : integer
     |DOUBLE
@@ -208,6 +216,7 @@ KNOWS : 'Knows';
 ON_METHOD : 'on';
 LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
+SELF : 'self';
 
 //Control structures
 IF : 'if';
