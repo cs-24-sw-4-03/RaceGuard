@@ -9,6 +9,7 @@
 
 package org.abcd.examples.ParLang;
 // import ANTLR's runtime libraries
+import org.abcd.examples.ParLang.AST.AstPrintVisitor;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.abcd.examples.ParLang.AST.AstNode;
@@ -31,10 +32,13 @@ public class ParLang {
 
         ParLangBaseVisitor<AstNode> visitor=new AstVisitor<>();
 
-        AstNode ast=(AstNode) visitor.visit(tree);
-
+        AstNode ast=visitor.visit(tree);
         //alternative but unsure how accept mehtod woroks here:
         //AstNode ast=tree.accept(visitor);
+
+        AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
+        astPrintVisitor.visit(0, ast);
+
 
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }
