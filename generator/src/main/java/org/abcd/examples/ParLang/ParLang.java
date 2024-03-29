@@ -34,10 +34,13 @@ public class ParLang {
         //alternative but unsure how accept method works here:
         AstNode ast=tree.accept(visitor);
 
+        //print AST
+        System.out.println("AST:");
         AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
         astPrintVisitor.visit(0, ast);
 
-
+        //print CST
+        System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }
 }
