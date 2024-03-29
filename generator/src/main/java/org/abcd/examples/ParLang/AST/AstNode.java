@@ -8,7 +8,15 @@ import java.util.List;
 
 public abstract class AstNode {
 
-    public List<AstNode> children = new ArrayList<>();
+    private List<AstNode> children = new ArrayList<>();
+
+    public List<AstNode> getChildren() {
+        return children;
+    }
+
+    public void addChild(AstNode n){
+        children.add(n);
+    }
 
     public abstract AstNode accept(NodeVisitor visitor);
 }

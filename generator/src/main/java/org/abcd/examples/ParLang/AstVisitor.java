@@ -19,7 +19,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
             if(c.getPayload() instanceof CommonToken){
                 continue;
             }
-            node.children.add((AstNode) visit(c));
+            node.addChild((AstNode) visit(c));
         }
         return node;
     }
@@ -124,20 +124,6 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
         }
     }
 
-/*
-            switch (child.getText()){
-        case "+":
-            node=new AddNode();
-            break;
-        case "-":
-            node=new SubNode();
-            break;
-        default:
-            return null;
-    }
-               node.children.add((AstNode) visitTerm(parent.term(termIndex))); //add left child(term)
-            node.children.add(visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator)); //add right child (operator)
-    */
 
     private AstNode visitArithExpChild(ParseTree child, ParLangParser.ArithExpContext parent, int operatorIndex){
         int termIndex=(operatorIndex-1)/2; //index of first term
@@ -171,27 +157,6 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
             return (T) visitTermChild(ctx.getChild(1),ctx,1);
         }
     }
-    /*
-            AstNode node;
-        switch (child.getText()){
-            case "*":
-                node=new MultNode();
-                break;
-            case "/":
-                node=new DivNode();
-                break;
-            case "%":
-                node=new ModNode();
-                break;
-            default:
-                return null;
-        }
-        if(parent.getChild(nextOperator)!=null){ //Are there more operators?
-            node.children.add((AstNode) visitTermChild( parent.getChild(nextOperator),parent,nextOperator)); //add right child (operator)
-        }else {
-            node.children.add((AstNode) visitFactor(parent.factor(factorIndex+1)));
-        }
-     */
 
     private AstNode visitTermChild(ParseTree child, ParLangParser.TermContext parent, int operatorIndex){
         int factorIndex=(operatorIndex-1)/2; //index of first factor
@@ -233,6 +198,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
      */
     @Override public T visitNumber(ParLangParser.NumberContext ctx) {
         if(ctx.getText().contains(".")){
+            System.out.println("double deteted");
             return (T) new DoubleNode(Double.parseDouble(ctx.getText()));
         }else if(ctx.getChild(0) instanceof  ParLangParser.IntegerContext){
             return visitInteger(ctx.integer());
@@ -283,7 +249,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
      */
     @Override public T visitInteger(ParLangParser.IntegerContext ctx) {
 
-        return visitChildren(ctx);
+        return (T)new IntegerNode(Integer.parseInt(ctx.getText()));
     }
     /**
      * {@inheritDoc}

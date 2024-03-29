@@ -22,25 +22,15 @@ public class ArithExpression extends Expression{
     }
 
     private final Type type;
-    private final Expression left;
-    private final Expression right;
 
     public ArithExpression(Type t, Expression l, Expression r){
         type=t;
-        left=l;
-        right=r;
+        this.addChild(l);
+        this.addChild(r);
     }
 
     public Type getType() {
         return type;
-    }
-
-    public Expression getLeft() {
-        return left;
-    }
-
-    public Expression getRight() {
-        return right;
     }
 
     @Override
