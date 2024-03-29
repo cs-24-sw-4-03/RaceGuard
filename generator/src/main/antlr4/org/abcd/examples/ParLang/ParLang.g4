@@ -6,43 +6,52 @@ grammar ParLang;
 
 //PARSER RULES -----------------------------------------------------------------------
 
-/** init used as start non-terminal for parser */
-init  : (value SEMICOLON)+ EOF;  // must match at least one value
+// init used as start non-terminal for parser
+init : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
-/** ACCEPTS: boolean expressions, or arithmetic expressions */
-value : boolExp
-    | compareExp
-    | arithExp
-    | declaration
+
+/** TO DO !!!!!!!!!!!!!!!!
+
+*/
+
+//main function, here the program should start
+mainFunc : MAIN arguments body;
+
+//declaration of an actor
+actor : ACTOR_TYPE identifier CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
+// state of an actor
+actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
+// defines which actors this actor knows
+actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifier)*)? CURLY_CLOSE;
+// defines how to create an instance of this actor type
+spawn : SPAWN arguments body;
+// methods of this actor
+actorMethod : (ON_METHOD | LOCAL_METHOD) identifier arguments body;
+//Ways to acces either the state of an actor or access the actors known of the current actor
+actorAccess : STATE DOT IDENTIFIER
+    | KNOWS DOT IDENTIFIER
     ;
+
+//the different control structures in the language
+controlStructure : ifElse
+    | forLoop
+    | whileLoop
+    ;
+
+// for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
+forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
+//while loop only having a evaluation before each loop
+whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
+
+//if statements must contain an if part
+ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body elsePart?;
+//the else part of an if statement is optional
+elsePart : elseIf* ELSE body;
+//else if parts are also optional
+elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
-declaration : INT_TYPE IDENTIFIER (ASSIGN integer)? // optinal to assign value from the declaration
-    | DOUBLE_TYPE IDENTIFIER (ASSIGN DOUBLE)? // when defining a variable the assignment type msut match
-    | STRING_TYPE IDENTIFIER (ASSIGN STRING)?
-    | BOOL_TYPE IDENTIFIER (ASSIGN (BOOL_FALSE | BOOL_TRUE))?
-    | arrayAssign
-    ;
-
-// can define the length of the array or specify the array elements in between curly braces
-arrayAssign : ARRAY_TYPE_INT arrayAssignLength
-    | ARRAY_TYPE_DOUBLE arrayAssignLength
-    | ARRAY_TYPE_BOOL arrayAssignLength
-    | ARRAY_TYPE_STRING arrayAssignLength
-    | ARRAY_TYPE_INT CURLY_OPEN integerList CURLY_CLOSE
-    | ARRAY_TYPE_DOUBLE CURLY_OPEN doubleList CURLY_CLOSE
-    | ARRAY_TYPE_BOOL CURLY_OPEN boolList CURLY_CLOSE
-    | ARRAY_TYPE_STRING CURLY_OPEN stringList CURLY_CLOSE
-    ;
-// assignment of the length af an array
-arrayAssignLength : IDENTIFIER ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
-
-// commaseperated lists of primitives
-integerList : integer (COMMA integer)*;
-doubleList : DOUBLE (COMMA DOUBLE)*;
-boolList : boolLiteral (COMMA boolLiteral)*;
-stringList : STRING (COMMA STRING)*;
-
+declaration : (allTypes | identifier)? (identifier (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor))?;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -55,10 +64,8 @@ boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     ;
 
-
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;
-
 
 // arithmetic expressions
 arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence of arithmetic operators
@@ -68,11 +75,9 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest
                                                         // precedence of arithmetic operators
 factor : number
+    | identifier
+    | actorAccess
     | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
-
-number : integer
-    |DOUBLE
-    ;
 
 // operator to compare two arithmetic expressions
 compareOperator : compareEqNEg;
@@ -88,22 +93,95 @@ compareOther : GREATER // Other compare operators have same precedence
     | LESSTHAN
     ;
 
+//ACCEPTS: boolean expressions, arithmetic expressions,
+//comparison of arithmetic expressions declarations, control structures, and sending of messages
+statement : boolExp SEMICOLON
+    | compareExp SEMICOLON
+    | arithExp SEMICOLON
+    | declaration SEMICOLON
+    | sendMsg SEMICOLON
+    | controlStructure
+    | methodCall
+    ;
+
+//a for loop can only send messages, make a declaration, or make an arithmetic axpression in the lop-end statement
+forStatement : arithExp
+    | sendMsg
+    | declaration
+    ;
+
+// body is a piece of code
+body : CURLY_OPEN statement* CURLY_CLOSE;
+
+// defines the arguments of a function
+arguments : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
+// the paramerters passed when calling function
+parameters : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
+
+//send a message to Actor and request use of method
+sendMsg : (identifier | SELF) SEND_MSG identifier parameters;
+
+//way to call a method
+methodCall : identifier parameters SEMICOLON;
+
+// to instanziate a new actor of a defined type
+spawnActor : SPAWN identifier parameters;
+
+// can define the length of the array or specify the array elements in between curly braces
+arrayAssign : arrayAssignLength
+    | list
+    ;
+
+// assignment of the length af an array
+arrayAssignLength : identifier ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
+
+//arbritatry lsit of either ints, doubles, bools, or strings
+list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
+
+// items that can be listed
+listItem : integer
+    | DOUBLE
+    | STRING
+    | identifier
+    | boolLiteral
+    | list
+    ;
+
+identifier : IDENTIFIER
+    | actorAccess
+    ;
+
+// can be any type defined in language
+allTypes : primitiveType
+    | primitiveType ARRAY_TYPE
+    | ACTOR_TYPE
+    ;
+
+//can be any primitive type in language
 primitiveType : INT_TYPE
     | DOUBLE_TYPE
     | STRING_TYPE
     | BOOL_TYPE
     ;
+// values can be any type in the language
+value : (primitive | identifier | arithExp | STRICT_POS_INT);
 
+number : integer
+    |DOUBLE
+    ; //number can be either integer or double
+
+//can be any primitive value
 primitive : INT
     | DOUBLE
     | STRING
     | boolLiteral
     ;
-    
+
 integer : INT
     | STRICT_POS_INT
     ;
 
+//either boolean value true of false
 boolLiteral : BOOL_TRUE
     | BOOL_FALSE
     ;
@@ -116,11 +194,48 @@ boolLiteral : BOOL_TRUE
 //fragments used to ease other definitions
 fragment DIGIT : [0-9];
 fragment POS_DIGIT : [1-9]; //Strictly positive digit
-fragment SMALL_LETTER : [a-z];
-fragment CAP_LETTER : [A_Z];
+fragment SMALL_LETTER : [a-zæøå];
+fragment CAP_LETTER : [A-ZÆØÅ];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
 fragment IDstart : ( LETTER | '_' ); //since identifier cannot start with a digit
 fragment IDpart : IDstart | DIGIT;
+
+//Types in language
+INT_TYPE : 'int';
+DOUBLE_TYPE : 'double';
+BOOL_TYPE : 'bool';
+STRING_TYPE : 'string';
+NULL_TYPE : 'null';
+ARRAY_TYPE : '[]';
+ACTOR_TYPE : 'Actor';
+
+//Actor specific keywords
+SPAWN : 'Spawn';
+STATE : 'State';
+KNOWS : 'Knows';
+ON_METHOD : 'on';
+LOCAL_METHOD : 'local';
+SEND_MSG : '<-';
+SELF : 'self';
+
+//Control structures
+IF : 'if';
+ELSE_IF : 'else-if';
+ELSE : 'else';
+WHILE : 'while';
+FOR : 'for';
+
+MAIN : 'main';
+STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
+INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
+DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
+//strings are inside either quotation marks or double quotation marks
+STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);
+BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
+BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
+IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
+COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
+WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 
 ASSIGN                  : '=';
 COMMA                   : ',';
@@ -149,37 +264,3 @@ DIVIDE                  : '/';
 MODULUS                 : '%';
 DOUBLE_QUOTATION        : '"';
 QUOTATION               : '\'';
-
-
-//Types in language
-INT_TYPE : 'int';
-DOUBLE_TYPE : 'double';
-BOOL_TYPE : 'bool';
-STRING_TYPE : 'string';
-NULL_TYPE : 'null';
-ARRAY_TYPE_INT : INT_TYPE SQUARE_OPEN SQUARE_CLOSE;
-ARRAY_TYPE_BOOL : BOOL_TYPE SQUARE_OPEN SQUARE_CLOSE;
-ARRAY_TYPE_DOUBLE : DOUBLE_TYPE SQUARE_OPEN SQUARE_CLOSE;
-ARRAY_TYPE_STRING : STRING_TYPE SQUARE_OPEN SQUARE_CLOSE;
-COLLECTION : 'collection';
-
-//Control structures
-IF : 'if';
-IF_ELSE : 'if else';
-ELSE : 'else';
-WHILE : 'while';
-DO_WHILE : 'do while';
-FOR : 'for';
-
-STRICT_POS_INT : '0'* POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
-INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
-DOUBLE : DIGIT+ DOT DIGIT+ ; // Define token for decimal number
-STRING : DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION;
-BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
-BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
-IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
-WAIT : 'wait' ; // Token used to wait for threads to finish executing
-RETURN : 'return' ; // Token for returning from a function
-FORK : 'fork' ; // Token used to define a multithreaded function does not have to return before continuing
-COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
-WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
