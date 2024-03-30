@@ -27,9 +27,6 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
         FuncDclNode funcNode=new FuncDclNode("main","void");
         //make mainFuncNode, onFuncNode, localFuncNode inherited from FuncDclNode
 
-
-
-
         return visitChildren(ctx);
     }
 
