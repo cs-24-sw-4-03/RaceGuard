@@ -15,7 +15,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
 
     private AstNode childVisitor(AstNode node, ParseTree[] children){
         for(ParseTree c:children){
-            if(c.getPayload() instanceof CommonToken){//if child is a CommonToken, e.g. "{", then skip. 
+            if(c.getPayload() instanceof CommonToken){//if child is a CommonToken, e.g. "{", then skip.
                 continue;
             }
             node.addChild((AstNode) visit(c));
@@ -153,17 +153,4 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
