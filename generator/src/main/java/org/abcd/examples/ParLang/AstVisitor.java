@@ -15,7 +15,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
 
     private AstNode childVisitor(AstNode node, ParseTree[] children){
         for(ParseTree c:children){
-            if(c.getPayload() instanceof CommonToken){
+            if(c.getPayload() instanceof CommonToken){//if child is a CommonToken, e.g. "{", then skip. 
                 continue;
             }
             node.addChild((AstNode) visit(c));
@@ -24,50 +24,30 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
     }
 
     @Override public T visitMainFunc(ParLangParser.MainFuncContext ctx) {
-        FuncDclNode funcNode=new FuncDclNode("main","void");
-        //make mainFuncNode, onFuncNode, localFuncNode inherited from FuncDclNode
+        MainFuncDcl main= new MainFuncDcl();
 
+        if(!ctx.arguments().getText().equals("()")){
+            main.addChild((AstNode) visit(ctx.arguments()));
+        }
+        if(ctx.body()!=null){
+            main.addChild((AstNode) visit(ctx.body()));
+        }
+        return (T) main;
+    }
+
+    @Override public T visitArguments(ParLangParser.ArgumentsContext ctx) {
         return visitChildren(ctx);
     }
 
-    @Override public T visitActor(ParLangParser.ActorContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitActorState(ParLangParser.ActorStateContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitActorKnows(ParLangParser.ActorKnowsContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitSpawn(ParLangParser.SpawnContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitActorMethod(ParLangParser.ActorMethodContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitActorAccess(ParLangParser.ActorAccessContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitControlStructure(ParLangParser.ControlStructureContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitForLoop(ParLangParser.ForLoopContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitWhileLoop(ParLangParser.WhileLoopContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitIfElse(ParLangParser.IfElseContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitElsePart(ParLangParser.ElsePartContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitElseIf(ParLangParser.ElseIfContext ctx) { return visitChildren(ctx); }
-
-
-    @Override public T visitValue(ParLangParser.ValueContext ctx) {
-        return visitChildren(ctx);
+    @Override public T visitBody(ParLangParser.BodyContext ctx) {
+        Body body=new Body();
+        return (T) childVisitor(body,ctx.children.toArray(ParseTree[]::new));
     }
 
-    @Override public T visitDeclaration(ParLangParser.DeclarationContext ctx) { return visitChildren(ctx); }
+    @Override public T visitStatement(ParLangParser.StatementContext ctx) {
+        return visit(ctx.getChild(0));
+    }
 
-    @Override public T visitBoolExp(ParLangParser.BoolExpContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitBoolTerm(ParLangParser.BoolTermContext ctx) { return visitChildren(ctx); }
-
-    @Override public T visitCompareExp(ParLangParser.CompareExpContext ctx) { return visitChildren(ctx); }
 
     @Override public T visitArithExp(ParLangParser.ArithExpContext ctx) {
         if(ctx.getChildCount()==1){
@@ -134,6 +114,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
         }else if(child.getText().equals("(")){//is child a parentheses?
                 return visit(ctx.arithExp());
         }else{
+            System.out.println("is this the null?");
             return null;
         }
     }
@@ -147,26 +128,7 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
             return null;
         }
     }
-    @Override public T visitCompareOperator(ParLangParser.CompareOperatorContext ctx) { return visitChildren(ctx); }
-    @Override public T visitCompareEqNEg(ParLangParser.CompareEqNEgContext ctx) { return visitChildren(ctx); }
-    @Override public T visitCompareOther(ParLangParser.CompareOtherContext ctx) { return visitChildren(ctx); }
-    @Override public T visitStatement(ParLangParser.StatementContext ctx) { return visitChildren(ctx); }
-    @Override public T visitForStatement(ParLangParser.ForStatementContext ctx) { return visitChildren(ctx); }
-    @Override public T visitBody(ParLangParser.BodyContext ctx) { return visitChildren(ctx); }
-    @Override public T visitArguments(ParLangParser.ArgumentsContext ctx) { return visitChildren(ctx); }
-    @Override public T visitParameters(ParLangParser.ParametersContext ctx) { return visitChildren(ctx); }
-    @Override public T visitSendMsg(ParLangParser.SendMsgContext ctx) { return visitChildren(ctx); }
-    @Override public T visitMethodCall(ParLangParser.MethodCallContext ctx) { return visitChildren(ctx); }
-    @Override public T visitSpawnActor(ParLangParser.SpawnActorContext ctx) { return visitChildren(ctx); }
-    @Override public T visitArrayAssign(ParLangParser.ArrayAssignContext ctx) { return visitChildren(ctx); }
-    @Override public T visitArrayAssignLength(ParLangParser.ArrayAssignLengthContext ctx) { return visitChildren(ctx); }
-    @Override public T visitList(ParLangParser.ListContext ctx) { return visitChildren(ctx); }
-    @Override public T visitListItem(ParLangParser.ListItemContext ctx) { return visitChildren(ctx); }
-    @Override public T visitIdentifier(ParLangParser.IdentifierContext ctx) { return visitChildren(ctx); }
-    @Override public T visitAllTypes(ParLangParser.AllTypesContext ctx) { return visitChildren(ctx); }
-    @Override public T visitPrimitiveType(ParLangParser.PrimitiveTypeContext ctx) { return visitChildren(ctx); }
 
-    @Override public T visitPrimitive(ParLangParser.PrimitiveContext ctx) { return visitChildren(ctx); }
 
     @Override public T visitInteger(ParLangParser.IntegerContext ctx) {
 
