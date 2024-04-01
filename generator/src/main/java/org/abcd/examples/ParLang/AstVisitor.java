@@ -1,6 +1,5 @@
 package org.abcd.examples.ParLang;
 
-
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AST.*;
@@ -57,7 +56,6 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
         }
     }
 
-
     private AstNode visitArithExpChild(ParseTree child, ParLangParser.ArithExpContext parent, int operatorIndex){
         int termIndex=(operatorIndex-1)/2; //index of first term
         int nextOperator=operatorIndex+2;
@@ -75,12 +73,6 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
     }
 
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>The default implementation returns the result of calling
-     * {@link #visitChildren} on {@code ctx}.</p>
-     */
     @Override public T visitTerm(ParLangParser.TermContext ctx) {
         int childCount= ctx.getChildCount();
 
