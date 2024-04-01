@@ -29,9 +29,8 @@ public class ParLang {
 
         ParseTree tree = parser.init(); // begin parsing at init
 
-        ParLangBaseVisitor<AstNode> visitor=new AstVisitor<>();
+        ParLangBaseVisitor<AstNode> visitor=new AstVisitor();
 
-        //alternative but unsure how accept method works here:
         AstNode ast=tree.accept(visitor);
 
         //print AST

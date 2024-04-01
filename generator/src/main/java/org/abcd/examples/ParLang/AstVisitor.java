@@ -4,12 +4,11 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AST.*;
 
-//class based on ParLangBaseVisitor. ParLangBaseVisitor has  "return visitChildren(ctx);" as the body of every of the overridden methods
-public class AstVisitor<T> extends ParLangBaseVisitor<T> {
-    @Override public T visitInit(ParLangParser.InitContext ctx) {
+public class AstVisitor extends ParLangBaseVisitor<AstNode> {
+    @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
 
-        return (T) childVisitor(initNode,ctx.children.toArray(ParseTree[]::new));
+        return childVisitor(initNode,ctx.children.toArray(ParseTree[]::new));
     }
 
     private AstNode childVisitor(AstNode node, ParseTree[] children){
@@ -17,117 +16,109 @@ public class AstVisitor<T> extends ParLangBaseVisitor<T> {
             if(c.getPayload() instanceof CommonToken){//if child is a CommonToken, e.g. "{", then skip.
                 continue;
             }
-            node.addChild((AstNode) visit(c));
+            node.addChild( visit(c));
         }
         return node;
     }
 
-    @Override public T visitMainFunc(ParLangParser.MainFuncContext ctx) {
+    @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
         MainFuncDcl main= new MainFuncDcl();
 
         if(!ctx.arguments().getText().equals("()")){
-            main.addChild((AstNode) visit(ctx.arguments()));
+            main.addChild(visit(ctx.arguments()));//arguments not handled yet. The idea is to have arguments as children to the main node.
         }
         if(ctx.body()!=null){
-            main.addChild((AstNode) visit(ctx.body()));
+            main.addChild(visit(ctx.body()));
         }
-        return (T) main;
+        return main;
     }
 
-    @Override public T visitArguments(ParLangParser.ArgumentsContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override public T visitBody(ParLangParser.BodyContext ctx) {
+    @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         Body body=new Body();
-        return (T) childVisitor(body,ctx.children.toArray(ParseTree[]::new));
+        return childVisitor(body,ctx.children.toArray(ParseTree[]::new));
     }
 
-    @Override public T visitStatement(ParLangParser.StatementContext ctx) {
-        return visit(ctx.getChild(0));
+    @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
+        return visit(ctx.getChild(0));//if statement has more than one child, the second one is ";". We just visit the  child always.
     }
 
 
-    @Override public T visitArithExp(ParLangParser.ArithExpContext ctx) {
+    @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
         if(ctx.getChildCount()==1){
             return visit(ctx.term(0));
         }else{
-            return (T) visitArithExpChild(ctx.getChild(1),ctx,1);
+            return visitArithExpChild(ctx.getChild(1),ctx,1);
         }
     }
 
     private AstNode visitArithExpChild(ParseTree child, ParLangParser.ArithExpContext parent, int operatorIndex){
-        int termIndex=(operatorIndex-1)/2; //index of first term
+        int termIndex=(operatorIndex-1)/2; //index of first term in a list of just the terms (not including operators).
         int nextOperator=operatorIndex+2;
 
         ArithExpression.Type operator=getArithmeticBinaryOperator(child.getText());
-        Expression leftChild=(Expression) visitTerm(parent.term(termIndex));
+        Expression leftChild=(Expression) visit(parent.term(termIndex));
         Expression rightChild;
 
         if(parent.getChild(nextOperator)!= null){ //Are there more operators in the tree?
             rightChild=(Expression)visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
         }else {
-            rightChild=(Expression)  visitTerm(parent.term(termIndex+1));
+            rightChild=(Expression)  visit(parent.term(termIndex+1));
         }
         return new ArithExpression(operator,leftChild,rightChild);
     }
 
 
-    @Override public T visitTerm(ParLangParser.TermContext ctx) {
+    @Override public AstNode visitTerm(ParLangParser.TermContext ctx) {
         int childCount= ctx.getChildCount();
 
         if(childCount==1){
-            return visitFactor(ctx.factor(0));
+            return visit(ctx.factor(0));
         }else{
-            return (T) visitTermChild(ctx.getChild(1),ctx,1);
+            return visitTermChild(ctx.getChild(1),ctx,1);
         }
     }
 
     private AstNode visitTermChild(ParseTree child, ParLangParser.TermContext parent, int operatorIndex){
-        int factorIndex=(operatorIndex-1)/2; //index of first factor
+        int factorIndex=(operatorIndex-1)/2; //index of first factor in a list of just the factors
         int nextOperator=operatorIndex+2;
 
         ArithExpression.Type operator=getArithmeticBinaryOperator(child.getText());
-        Expression leftChild=(Expression) visitFactor(parent.factor(factorIndex));
+        Expression leftChild=(Expression) visit(parent.factor(factorIndex));
         Expression rightChild;
 
         if(parent.getChild(nextOperator)!=null){ //Are there more operators?
             rightChild=(Expression) visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
         }else {
-            rightChild=(Expression)  visitFactor(parent.factor(factorIndex+1));
+            rightChild=(Expression)  visit(parent.factor(factorIndex+1));
         }
         return new ArithExpression(operator,leftChild,rightChild);
     }
 
-    @Override public T visitFactor(ParLangParser.FactorContext ctx) {
+    @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
         ParseTree child=ctx.getChild(0);
         if(child instanceof ParLangParser.NumberContext){
-            return visitNumber(ctx.number());
-        }else if(child.getText().equals("(")){//is child a parentheses?
+            return visit(ctx.number());
+        }else if(child.getText().equals("(")){//If first child is a parentheses, treat the node as arithmetic expression
                 return visit(ctx.arithExp());
         }else{
-            System.out.println("is this the null?");
             return null;
         }
     }
 
-    @Override public T visitNumber(ParLangParser.NumberContext ctx) {
+    @Override public AstNode visitNumber(ParLangParser.NumberContext ctx) {
         if(ctx.getText().contains(".")){
-            return (T) new DoubleNode(Double.parseDouble(ctx.getText()));
+            return new DoubleNode(Double.parseDouble(ctx.getText()));
         }else if(ctx.getChild(0) instanceof  ParLangParser.IntegerContext){
-            return visitInteger(ctx.integer());
+            return visit(ctx.integer());
         }else{
             return null;
         }
     }
 
 
-    @Override public T visitInteger(ParLangParser.IntegerContext ctx) {
-
-        return (T)new IntegerNode(Integer.parseInt(ctx.getText()));
+    @Override public AstNode visitInteger(ParLangParser.IntegerContext ctx) {
+        return new IntegerNode(Integer.parseInt(ctx.getText()));
     }
-
-    @Override public T visitBoolLiteral(ParLangParser.BoolLiteralContext ctx) { return visitChildren(ctx); }
 
     private static ArithExpression.Type getArithmeticBinaryOperator(String operator) {
         switch (operator) {

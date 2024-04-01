@@ -27,7 +27,7 @@ public class AstPrintVisitor {
                 this.visit(localIndent + 1, childNode);
             }
         }else{
-            System.out.println("A node is null");
+            System.out.println("A null-node");
         }
     }
 

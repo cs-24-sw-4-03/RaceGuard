@@ -1,8 +1,5 @@
 package org.abcd.examples.ParLang.AST;
 
-import org.abcd.examples.ParLang.AstVisitor;
-import org.abcd.examples.ParLang.NodeVisitor;
-
 public class ArithExpression extends Expression{
     public enum Type {
         PLUS("+"),
@@ -31,10 +28,5 @@ public class ArithExpression extends Expression{
 
     public Type getType() {
         return type;
-    }
-
-    @Override
-    public  AstNode accept(NodeVisitor visitor){
-        return visitor.visit(this);
     }
 }
