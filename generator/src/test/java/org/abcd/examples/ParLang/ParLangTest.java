@@ -140,7 +140,7 @@ public class ParLangTest {
             if(counter != 7){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -158,7 +158,7 @@ public class ParLangTest {
             if(counter != 14){
                 counter++;
             }
-            else {
+            else { //last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -176,7 +176,7 @@ public class ParLangTest {
             if(counter != 20){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -194,7 +194,7 @@ public class ParLangTest {
             if(counter != 27){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -221,7 +221,7 @@ public class ParLangTest {
             if(counter != 40){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -239,7 +239,7 @@ public class ParLangTest {
             if(counter != 46){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -257,7 +257,7 @@ public class ParLangTest {
             if(counter != 49){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -275,7 +275,7 @@ public class ParLangTest {
             if(counter != 54){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
@@ -293,7 +293,7 @@ public class ParLangTest {
             if(counter != 56){
                 counter++;
             }
-            else {
+            else {//last token is always EOF which is rule 57
                 counter = 57;
             }
         }
