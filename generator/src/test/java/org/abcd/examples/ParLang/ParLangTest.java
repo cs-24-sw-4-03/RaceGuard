@@ -84,11 +84,6 @@ public class ParLangTest {
         }
     }
 
-
-    /*@Test
-    public void shouldAnswerWithTrue() {
-        assertTrue(true);
-    }*/
 //PARSER TEST------------------------------------------------------------------------------------------------
     @Test
     public void testArithExpParsing() {
@@ -107,11 +102,28 @@ public class ParLangTest {
         String input = "main(){if (x > 0) { x = x + 1; } else { x = x - 1; }}";
         assertTrue(ParLang.parseTest(input));
     }
+    @Test
+    public void testWrongControlStructureParsing() {
+        String input = "main(){(x > 0) { x = x + 1; } else { x = x - 1; }}";
+        assertFalse(ParLang.parseTest(input));
+    }
 
     @Test
     public void testDeclarationParsing() {
         String input = "main(){int x = 10;}";
         assertTrue(ParLang.parseTest(input));
+    }
+
+    @Test
+    public void testWrongDeclarationNoType() {
+        String input = "main(){x = 10;}";
+        assertTrue(ParLang.parseTest(input));
+    }
+
+    @Test
+    public void testWrongDeclarationParsing() {
+        String input = "main(){s int x = 10;}";
+        assertFalse(ParLang.parseTest(input));
     }
 
     @Test
@@ -121,8 +133,8 @@ public class ParLangTest {
     }
 
     @Test
-    public void testWrongDeclarationParsing() {
-        String input = "main(){s int x = 10;}";
+    public void testWrongBooleanExpressionParsing() {
+        String input = "main(){ && (5 < 10) || FALSE;}";
         assertFalse(ParLang.parseTest(input));
     }
 
@@ -313,6 +325,43 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         assertEquals(1,tokenList.size());
         assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(0).getType()));
+    }
+
+    @Test
+    public void testStringSingleQuote() {
+        String input = " 'hello world!' ";
+        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        assertEquals(2,tokenList.size());
+        assertEquals(tokenMap.get(24),tokenMap.get(tokenList.get(0).getType()));
+        assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(1).getType()));
+    }
+
+    @Test
+    public void testStringDoubleQuote() {
+        String input = " \"hello world!\" ";
+        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        assertEquals(2,tokenList.size());
+        assertEquals(tokenMap.get(24),tokenMap.get(tokenList.get(0).getType()));
+        assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(1).getType()));
+    }
+
+    @Test
+    public void testStringEscape1() {
+        String input = " 'hello \n world!' ";
+        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        assertEquals(6,tokenList.size()); //strings cannot contain \n and will then force lexer to tokenize otherwise
+    }
+    @Test
+    public void testStringEscape2() {
+        String input = " 'hello \t world!' ";
+        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        assertEquals(6,tokenList.size()); //strings cannot contain \t and will then force lexer to tokenize otherwise
+    }
+    @Test
+    public void testStringEscape3() {
+        String input = " 'hello \r world!' ";
+        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        assertEquals(6,tokenList.size()); //strings cannot contain \r and will then force lexer to tokenize otherwise
     }
 }
 enum LexerTokens {

@@ -58,7 +58,7 @@ public class ParLang {
 
         List<SyntaxError> errors = errListen.getSyntaxErrors();
         if (errors.size() != 0){return false;}
-        System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+        //System.out.println(tree.toStringTree(parser)); // print LISP-style tree
         return true;
     }
     public static List<org.antlr.v4.runtime.Token> lexerTest(String realInput){
