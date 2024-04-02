@@ -61,7 +61,7 @@ public class ParLang {
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
         return true;
     }
-    public static boolean lexerTest(String realInput){
+    public static List<org.antlr.v4.runtime.Token> lexerTest(String realInput){
         // create a CharStream that reads from standard input
         ANTLRInputStream input = new ANTLRInputStream(realInput);
 
@@ -71,19 +71,12 @@ public class ParLang {
         // create a buffer of tokens pulled from the lexer
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-        // create a parser that feeds off the tokens buffer
-        ParLangParser parser = new ParLangParser(tokens);
+        //filling in the tokens
+        tokens.fill();
 
-        parser.removeErrorListeners();
-        ErrorListener errListen = new ErrorListener();
-        parser.addErrorListener(errListen);
-
-        ParseTree tree = parser.init(); // begin parsing at init rule
-
-        List<SyntaxError> errors = errListen.getSyntaxErrors();
-        if (errors.size() != 0){return false;}
-        System.out.println(tree.toStringTree(parser)); // print LISP-style tree
-        return true;
+        //create list of tokens to return
+        List<org.antlr.v4.runtime.Token> tokenList = tokens.getTokens();
+        return tokenList;
     }
 }
 
