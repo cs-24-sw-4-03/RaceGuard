@@ -84,14 +84,12 @@ public class ParLangTest {
         }
     }
 
-    /**
-     * Rigorous Test :-)
-     */
+
     /*@Test
     public void shouldAnswerWithTrue() {
         assertTrue(true);
     }*/
-
+//PARSER TEST------------------------------------------------------------------------------------------------
     @Test
     public void testArithExpParsing() {
         String input = "main(){2 + 3 * 4;}";
@@ -128,6 +126,15 @@ public class ParLangTest {
         assertFalse(ParLang.parseTest(input));
     }
 
+    @Test
+    public void testNoInput() {
+        String input = "";
+        assertFalse(ParLang.parseTest(input));
+    }
+    //-------------------------------------------------------------------------------------------------------
+
+
+    //LEXER TEST--------------------------------------------------------------------------------------------
     @Test
     public void testLexerTypes() {
         String input = "int double bool string null [] Actor";
@@ -206,6 +213,7 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be 1 as the lexer should skip comments and whitespace
         assertEquals(1,tokenList.size());
+        //the only token should be EOF
         assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(0).getType()));
     }
 
