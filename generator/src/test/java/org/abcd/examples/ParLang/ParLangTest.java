@@ -221,7 +221,7 @@ public class ParLangTest {
 
     @Test
     public void testLexerCommentAndWhitespace() {
-        String input = "//helle\n//        rgtlb&%234*^`^*^`:;,.,zvlb§@£$€546{[7978\n              ";
+        String input = "//hee\n//        rgtlb&%234*^`^*^`:;,.,zvlb§@£$€546{[7978\n              ";
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be 1 as the lexer should skip comments and whitespace
         assertEquals(1,tokenList.size());
@@ -363,6 +363,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         assertEquals(6,tokenList.size()); //strings cannot contain \r and will then force lexer to tokenize otherwise
     }
+
+    /*@Test
+    public void testUnknownToken() { //lexer does not handle unknown tokens well yet
+        String input = " @ ";
+        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        System.out.println("IIIIIIIIIIIIIIIIIIII");
+        System.out.println(tokenList);
+    }*/
 }
 enum LexerTokens {
     INT_TYPE,             //1
@@ -423,4 +431,3 @@ enum LexerTokens {
     QUOTATION,            //56
     EOF                   //57
 }
-
