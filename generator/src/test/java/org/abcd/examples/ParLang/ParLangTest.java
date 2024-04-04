@@ -80,7 +80,8 @@ public class ParLangTest {
             tokenMap.put(55, LexerTokens.MODULUS);
             tokenMap.put(56, LexerTokens.DOUBLE_QUOTATION);
             tokenMap.put(57, LexerTokens.QUOTATION);
-
+            tokenMap.put(58, LexerTokens.EOF);
+            tokenMap.put(-1, LexerTokens.EOF); //when tokens return type EOF comes out as -1
 
             mappingMade = true;
         }
@@ -89,13 +90,13 @@ public class ParLangTest {
 //PARSER TEST------------------------------------------------------------------------------------------------
     @Test
     public void testArithExpParsing() {
-        String input = "main(){2 + 3 * 4;}";
+        String input = "main(){int i = 2 + 3 * 4;}";
         assertTrue(ParLang.parseTest(input));
     }
 
     @Test
     public void testWrongArithExpParsing() {
-        String input = "main(){ + 3 * 4;}";
+        String input = "main(){ 5 + 3 * 4;}";
         assertFalse(ParLang.parseTest(input));
     }
 
@@ -151,18 +152,23 @@ public class ParLangTest {
     //LEXER TEST--------------------------------------------------------------------------------------------
     @Test
     public void testLexerTypes() {
-        String input = "int double bool string null [] Actor";
+        String input = "int double bool string null [] Actor void";
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
-        assertEquals(8,tokenList.size());
+        assertEquals(9,tokenList.size());
         int counter = 1;
         for(org.antlr.v4.runtime.Token token : tokenList){
+            /*System.out.println("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIii");
+            System.out.println(token);
+            System.out.println("counte: " + tokenMap.get(counter));
+            System.out.println("number " + token.getType());
+            System.out.println("type: " + tokenMap.get(token.getType()));*/
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 7){
+            if(counter != 8){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -173,14 +179,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(8,tokenList.size());
-        int counter = 8;
+        int counter = 9;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 14){
+            if(counter != 15){
                 counter++;
             }
-            else { //last token is always EOF which is rule 57
-                counter = 57;
+            else { //last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -191,14 +197,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(7,tokenList.size());
-        int counter = 15;
+        int counter = 16;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 20){
+            if(counter != 21){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -209,14 +215,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(8,tokenList.size());
-        int counter = 21;
+        int counter = 22;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 27){
+            if(counter != 28){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -228,7 +234,7 @@ public class ParLangTest {
         //size should be 1 as the lexer should skip comments and whitespace
         assertEquals(1,tokenList.size());
         //the only token should be EOF
-        assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(0).getType()));
+        assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(0).getType()));
     }
 
     @Test
@@ -237,14 +243,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(12,tokenList.size());
-        int counter = 30;
+        int counter = 31;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 40){
+            if(counter != 41){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -255,14 +261,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(7,tokenList.size());
-        int counter = 41;
+        int counter = 42;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 46){
+            if(counter != 47){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -273,14 +279,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(4,tokenList.size());
-        int counter = 47;
+        int counter = 48;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 49){
+            if(counter != 50){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -291,14 +297,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(6,tokenList.size());
-        int counter = 50;
+        int counter = 51;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 54){
+            if(counter != 55){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -309,14 +315,14 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(3,tokenList.size());
-        int counter =55;
+        int counter =56;
         for(org.antlr.v4.runtime.Token token : tokenList){
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
-            if(counter != 56){
+            if(counter != 57){
                 counter++;
             }
-            else {//last token is always EOF which is rule 57
-                counter = 57;
+            else {//last token is always EOF which is rule 58
+                counter = 58;
             }
         }
     }
@@ -326,7 +332,7 @@ public class ParLangTest {
         String input = "";
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         assertEquals(1,tokenList.size());
-        assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(0).getType()));
+        assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(0).getType()));
     }
 
     @Test
@@ -334,8 +340,8 @@ public class ParLangTest {
         String input = " 'hello world!' ";
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         assertEquals(2,tokenList.size());
-        assertEquals(tokenMap.get(24),tokenMap.get(tokenList.get(0).getType()));
-        assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(1).getType()));
+        assertEquals(tokenMap.get(25),tokenMap.get(tokenList.get(0).getType()));
+        assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(1).getType()));
     }
 
     @Test
@@ -343,8 +349,8 @@ public class ParLangTest {
         String input = " \"hello world!\" ";
         List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
         assertEquals(2,tokenList.size());
-        assertEquals(tokenMap.get(24),tokenMap.get(tokenList.get(0).getType()));
-        assertEquals(tokenMap.get(57),tokenMap.get(tokenList.get(1).getType()));
+        assertEquals(tokenMap.get(25),tokenMap.get(tokenList.get(0).getType()));
+        assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(1).getType()));
     }
 
     @Test
