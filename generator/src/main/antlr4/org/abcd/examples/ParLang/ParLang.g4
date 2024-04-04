@@ -48,16 +48,16 @@ controlStructure : ifElse
     ;
 
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
-forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE bodyNode;
+forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
-whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE bodyNode;
+whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
 
 //if statements must contain an if part
-ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE bodyNode elsePart?;
+ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body elsePart?;
 //the else part of an if statement is optional
-elsePart : elseIf* ELSE bodyNode;
+elsePart : elseIf* ELSE body;
 //else if parts are also optional
-elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE bodyNode;
+elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
 declaration : (allTypes | identifier)? (identifier (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor))?;
@@ -112,8 +112,8 @@ forStatement : sendMsg
     | declaration
     ;
 
-// bodyNode is a piece of code
-bodyNode : CURLY_OPEN statement* CURLY_CLOSE;
+// body is a block of code
+body : CURLY_OPEN statement* CURLY_CLOSE;
 
 // defines the parameters of a function
 parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
