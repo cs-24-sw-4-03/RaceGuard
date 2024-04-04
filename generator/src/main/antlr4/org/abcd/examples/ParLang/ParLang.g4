@@ -7,29 +7,39 @@ grammar ParLang;
 //PARSER RULES -----------------------------------------------------------------------
 
 // init used as start non-terminal for parser
-init : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
+init : (actor | script)* mainFunc (actor | script)* EOF;  // must have a main function end on an end of file character
 
 /** TO DO !!!!!!!!!!!!!!!!
 
 */
 
 //main function, here the program should start
-mainFunc : MAIN arguments body;
+mainFunc : MAIN parameters body;
+
+//scripts can define methods that need to be implemented by following actors
+script : SCRIPT_TYPE identifier CURLY_OPEN scriptBody+ CURLY_CLOSE;
+scriptBody : (ON_METHOD | LOCAL_METHOD) identifier parameters SEMICOLON;
+
+//defines the scripts an actor follows
+follow : FOLLOWS identifier (COMMA identifier)*;
 
 //declaration of an actor
-actor : ACTOR_TYPE identifier CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
+actor : ACTOR_TYPE identifier follow? CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
 // state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 // defines which actors this actor knows
 actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifier)*)? CURLY_CLOSE;
 // defines how to create an instance of this actor type
-spawn : SPAWN arguments body;
+spawn : SPAWN parameters body;
 // methods of this actor
-actorMethod : (ON_METHOD | LOCAL_METHOD) identifier arguments body;
+actorMethod : (ON_METHOD | LOCAL_METHOD) identifier parameters body;
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
     ;
+
+printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
+printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
 
 //the different control structures in the language
 controlStructure : ifElse
@@ -94,6 +104,7 @@ statement : boolExp SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
     | methodCall
+    | printCall
     ;
 
 //a for loop can only send messages, make a declaration, or make an arithmetic axpression in the lop-end statement
@@ -104,19 +115,19 @@ forStatement : sendMsg
 // body is a piece of code
 body : CURLY_OPEN statement* CURLY_CLOSE;
 
-// defines the arguments of a function
-arguments : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
-// the paramerters passed when calling function
-parameters : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
+// defines the parameters of a function
+parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
+// the arguments passed when calling function
+arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : (identifier | SELF) SEND_MSG identifier parameters;
+sendMsg : (identifier | SELF) SEND_MSG identifier arguments;
 
 //way to call a method
-methodCall : identifier parameters SEMICOLON;
+methodCall : identifier arguments SEMICOLON;
 
 // to instanziate a new actor of a defined type
-spawnActor : SPAWN identifier parameters;
+spawnActor : SPAWN identifier arguments;
 
 // can define the length of the array or specify the array elements in between curly braces
 arrayAssign : arrayAssignLength
@@ -201,6 +212,7 @@ NULL_TYPE : 'null';
 ARRAY_TYPE : '[]';
 ACTOR_TYPE : 'Actor';
 VOID_TYPE : 'void';
+SCRIPT_TYPE : 'Script';
 
 //Actor specific keywords
 SPAWN : 'Spawn';
@@ -210,6 +222,7 @@ ON_METHOD : 'on';
 LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
+FOLLOWS : 'follows';
 
 //Control structures
 IF : 'if';
@@ -219,6 +232,7 @@ WHILE : 'while';
 FOR : 'for';
 
 MAIN : 'main';
+PRINT : 'print';
 STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
 INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
@@ -255,5 +269,5 @@ MINUS                   : '-';
 MULTIPLY                : '*';
 DIVIDE                  : '/';
 MODULUS                 : '%';
-DOUBLE_QUOTATION        : '"';
+DOUBLE_QUOTATION        : '"' | '“';
 QUOTATION               : '\'';
