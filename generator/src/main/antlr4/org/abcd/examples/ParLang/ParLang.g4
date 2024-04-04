@@ -9,7 +9,6 @@ grammar ParLang;
 // init used as start non-terminal for parser
 init : actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
-
 /** TO DO !!!!!!!!!!!!!!!!
 
 */
@@ -55,9 +54,7 @@ declaration : (allTypes | identifier)? (identifier (ARRAY_TYPE)? | actorAccess) 
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
-
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
-
 boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
     | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
@@ -71,9 +68,7 @@ compareExp : arithExp compareOperator arithExp;
 arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence of arithmetic operators
     | PARAN_OPEN arithExp PARAN_CLOSE
     ;
-
-term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest
-                                                        // precedence of arithmetic operators
+term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
     | identifier
     | actorAccess
@@ -81,12 +76,10 @@ factor : number
 
 // operator to compare two arithmetic expressions
 compareOperator : compareEqNEg;
-
 compareEqNEg : EQUAL // EQUAL and NOTEQUAL have lower precedence than other compare operators
     | NOTEQUAL
     | compareOther
     ;
-
 compareOther : GREATER // Other compare operators have same precedence
     | GREATER_OR_EQUAL
     | LESSTHAN_OR_EQUAL
@@ -97,7 +90,6 @@ compareOther : GREATER // Other compare operators have same precedence
 //comparison of arithmetic expressions declarations, control structures, and sending of messages
 statement : boolExp SEMICOLON
     | compareExp SEMICOLON
-    | arithExp SEMICOLON
     | declaration SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
@@ -105,8 +97,7 @@ statement : boolExp SEMICOLON
     ;
 
 //a for loop can only send messages, make a declaration, or make an arithmetic axpression in the lop-end statement
-forStatement : arithExp
-    | sendMsg
+forStatement : sendMsg
     | declaration
     ;
 
@@ -155,6 +146,7 @@ identifier : IDENTIFIER
 allTypes : primitiveType
     | primitiveType ARRAY_TYPE
     | ACTOR_TYPE
+    | VOID_TYPE
     ;
 
 //can be any primitive type in language
@@ -208,6 +200,7 @@ STRING_TYPE : 'string';
 NULL_TYPE : 'null';
 ARRAY_TYPE : '[]';
 ACTOR_TYPE : 'Actor';
+VOID_TYPE : 'void';
 
 //Actor specific keywords
 SPAWN : 'Spawn';
