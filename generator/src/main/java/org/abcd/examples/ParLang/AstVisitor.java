@@ -33,7 +33,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return main;
     }
 
-    @Override public AstNode visitBody(ParLangParser.BodyNodeContext ctx) {
+    @Override public AstNode visitBodyNode(ParLangParser.BodyNodeContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children.toArray(ParseTree[]::new));
     }
