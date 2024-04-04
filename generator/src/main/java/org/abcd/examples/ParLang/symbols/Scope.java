@@ -8,19 +8,22 @@ public class Scope {
 
     //The symbols in the scope
     //TODO: Research whether Hashmaps are the best for these lists
-    private HashMap<String, Attributes> symbols = new HashMap<>();
-    private Map<String, Attributes> params = new LinkedHashMap<>();
+    private final HashMap<String, Attributes> symbols = new HashMap<>();
+    private final Map<String, Attributes> params = new LinkedHashMap<>();
 
     //Nested scopes within the current scope
-    private List<Scope> children = new ArrayList<>();
+    public final List<Scope> children = new ArrayList<>();
 
-    public Scope(String scopeName, Scope parent){
+    public Scope(String scopeName){
         this.scopeName = scopeName;
-        this.parent = parent;
     }
 
     public String getScopeName() {
         return this.scopeName;
+    }
+
+    public void setParent(Scope parent){
+        this.parent = parent;
     }
 
     public Scope getParent() {
@@ -41,9 +44,4 @@ public class Scope {
         return this.params;
     }
 
-
-
-    public void addChildToScope(Scope child){
-        this.children.add(child);
-    }
 }
