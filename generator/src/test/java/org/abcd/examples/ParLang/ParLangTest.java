@@ -1,10 +1,20 @@
 package org.abcd.examples.ParLang;
 
+// import ANTLR's runtime libraries
+import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.misc.Utils;
+import org.antlr.v4.runtime.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.abcd.examples.ParLang.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.antlr.v4.runtime.*;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +25,47 @@ import java.util.Map;
 public class ParLangTest {
     private static boolean mappingMade = false;
     private static Map<Integer, LexerTokens> tokenMap = new HashMap<>();
+
+    public static boolean parseTest(String realInput){
+        // create a CharStream that reads from standard input
+        ANTLRInputStream input = new ANTLRInputStream(realInput);
+
+        // create a lexer that feeds off of input CharStream
+        ParLangLexer lexer = new ParLangLexer(input);
+
+        // create a buffer of tokens pulled from the lexer
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        // create a parser that feeds off the tokens buffer
+        ParLangParser parser = new ParLangParser(tokens);
+
+        parser.removeErrorListeners();
+        ErrorListener errListen = new ErrorListener();
+        parser.addErrorListener(errListen);
+
+        ParseTree tree = parser.init(); // begin parsing at init rule
+
+        List<SyntaxError> errors = errListen.getSyntaxErrors();
+        if (errors.size() != 0){return false;}
+        return true;
+    }
+    public static List<org.antlr.v4.runtime.Token> lexerTest(String realInput){
+        // create a CharStream that reads from standard input
+        ANTLRInputStream input = new ANTLRInputStream(realInput);
+
+        // create a lexer that feeds off of input CharStream
+        ParLangLexer lexer = new ParLangLexer(input);
+
+        // create a buffer of tokens pulled from the lexer
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        //filling in the tokens
+        tokens.fill();
+
+        //create list of tokens to return
+        List<org.antlr.v4.runtime.Token> tokenList = tokens.getTokens();
+        return tokenList;
+    }
 
     @BeforeEach
     public void mapping() {
@@ -91,60 +142,60 @@ public class ParLangTest {
     @Test
     public void testArithExpParsing() {
         String input = "main(){int i = 2 + 3 * 4;}";
-        assertTrue(ParLang.parseTest(input));
+        assertTrue(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testWrongArithExpParsing() {
         String input = "main(){ 5 + 3 * 4;}";
-        assertFalse(ParLang.parseTest(input));
+        assertFalse(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testControlStructureParsing() {
         String input = "main(){if (x > 0) { x = x + 1; } else { x = x - 1; }}";
-        assertTrue(ParLang.parseTest(input));
+        assertTrue(ParLangTest.parseTest(input));
     }
     @Test
     public void testWrongControlStructureParsing() {
         String input = "main(){(x > 0) { x = x + 1; } else { x = x - 1; }}";
-        assertFalse(ParLang.parseTest(input));
+        assertFalse(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testDeclarationParsing() {
         String input = "main(){int x = 10;}";
-        assertTrue(ParLang.parseTest(input));
+        assertTrue(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testWrongDeclarationNoType() {
         String input = "main(){x = 10;}";
-        assertTrue(ParLang.parseTest(input));
+        assertTrue(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testWrongDeclarationParsing() {
         String input = "main(){s int x = 10;}";
-        assertFalse(ParLang.parseTest(input));
+        assertFalse(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testBooleanExpressionParsing() {
         String input = "main(){TRUE && (5 < 10) || FALSE;}";
-        assertTrue(ParLang.parseTest(input));
+        assertTrue(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testWrongBooleanExpressionParsing() {
         String input = "main(){ && (5 < 10) || FALSE;}";
-        assertFalse(ParLang.parseTest(input));
+        assertFalse(ParLangTest.parseTest(input));
     }
 
     @Test
     public void testNoInput() {
         String input = "";
-        assertFalse(ParLang.parseTest(input));
+        assertFalse(ParLangTest.parseTest(input));
     }
     //-------------------------------------------------------------------------------------------------------
 
@@ -153,7 +204,7 @@ public class ParLangTest {
     @Test
     public void testLexerTypes() {
         String input = "int double bool string null [] Actor void";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(9,tokenList.size());
         int counter = 1;
@@ -176,7 +227,7 @@ public class ParLangTest {
     @Test
     public void testLexerActorSpec() {
         String input = "Spawn State Knows on local <- self";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(8,tokenList.size());
         int counter = 9;
@@ -194,7 +245,7 @@ public class ParLangTest {
     @Test
     public void testLexerControlStructPlusMain() {
         String input = "if else-if else while for main";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(7,tokenList.size());
         int counter = 16;
@@ -212,7 +263,7 @@ public class ParLangTest {
     @Test
     public void testLexerprimitivesAndIdentifier() {
         String input = "5 -5 3.5 \"string\" TRUE FALSE identifier";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(8,tokenList.size());
         int counter = 22;
@@ -230,7 +281,7 @@ public class ParLangTest {
     @Test
     public void testLexerCommentAndWhitespace() {
         String input = "//hee\n//        rgtlb&%234*^`^*^`:;,.,zvlb§@£$€546{[7978\n              ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be 1 as the lexer should skip comments and whitespace
         assertEquals(1,tokenList.size());
         //the only token should be EOF
@@ -240,7 +291,7 @@ public class ParLangTest {
     @Test
     public void testLexerSingleSymbols() {
         String input = "= , { } : ; ( ) [ ] .";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(12,tokenList.size());
         int counter = 31;
@@ -258,7 +309,7 @@ public class ParLangTest {
     @Test
     public void testLexerCompareOperators() {
         String input = "> >= < <= == !=";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(7,tokenList.size());
         int counter = 42;
@@ -276,7 +327,7 @@ public class ParLangTest {
     @Test
     public void testLexerLogicOperators() {
         String input = "! && ||";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(4,tokenList.size());
         int counter = 48;
@@ -294,7 +345,7 @@ public class ParLangTest {
     @Test
     public void testLexerArithOperators() {
         String input = "+ - * / %";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(6,tokenList.size());
         int counter = 51;
@@ -312,7 +363,7 @@ public class ParLangTest {
     @Test
     public void testLexerQuotations() {
         String input = "\" ' ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         //size should be one more than number of tokens as an input always will end on an End Of File (EOF) token
         assertEquals(3,tokenList.size());
         int counter =56;
@@ -330,7 +381,7 @@ public class ParLangTest {
     @Test
     public void testLexerEOF() {
         String input = "";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(1,tokenList.size());
         assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(0).getType()));
     }
@@ -338,7 +389,7 @@ public class ParLangTest {
     @Test
     public void testStringSingleQuote() {
         String input = " 'hello world!' ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(2,tokenList.size());
         assertEquals(tokenMap.get(25),tokenMap.get(tokenList.get(0).getType()));
         assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(1).getType()));
@@ -347,7 +398,7 @@ public class ParLangTest {
     @Test
     public void testStringDoubleQuote() {
         String input = " \"hello world!\" ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(2,tokenList.size());
         assertEquals(tokenMap.get(25),tokenMap.get(tokenList.get(0).getType()));
         assertEquals(tokenMap.get(58),tokenMap.get(tokenList.get(1).getType()));
@@ -356,26 +407,26 @@ public class ParLangTest {
     @Test
     public void testStringEscape1() {
         String input = " 'hello \n world!' ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(6,tokenList.size()); //strings cannot contain \n and will then force lexer to tokenize otherwise
     }
     @Test
     public void testStringEscape2() {
         String input = " 'hello \t world!' ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(6,tokenList.size()); //strings cannot contain \t and will then force lexer to tokenize otherwise
     }
     @Test
     public void testStringEscape3() {
         String input = " 'hello \r world!' ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(6,tokenList.size()); //strings cannot contain \r and will then force lexer to tokenize otherwise
     }
 
     /*@Test
     public void testUnknownToken() { //lexer does not handle unknown tokens well yet
         String input = " @ ";
-        List<org.antlr.v4.runtime.Token> tokenList = ParLang.lexerTest(input);
+        List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         System.out.println("IIIIIIIIIIIIIIIIIIII");
         System.out.println(tokenList);
     }*/
@@ -439,4 +490,80 @@ enum LexerTokens {
     DOUBLE_QUOTATION,     //56
     QUOTATION,            //57
     EOF                   //58
+}
+
+
+class ErrorListener extends BaseErrorListener{
+    private final List<SyntaxError> syntaxErrors = new ArrayList<>();
+
+    public ErrorListener() {
+    }
+
+    List<SyntaxError> getSyntaxErrors() {
+        return syntaxErrors;
+    }
+
+    @Override
+    public void syntaxError(Recognizer<?, ?> recognizer,
+                            Object offendingSymbol,
+                            int line, int charPositionInLine,
+                            String msg, RecognitionException e)
+    {
+        syntaxErrors.add(new SyntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e));
+    }
+
+    @Override
+    public String toString() {
+        return Utils.join(syntaxErrors.iterator(), "\n");
+    }
+}
+
+class SyntaxError
+{
+    private final Recognizer<?, ?> recognizer;
+    private final Object offendingSymbol;
+    private final int line;
+    private final int charPositionInLine;
+    private final String message;
+    private final RecognitionException e;
+
+    SyntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
+    {
+        this.recognizer = recognizer;
+        this.offendingSymbol = offendingSymbol;
+        this.line = line;
+        this.charPositionInLine = charPositionInLine;
+        this.message = msg;
+        this.e = e;
+    }
+
+    public Recognizer<?, ?> getRecognizer()
+    {
+        return recognizer;
+    }
+
+    public Object getOffendingSymbol()
+    {
+        return offendingSymbol;
+    }
+
+    public int getLine()
+    {
+        return line;
+    }
+
+    public int getCharPositionInLine()
+    {
+        return charPositionInLine;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public RecognitionException getException()
+    {
+        return e;
+    }
 }
