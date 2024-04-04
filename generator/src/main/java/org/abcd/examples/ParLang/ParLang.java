@@ -18,6 +18,8 @@ import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.abcd.examples.ParLang.AstNodes.AstNode;
+
 
 public class ParLang {
     public static void main(String[] args) throws Exception {
@@ -33,7 +35,19 @@ public class ParLang {
         // create a parser that feeds off the tokens buffer
         ParLangParser parser = new ParLangParser(tokens);
 
-        ParseTree tree = parser.init(); // begin parsing at init rule
+        ParseTree tree = parser.init(); // begin parsing at init
+
+        ParLangBaseVisitor<AstNode> visitor=new AstVisitor();
+
+        AstNode ast=tree.accept(visitor);
+
+        //print AST
+        System.out.println("AST:");
+        AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
+        astPrintVisitor.visit(0, ast);
+
+        //print CST
+        System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }
 
