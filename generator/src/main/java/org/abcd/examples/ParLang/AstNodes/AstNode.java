@@ -15,4 +15,12 @@ public abstract class AstNode {
     public void addChild(AstNode n){
         children.add(n);
     }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

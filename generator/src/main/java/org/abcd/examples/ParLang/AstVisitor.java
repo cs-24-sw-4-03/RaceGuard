@@ -33,6 +33,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return main;
     }
 
+    @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
+
+
+        return this.visitChildren(ctx);
+    }
+
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children.toArray(ParseTree[]::new));
@@ -55,7 +61,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int termIndex=(operatorIndex-1)/2; //index of first term in a list of just the terms (not including operators).
         int nextOperator=operatorIndex+2;
 
-        ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
+        ArithExprNode.OpType operator=getArithmeticBinaryOperator(child.getText());
         ExprNode leftChild=(ExprNode) visit(parent.term(termIndex));
         ExprNode rightChild;
 
@@ -82,7 +88,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int factorIndex=(operatorIndex-1)/2; //index of first factor in a list of just the factors
         int nextOperator=operatorIndex+2;
 
-        ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
+        ArithExprNode.OpType operator=getArithmeticBinaryOperator(child.getText());
         ExprNode leftChild=(ExprNode) visit(parent.factor(factorIndex));
         ExprNode rightChild;
 
@@ -120,18 +126,18 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return new IntegerNode(Integer.parseInt(ctx.getText()));
     }
 
-    private static ArithExprNode.Type getArithmeticBinaryOperator(String operator) {
+    private static ArithExprNode.OpType getArithmeticBinaryOperator(String operator) {
         switch (operator) {
             case "+":
-                return ArithExprNode.Type.PLUS;
+                return ArithExprNode.OpType.PLUS;
             case  "-":
-                return ArithExprNode.Type.MINUS;
+                return ArithExprNode.OpType.MINUS;
             case "*":
-                return ArithExprNode.Type.MULTIPLY;
+                return ArithExprNode.OpType.MULTIPLY;
             case "/":
-                return ArithExprNode.Type.DIVIDE;
+                return ArithExprNode.OpType.DIVIDE;
             case "%":
-                return ArithExprNode.Type.MODULO;
+                return ArithExprNode.OpType.MODULO;
             default:
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
