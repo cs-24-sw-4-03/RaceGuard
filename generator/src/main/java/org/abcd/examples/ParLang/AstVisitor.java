@@ -24,16 +24,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
         MainDclNode main= new MainDclNode();
 
-        if(!ctx.arguments().getText().equals("()")){
-            main.addChild(visit(ctx.arguments()));//arguments not handled yet. The idea is to have arguments as children to the main node.
+        if(!ctx.parameters().getText().equals("()")){
+            main.addChild(visit(ctx.parameters()));//arguments not handled yet. The idea is to have arguments as children to the main node.
         }
-        if(ctx.bodyNode()!=null){
-            main.addChild(visit(ctx.bodyNode()));
+        if(ctx.body()!=null){
+            main.addChild(visit(ctx.body()));
         }
         return main;
     }
 
-    @Override public AstNode visitBodyNode(ParLangParser.BodyNodeContext ctx) {
+    @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children.toArray(ParseTree[]::new));
     }
