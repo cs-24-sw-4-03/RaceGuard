@@ -1,21 +1,21 @@
 package org.abcd.examples.ParLang;
 
-import org.abcd.examples.ParLang.AST.ArithExpression;
-import org.abcd.examples.ParLang.AST.AstNode;
-import org.abcd.examples.ParLang.AST.DoubleNode;
-import org.abcd.examples.ParLang.AST.IntegerNode;
+import org.abcd.examples.ParLang.AstNodes.ArithExprNode;
+import org.abcd.examples.ParLang.AstNodes.AstNode;
+import org.abcd.examples.ParLang.AstNodes.DoubleNode;
+import org.abcd.examples.ParLang.AstNodes.IntegerNode;
 
 public class AstPrintVisitor {
     public void visit(int localIndent, AstNode node){
         if(node != null){
             switch (node.getClass().toString()){
-                case "class org.abcd.examples.ParLang.AST.ArithExpression":
-                    this.print(localIndent, node.getClass() + " of type: " + ((ArithExpression) node).getType());
+                case "class org.abcd.examples.ParLang.AstNodes.ArithExpression":
+                    this.print(localIndent, node.getClass() + " of type: " + ((ArithExprNode) node).getType());
                     break;
-                case "class org.abcd.examples.ParLang.AST.DoubleNode":
+                case "class org.abcd.examples.ParLang.AstNodes.DoubleNode":
                     this.print(localIndent, node.getClass() + " with the value: " + ((DoubleNode)node).getValue());
                     break;
-                case "class org.abcd.examples.ParLang.AST.IntegerNode":
+                case "class org.abcd.examples.ParLang.AstNodes.IntegerNode":
                     this.print(localIndent, node.getClass() + " with the value: " + ((IntegerNode)node).getValue());
                     break;
                 default:

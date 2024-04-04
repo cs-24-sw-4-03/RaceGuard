@@ -15,7 +15,7 @@ init : actor* mainFunc actor* EOF;  // must have a main function end on an end o
 */
 
 //main function, here the program should start
-mainFunc : MAIN arguments body;
+mainFunc : MAIN arguments bodyNode;
 
 //declaration of an actor
 actor : ACTOR_TYPE identifier CURLY_OPEN actorState actorKnows spawn actorMethod* CURLY_CLOSE;
@@ -24,9 +24,9 @@ actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 // defines which actors this actor knows
 actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifier)*)? CURLY_CLOSE;
 // defines how to create an instance of this actor type
-spawn : SPAWN arguments body;
+spawn : SPAWN arguments bodyNode;
 // methods of this actor
-actorMethod : (ON_METHOD | LOCAL_METHOD) identifier arguments body;
+actorMethod : (ON_METHOD | LOCAL_METHOD) identifier arguments bodyNode;
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
@@ -39,16 +39,16 @@ controlStructure : ifElse
     ;
 
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
-forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
+forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE bodyNode;
 //while loop only having a evaluation before each loop
-whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
+whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE bodyNode;
 
 //if statements must contain an if part
-ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body elsePart?;
+ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE bodyNode elsePart?;
 //the else part of an if statement is optional
-elsePart : elseIf* ELSE body;
+elsePart : elseIf* ELSE bodyNode;
 //else if parts are also optional
-elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
+elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE bodyNode;
 
 // Declaration used to declare variables
 declaration : (allTypes | identifier)? (identifier (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor))?;
@@ -110,8 +110,8 @@ forStatement : arithExp
     | declaration
     ;
 
-// body is a piece of code
-body : CURLY_OPEN statement* CURLY_CLOSE;
+// bodyNode is a piece of code
+bodyNode : CURLY_OPEN statement* CURLY_CLOSE;
 
 // defines the arguments of a function
 arguments : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;

@@ -2,7 +2,7 @@ package org.abcd.examples.ParLang;
 
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.abcd.examples.ParLang.AST.*;
+import org.abcd.examples.ParLang.AstNodes.*;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
@@ -27,15 +27,15 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if(!ctx.arguments().getText().equals("()")){
             main.addChild(visit(ctx.arguments()));//arguments not handled yet. The idea is to have arguments as children to the main node.
         }
-        if(ctx.body()!=null){
-            main.addChild(visit(ctx.body()));
+        if(ctx.bodyNode()!=null){
+            main.addChild(visit(ctx.bodyNode()));
         }
         return main;
     }
 
-    @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
-        Body body=new Body();
-        return childVisitor(body,ctx.children.toArray(ParseTree[]::new));
+    @Override public AstNode visitBody(ParLangParser.BodyNodeContext ctx) {
+        BodyNode bodyNode =new BodyNode();
+        return childVisitor(bodyNode,ctx.children.toArray(ParseTree[]::new));
     }
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
@@ -55,7 +55,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int termIndex=(operatorIndex-1)/2; //index of first term in a list of just the terms (not including operators).
         int nextOperator=operatorIndex+2;
 
-        ArithExpression.Type operator=getArithmeticBinaryOperator(child.getText());
+        ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
         Expression leftChild=(Expression) visit(parent.term(termIndex));
         Expression rightChild;
 
@@ -64,7 +64,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }else {
             rightChild=(Expression)  visit(parent.term(termIndex+1));
         }
-        return new ArithExpression(operator,leftChild,rightChild);
+        return new ArithExprNode(operator,leftChild,rightChild);
     }
 
 
@@ -82,7 +82,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int factorIndex=(operatorIndex-1)/2; //index of first factor in a list of just the factors
         int nextOperator=operatorIndex+2;
 
-        ArithExpression.Type operator=getArithmeticBinaryOperator(child.getText());
+        ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
         Expression leftChild=(Expression) visit(parent.factor(factorIndex));
         Expression rightChild;
 
@@ -91,7 +91,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }else {
             rightChild=(Expression)  visit(parent.factor(factorIndex+1));
         }
-        return new ArithExpression(operator,leftChild,rightChild);
+        return new ArithExprNode(operator,leftChild,rightChild);
     }
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
@@ -120,18 +120,18 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return new IntegerNode(Integer.parseInt(ctx.getText()));
     }
 
-    private static ArithExpression.Type getArithmeticBinaryOperator(String operator) {
+    private static ArithExprNode.Type getArithmeticBinaryOperator(String operator) {
         switch (operator) {
             case "+":
-                return ArithExpression.Type.PLUS;
+                return ArithExprNode.Type.PLUS;
             case  "-":
-                return ArithExpression.Type.MINUS;
+                return ArithExprNode.Type.MINUS;
             case "*":
-                return ArithExpression.Type.MULTIPLY;
+                return ArithExprNode.Type.MULTIPLY;
             case "/":
-                return ArithExpression.Type.DIVIDE;
+                return ArithExprNode.Type.DIVIDE;
             case "%":
-                return ArithExpression.Type.MODULO;
+                return ArithExprNode.Type.MODULO;
             default:
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
