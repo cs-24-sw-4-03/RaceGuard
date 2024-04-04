@@ -22,7 +22,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
-        MainFuncDcl main= new MainFuncDcl();
+        MainDclNode main= new MainDclNode();
 
         if(!ctx.arguments().getText().equals("()")){
             main.addChild(visit(ctx.arguments()));//arguments not handled yet. The idea is to have arguments as children to the main node.
@@ -56,13 +56,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int nextOperator=operatorIndex+2;
 
         ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
-        Expression leftChild=(Expression) visit(parent.term(termIndex));
-        Expression rightChild;
+        ExprNode leftChild=(ExprNode) visit(parent.term(termIndex));
+        ExprNode rightChild;
 
         if(parent.getChild(nextOperator)!= null){ //Are there more operators in the tree?
-            rightChild=(Expression)visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
+            rightChild=(ExprNode)visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
         }else {
-            rightChild=(Expression)  visit(parent.term(termIndex+1));
+            rightChild=(ExprNode)  visit(parent.term(termIndex+1));
         }
         return new ArithExprNode(operator,leftChild,rightChild);
     }
@@ -83,13 +83,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int nextOperator=operatorIndex+2;
 
         ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
-        Expression leftChild=(Expression) visit(parent.factor(factorIndex));
-        Expression rightChild;
+        ExprNode leftChild=(ExprNode) visit(parent.factor(factorIndex));
+        ExprNode rightChild;
 
         if(parent.getChild(nextOperator)!=null){ //Are there more operators?
-            rightChild=(Expression) visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
+            rightChild=(ExprNode) visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
         }else {
-            rightChild=(Expression)  visit(parent.factor(factorIndex+1));
+            rightChild=(ExprNode)  visit(parent.factor(factorIndex+1));
         }
         return new ArithExprNode(operator,leftChild,rightChild);
     }

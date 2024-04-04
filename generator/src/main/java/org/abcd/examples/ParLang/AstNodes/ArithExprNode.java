@@ -1,6 +1,6 @@
 package org.abcd.examples.ParLang.AstNodes;
 
-public class ArithExprNode extends Expression{
+public class ArithExprNode extends ExprNode {
     public enum Type {
         PLUS("+"),
         MINUS("-"),
@@ -20,7 +20,7 @@ public class ArithExprNode extends Expression{
 
     private final Type type;
 
-    public ArithExprNode(Type t, Expression l, Expression r){
+    public ArithExprNode(Type t, ExprNode l, ExprNode r){
         type=t;
         this.addChild(l);
         this.addChild(r);
