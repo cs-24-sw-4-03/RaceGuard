@@ -1,9 +1,9 @@
 package org.abcd.examples.ParLang.AstNodes;
 
-public abstract class VarDclNode extends AstNode {
+public abstract class DclNode extends AstNode {
     private String id;
 
-    public VarDclNode(String id){
+    public DclNode(String id){
         this.id = id;
     }
 

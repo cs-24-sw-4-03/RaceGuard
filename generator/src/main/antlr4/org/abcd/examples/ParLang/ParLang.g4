@@ -32,7 +32,10 @@ actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifie
 // defines how to create an instance of this actor type
 spawn : SPAWN parameters body;
 // methods of this actor
-actorMethod : (ON_METHOD | LOCAL_METHOD) identifier parameters body;
+actorMethod: onMethod | localMethod;
+onMethod : ON_METHOD  identifier parameters body;
+localMethod: LOCAL_METHOD allTypes identifier parameters body;
+
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER

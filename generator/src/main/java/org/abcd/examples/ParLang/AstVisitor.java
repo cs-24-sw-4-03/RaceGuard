@@ -7,7 +7,6 @@ import org.abcd.examples.ParLang.AstNodes.*;
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
-
         return childVisitor(initNode,ctx.children.toArray(ParseTree[]::new));
     }
 
@@ -25,7 +24,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         MainDclNode main= new MainDclNode();
 
         if(!ctx.parameters().getText().equals("()")){
-            main.addChild(visit(ctx.parameters()));//arguments not handled yet. The idea is to have arguments as children to the main node.
+            main.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
         }
         if(ctx.body()!=null){
             main.addChild(visit(ctx.body()));
@@ -34,10 +33,59 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
-
-
-        return this.visitChildren(ctx);
+        System.out.println("visit Actor");
+        ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
+        return childVisitor(node,ctx.children.toArray(ParseTree[]::new));
     }
+
+    @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
+        ActorStateNode node= new ActorStateNode();
+
+        return childVisitor(node,ctx.children.toArray(ParseTree[]::new));
+    }
+
+    @Override public AstNode visitActorKnows(ParLangParser.ActorKnowsContext ctx) {
+        System.out.println("visiting knows?");
+        KnowsNode node= new KnowsNode();
+
+        return childVisitor(node,ctx.children.toArray(ParseTree[]::new));
+    }
+
+    @Override public AstNode visitSpawn(ParLangParser.SpawnContext ctx) {
+        SpawnNode node= new SpawnNode();
+
+        if(!ctx.parameters().getText().equals("()")){
+            node.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
+        }
+        if(ctx.body()!=null){
+            node.addChild(visit(ctx.body()));
+        }
+        return node;
+    }
+
+    @Override public AstNode visitOnMethod(ParLangParser.OnMethodContext ctx) {
+        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),"void","on");
+        if (ctx.parameters() != null) {
+            node.addChild(visit(ctx.parameters()));
+        }
+        if(ctx.body()!=null){
+            node.addChild(visit(ctx.body()));
+        }
+        return node;
+    }
+
+
+    @Override public AstNode visitLocalMethod(ParLangParser.LocalMethodContext ctx) {
+        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),ctx.allTypes().getText(),"local");
+        if (ctx.parameters() != null) {
+            node.addChild(visit(ctx.parameters()));
+        }
+        if(ctx.body()!=null){
+            node.addChild(visit(ctx.body()));
+        }
+        return node;
+    }
+
 
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
