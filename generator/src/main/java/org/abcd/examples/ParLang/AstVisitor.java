@@ -39,8 +39,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitParameters(ParLangParser.ParametersContext ctx){
-        System.out.println("KIGHER: " + ctx.parent);
-        System.out.println("KIGHER: " + ctx.parent.getPayload());
         int numOfChildren=ctx.getChildCount();
         ParametersNode params = new ParametersNode();
         if (numOfChildren != 2){ //there are minimum 2 children, the parentheses

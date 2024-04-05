@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParametersNode extends AstNode{
-    public String getValue() {
-        return "en eller anden value";
+    public int getNumberOfIdentifiers(){
+        return this.getChildren().size();
     }
 }
