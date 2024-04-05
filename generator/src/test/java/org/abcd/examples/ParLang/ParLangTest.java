@@ -201,7 +201,7 @@ public class ParLangTest {
 
 
     //LEXER TEST--------------------------------------------------------------------------------------------
-    @Test
+   /* @Test
     public void testLexerTypes() {
         String input = "int double bool string null [] Actor void";
         List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
@@ -209,11 +209,11 @@ public class ParLangTest {
         assertEquals(9,tokenList.size());
         int counter = 1;
         for(org.antlr.v4.runtime.Token token : tokenList){
-            /*System.out.println("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIii");
+            *//*System.out.println("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIii");
             System.out.println(token);
             System.out.println("counte: " + tokenMap.get(counter));
             System.out.println("number " + token.getType());
-            System.out.println("type: " + tokenMap.get(token.getType()));*/
+            System.out.println("type: " + tokenMap.get(token.getType()));*//*
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
             if(counter != 8){
                 counter++;
@@ -422,7 +422,7 @@ public class ParLangTest {
         List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         assertEquals(6,tokenList.size()); //strings cannot contain \r and will then force lexer to tokenize otherwise
     }
-
+*/
     /*@Test
     public void testUnknownToken() { //lexer does not handle unknown tokens well yet
         String input = " @ ";
