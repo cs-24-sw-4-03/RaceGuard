@@ -1,13 +1,9 @@
 package org.abcd.examples.ParLang;
 
 import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
@@ -153,4 +149,15 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
     }
+    @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
+        //Primitives can be: INT, DOUBLE, STRING, and BOOL
+
+        //In case the primitive is a STRING
+        if(ctx.STRING() != null) {
+            return new StringNode(ctx.getText());
+        }
+        return null;
+    }
+
+
 }

@@ -21,6 +21,9 @@ public class AstPrintVisitor {
                 case "class org.abcd.examples.ParLang.AstNodes.IdentifierNode":
                     this.print(localIndent, node.getClass() + " with " + ((IdentifierNode)node).getType().toString() + " identifier: " + ((IdentifierNode)node).getName());
                     break;
+                case "class org.abcd.examples.ParLang.AstNodes.StringNode":
+                    this.print(localIndent, node.getClass() + "with the value: " + ((StringNode)node).getValue());
+                    break;
                 default:
                     this.print(localIndent, node.getClass().toString());
                     break;
