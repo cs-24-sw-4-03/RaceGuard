@@ -30,16 +30,18 @@ public class Scope {
         return this.parent;
     }
 
-    public void addSymbol(String id, Attributes attribute){
-        this.symbols.put(id, attribute);
+    public void addSymbol(String id, Attributes attributes){
+        this.symbols.put(id, attributes);
     }
+
     public HashMap<String, Attributes> getSymbols() {
         return this.symbols;
     }
 
-    public void addParams(String id, Attributes attribute) {
-        this.params.put(id, attribute);
+    public void addParams(String id, Attributes attributes) {
+        this.params.put(id, attributes);
     }
+
     public Map<String, Attributes> getParams() {
         return this.params;
     }

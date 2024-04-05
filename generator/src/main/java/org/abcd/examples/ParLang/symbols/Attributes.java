@@ -12,7 +12,6 @@ public class Attributes {
         this.variableType = variableType;
         this.scope = scope;
         this.kind = kind;
-
     }
 
     public String getVariableType(){

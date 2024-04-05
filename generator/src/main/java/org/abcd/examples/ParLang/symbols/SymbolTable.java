@@ -11,7 +11,7 @@ public class SymbolTable {
 
     public SymbolTable() {
         this.globalScope = new Scope("global");
-        currentScope = this.globalScope;
+        this.currentScope = this.globalScope;
     }
 
     public Scope getCurrentScope(){
@@ -28,7 +28,8 @@ public class SymbolTable {
         }
     }
 
-    //Sets
+    //Pops the top scope from the stack and sets it as the currentScope
+    //TODO: C* sets the name of the original currentScope, find out if there is a reason for this
     public void leaveScope(){
         if(!this.scopeStack.empty()){
             this.currentScope = this.scopeStack.pop();
@@ -60,16 +61,27 @@ public class SymbolTable {
         return findScope(scopeName, this.globalScope);
     }
 
-    public Attributes lookUpSymbol(){
+    public Attributes lookUpSymbol(String symbol){
+        Scope scope = this.currentScope;
 
+        while(scope != null){
+            if(!scope.getSymbols().isEmpty() && scope.getSymbols().containsKey(symbol)){
+                return scope.getSymbols().get(symbol);
+            } else if (!scope.getParams().isEmpty() && scope.getParams().containsKey(symbol)) {
+                return scope.getParams().get(symbol);
+            }
+
+            scope = scope.getParent();
+        }
+        return null;
     }
 
-    public void insertSymbol(){
-
+    public void insertSymbol(String symbol, Attributes attributes){
+        this.currentScope.addSymbol(symbol, attributes);
     }
 
-    public void insertParams(){
-
+    public void insertParams(String param, Attributes attributes){
+        this.currentScope.addParams(param, attributes);
     }
 
 }
