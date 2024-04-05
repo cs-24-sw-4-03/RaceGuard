@@ -1,9 +1,6 @@
 package org.abcd.examples.ParLang;
 
-import org.abcd.examples.ParLang.AstNodes.ArithExprNode;
-import org.abcd.examples.ParLang.AstNodes.AstNode;
-import org.abcd.examples.ParLang.AstNodes.DoubleNode;
-import org.abcd.examples.ParLang.AstNodes.IntegerNode;
+import org.abcd.examples.ParLang.AstNodes.*;
 
 public class AstPrintVisitor {
     public void visit(int localIndent, AstNode node){
@@ -17,6 +14,9 @@ public class AstPrintVisitor {
                     break;
                 case "class org.abcd.examples.ParLang.AstNodes.IntegerNode":
                     this.print(localIndent, node.getClass() + " with the value: " + ((IntegerNode)node).getValue());
+                    break;
+                case "class org.abcd.examples.ParLang.AstNodes.StringNode":
+                    this.print(localIndent, node.getClass() + "with the value: " + ((StringNode)node).getValue());
                     break;
                 default:
                     this.print(localIndent, node.getClass().toString());
