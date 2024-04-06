@@ -20,7 +20,7 @@ public class ArithExprNode extends ExprNode {
 
     private final OpType opType;
 
-    public ArithExprNode(OpType t, ExprNode l, ExprNode r){
+    public ArithExprNode(OpType t, AstNode l, AstNode r){
         opType=t;
         this.addChild(l);
         this.addChild(r);

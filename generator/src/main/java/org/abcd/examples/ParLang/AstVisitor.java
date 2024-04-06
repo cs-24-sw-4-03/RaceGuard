@@ -123,13 +123,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int nextOperator=operatorIndex+2;
 
         ArithExprNode.OpType operator=getArithmeticBinaryOperator(child.getText());
-        ExprNode leftChild=(ExprNode) visit(parent.term(termIndex));
-        ExprNode rightChild;
+        AstNode leftChild= visit(parent.term(termIndex));
+        AstNode rightChild;
 
         if(parent.getChild(nextOperator)!= null){ //Are there more operators in the tree?
-            rightChild=(ExprNode)visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
+            rightChild=visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
         }else {
-            rightChild=(ExprNode)  visit(parent.term(termIndex+1));
+            rightChild=visit(parent.term(termIndex+1));
         }
         return new ArithExprNode(operator,leftChild,rightChild);
     }
