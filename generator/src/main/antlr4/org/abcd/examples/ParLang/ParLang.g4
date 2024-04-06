@@ -119,7 +119,6 @@ statement : boolExp SEMICOLON
 forStatement : sendMsg
     |declaration
     |assignment
-    |arithExp
     ;
 
 // body is a block of code
