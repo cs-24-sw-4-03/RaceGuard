@@ -19,7 +19,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            //System.out.println(c.getText());
+            System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
@@ -112,6 +112,17 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children);
+    }
+
+    @Override
+    public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
+        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()));
+        dclNode.addChild(new IdentifierNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()))); //add identifier as child
+        ParLangParser.InitializationContext init=ctx.initialization();
+        if(init!=null){//variable is initialized
+            dclNode.addChild( visit(init.getChild(1))); //add initialized value as child
+        }
+        return dclNode;
     }
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
