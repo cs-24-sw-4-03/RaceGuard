@@ -20,7 +20,11 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " with "+  ((ParametersNode)node).getNumberOfIdentifiers() + " identifier(s)");
                     break;
                 case "IdentifierNode":
-                    this.print(localIndent, className + " with type: " + ((IdentifierNode)node).getType().toString() + " and identifier: " + ((IdentifierNode)node).getName());
+                    if(((IdentifierNode)node).getType()!=null){
+                        this.print(localIndent, className + " with type: " + ((IdentifierNode)node).getType().toString() + " and identifier: " + ((IdentifierNode)node).getName());
+                    }else{
+                        this.print(localIndent, className + " with identifier: " + ((IdentifierNode)node).getName());
+                    }
                     break;
                 case "ActorIdentifierNode":
                     this.print(localIndent, className + " with type: " + ((ActorIdentifierNode)node).getActorType()+ " and identifier: " + ((ActorIdentifierNode)node).getName());
@@ -30,6 +34,10 @@ public class AstPrintVisitor {
                     break;
                 case "ActorDclNode":
                     this.print(localIndent, className + " with the id: " + ((ActorDclNode)node).getId());
+                    break;
+
+                case "MethodDclNode":
+                    this.print(localIndent, className + " - id: " + ((MethodDclNode)node).getId()+ ", method type : "+ ((MethodDclNode)node).getMethodType()+", return type: "+((MethodDclNode)node).getReturnType());
                     break;
                 default:
                     this.print(localIndent, className);

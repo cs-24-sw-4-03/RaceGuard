@@ -1,4 +1,4 @@
 package org.abcd.examples.ParLang.AstNodes;
 
-public class SpawnNode extends AstNode{
+public class SpawnDclNode extends AstNode{
 }

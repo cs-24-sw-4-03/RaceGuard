@@ -75,7 +75,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitSpawn(ParLangParser.SpawnContext ctx) {
-        SpawnNode node= new SpawnNode();
+        SpawnDclNode node= new SpawnDclNode();
         if(!ctx.parameters().getText().equals("()")){
             node.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
         }
@@ -117,12 +117,39 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
         VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()));
-        dclNode.addChild(new IdentifierNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()))); //add identifier as child
+
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()));
+
+        dclNode.addChild(idNode); //add identifier as child
+
         ParLangParser.InitializationContext init=ctx.initialization();
         if(init!=null){//variable is initialized
-            dclNode.addChild( visit(init.getChild(1))); //add initialized value as child
+            AssignNode assignNode=new AssignNode();
+
+            assignNode.addChild(idNode);
+            assignNode.addChild(visit(init.getChild(1)));
+
+            dclNode.addChild(assignNode); //add initialized value as child
         }
         return dclNode;
+    }
+
+    @Override
+    public AstNode visitAssignment(ParLangParser.AssignmentContext ctx) {
+        AssignNode assignNode = new AssignNode();
+
+        AstNode varNode=visit(ctx.getChild(0));
+        AstNode valueNode=visit(ctx.getChild(2));
+
+        assignNode.addChild(varNode);
+        assignNode.addChild(valueNode);
+
+        return assignNode;
+    }
+
+    @Override
+    public AstNode visitIdentifier(ParLangParser.IdentifierContext ctx) {
+        return new IdentifierNode(ctx.IDENTIFIER().getText());
     }
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
@@ -185,6 +212,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         ParseTree child=ctx.getChild(0);
         if(child instanceof ParLangParser.NumberContext){
             return visit(ctx.number());
+        }else if (child instanceof ParLangParser.IdentifierContext){
+            return visit(ctx.identifier());
         }else if(child.getText().equals("(")){//If first child is a parentheses, treat the node as arithmetic expression
                 return visit(ctx.arithExp());
         }else{

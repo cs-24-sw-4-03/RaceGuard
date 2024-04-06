@@ -67,7 +67,7 @@ declaration: allTypes (identifier (ARRAY_TYPE)?) (initialization)?;
 initialization:  ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor) SEMICOLON;
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor) ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -117,8 +117,9 @@ statement : boolExp SEMICOLON
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
 forStatement : sendMsg
-    | declaration
+    |declaration
     |assignment
+    |arithExp
     ;
 
 // body is a block of code
