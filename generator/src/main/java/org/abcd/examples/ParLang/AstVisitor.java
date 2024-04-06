@@ -4,7 +4,6 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
@@ -27,12 +26,24 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         MainDclNode main= new MainDclNode();
 
         if(!ctx.parameters().getText().equals("()")){
-            main.addChild(visit(ctx.parameters()));//arguments not handled yet. The idea is to have arguments as children to the main node.
+            main.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
         }
         if(ctx.body()!=null){
             main.addChild(visit(ctx.body()));
         }
         return main;
+    }
+
+    @Override public AstNode visitParameters(ParLangParser.ParametersContext ctx){
+        int numOfChildren=ctx.getChildCount();
+        ParametersNode params = new ParametersNode();
+        if (numOfChildren != 2){ //there are minimum 2 children, the parentheses
+            //If there are more than 2 children, there are parameters
+            for (int i = 1; i < numOfChildren; i+=3){
+                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), LanguageType.valueOf(ctx.getChild(i).getText().toUpperCase())));
+            }
+        }
+        return params;
     }
 
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
