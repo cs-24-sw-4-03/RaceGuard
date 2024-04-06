@@ -1,21 +1,25 @@
 package org.abcd.examples.ParLang;
 
 import org.antlr.v4.runtime.CommonToken;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
-        return childVisitor(initNode,ctx.children.toArray(ParseTree[]::new));
+        return childVisitor(initNode,ctx.children);
     }
 
-    private AstNode childVisitor(AstNode node, ParseTree[] children){
+    private AstNode childVisitor(AstNode node, List<ParseTree> children){
         for(ParseTree c:children){
             if(c.getPayload() instanceof CommonToken){//if child is a CommonToken, e.g. "{", then skip.
                 continue;
             }
+            //print can be used for debugging
+            //System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
@@ -46,27 +50,24 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
-        System.out.println("visit Actor");
         ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
-        return childVisitor(node,ctx.children.toArray(ParseTree[]::new));
+        List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
+        children.remove(1);//remove identifier from list of children
+        return childVisitor(node,children);
     }
 
     @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
         ActorStateNode node= new ActorStateNode();
-
-        return childVisitor(node,ctx.children.toArray(ParseTree[]::new));
+        return childVisitor(node,ctx.children);
     }
 
     @Override public AstNode visitActorKnows(ParLangParser.ActorKnowsContext ctx) {
-        System.out.println("visiting knows?");
         KnowsNode node= new KnowsNode();
-
-        return childVisitor(node,ctx.children.toArray(ParseTree[]::new));
+        return childVisitor(node,ctx.children);
     }
 
     @Override public AstNode visitSpawn(ParLangParser.SpawnContext ctx) {
         SpawnNode node= new SpawnNode();
-
         if(!ctx.parameters().getText().equals("()")){
             node.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
         }
@@ -102,7 +103,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
-        return childVisitor(bodyNode,ctx.children.toArray(ParseTree[]::new));
+        return childVisitor(bodyNode,ctx.children);
     }
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
@@ -150,13 +151,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int nextOperator=operatorIndex+2;
 
         ArithExprNode.OpType operator=getArithmeticBinaryOperator(child.getText());
-        ExprNode leftChild=(ExprNode) visit(parent.factor(factorIndex));
-        ExprNode rightChild;
+        AstNode leftChild=visit(parent.factor(factorIndex));
+        AstNode rightChild;
 
         if(parent.getChild(nextOperator)!=null){ //Are there more operators?
-            rightChild=(ExprNode) visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
+            rightChild=visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
         }else {
-            rightChild=(ExprNode)  visit(parent.factor(factorIndex+1));
+            rightChild=visit(parent.factor(factorIndex+1));
         }
         return new ArithExprNode(operator,leftChild,rightChild);
     }
