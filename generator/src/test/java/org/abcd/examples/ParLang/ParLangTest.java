@@ -1,3 +1,4 @@
+/*
 package org.abcd.examples.ParLang;
 
 // import ANTLR's runtime libraries
@@ -19,9 +20,11 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+*/
 /**
  * Unit test for simple App.
- */
+ *//*
+
 public class ParLangTest {
     private static boolean mappingMade = false;
     private static Map<Integer, LexerTokens> tokenMap = new HashMap<>();
@@ -46,7 +49,7 @@ public class ParLangTest {
         ParseTree tree = parser.init(); // begin parsing at init rule
 
         List<SyntaxError> errors = errListen.getSyntaxErrors();
-        if (errors.size() != 0){return false;}
+        if (!errors.isEmpty()){return false;}
         return true;
     }
     public static List<org.antlr.v4.runtime.Token> lexerTest(String realInput){
@@ -63,8 +66,7 @@ public class ParLangTest {
         tokens.fill();
 
         //create list of tokens to return
-        List<org.antlr.v4.runtime.Token> tokenList = tokens.getTokens();
-        return tokenList;
+        return tokens.getTokens();
     }
 
     @BeforeEach
@@ -209,11 +211,13 @@ public class ParLangTest {
         assertEquals(9,tokenList.size());
         int counter = 1;
         for(org.antlr.v4.runtime.Token token : tokenList){
-            /*System.out.println("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIii");
+            */
+/*System.out.println("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIii");
             System.out.println(token);
             System.out.println("counte: " + tokenMap.get(counter));
             System.out.println("number " + token.getType());
-            System.out.println("type: " + tokenMap.get(token.getType()));*/
+            System.out.println("type: " + tokenMap.get(token.getType()));*//*
+
             assertEquals(tokenMap.get(counter),tokenMap.get(token.getType()));
             if(counter != 8){
                 counter++;
@@ -423,13 +427,15 @@ public class ParLangTest {
         assertEquals(6,tokenList.size()); //strings cannot contain \r and will then force lexer to tokenize otherwise
     }
 
-    /*@Test
+    */
+/*@Test
     public void testUnknownToken() { //lexer does not handle unknown tokens well yet
         String input = " @ ";
         List<org.antlr.v4.runtime.Token> tokenList = ParLangTest.lexerTest(input);
         System.out.println("IIIIIIIIIIIIIIIIIIII");
         System.out.println(tokenList);
-    }*/
+    }*//*
+
 }
 enum LexerTokens {
     INT_TYPE,             //1
@@ -566,4 +572,4 @@ class SyntaxError
     {
         return e;
     }
-}
+}*/

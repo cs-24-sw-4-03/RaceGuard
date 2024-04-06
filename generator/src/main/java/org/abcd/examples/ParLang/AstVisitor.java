@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang;
 
 import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 
@@ -30,6 +31,18 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             main.addChild(visit(ctx.body()));
         }
         return main;
+    }
+
+    @Override public AstNode visitParameters(ParLangParser.ParametersContext ctx){
+        int numOfChildren=ctx.getChildCount();
+        ParametersNode params = new ParametersNode();
+        if (numOfChildren != 2){ //there are minimum 2 children, the parentheses
+            //If there are more than 2 children, there are parameters
+            for (int i = 1; i < numOfChildren; i+=3){
+                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), LanguageType.valueOf(ctx.getChild(i).getText().toUpperCase())));
+            }
+        }
+        return params;
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
@@ -190,4 +203,15 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
     }
+    @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
+        //Primitives can be: INT, DOUBLE, STRING, and BOOL
+
+        //In case the primitive is a STRING
+        if(ctx.STRING() != null) {
+            return new StringNode(ctx.getText());
+        }
+        return null;
+    }
+
+
 }
