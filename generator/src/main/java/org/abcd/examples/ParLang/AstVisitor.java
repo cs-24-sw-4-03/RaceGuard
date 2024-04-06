@@ -19,7 +19,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            //System.out.println(c.getText());
+            System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
@@ -62,8 +62,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActorKnows(ParLangParser.ActorKnowsContext ctx) {
-        KnowsNode node= new KnowsNode();
-        return childVisitor(node,ctx.children);
+        int numOfChildren=ctx.getChildCount();
+        KnowsNode knowsNode= new KnowsNode();
+        if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
+            //If there are more than 3 children, there are known actors
+            for (int i = 2; i < numOfChildren; i+=3){
+                System.out.println("her: "+ctx.getChild(i+1).getText());
+                knowsNode.addChild(new ActorIdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
+            }
+        }
+        return knowsNode;
     }
 
     @Override public AstNode visitSpawn(ParLangParser.SpawnContext ctx) {

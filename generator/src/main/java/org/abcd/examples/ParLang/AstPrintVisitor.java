@@ -19,7 +19,10 @@ public class AstPrintVisitor {
                     this.print(localIndent, node.getClass() + " with "+  ((ParametersNode)node).getNumberOfIdentifiers() + " identifiers");
                     break;
                 case "class org.abcd.examples.ParLang.AstNodes.IdentifierNode":
-                    this.print(localIndent, node.getClass() + " with " + ((IdentifierNode)node).getType().toString() + " identifier: " + ((IdentifierNode)node).getName());
+                    this.print(localIndent, node.getClass() + " with type " + ((IdentifierNode)node).getType().toString() + " and identifier: " + ((IdentifierNode)node).getName());
+                    break;
+                case "class org.abcd.examples.ParLang.AstNodes.ActorIdentifierNode":
+                    this.print(localIndent, node.getClass() + " with type " + ((ActorIdentifierNode)node).getActorType()+ " and identifier: " + ((ActorIdentifierNode)node).getName());
                     break;
                 case "class org.abcd.examples.ParLang.AstNodes.StringNode":
                     this.print(localIndent, node.getClass() + "with the value: " + ((StringNode)node).getValue());
