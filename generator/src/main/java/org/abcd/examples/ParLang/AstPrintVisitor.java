@@ -7,7 +7,7 @@ public class AstPrintVisitor {
         if(node != null){
             switch (node.getClass().toString()){
                 case "class org.abcd.examples.ParLang.AstNodes.ArithExpression":
-                    this.print(localIndent, node.getClass() + " of type: " + ((ArithExprNode) node).getType());
+                    this.print(localIndent, node.getClass() + " of type: " + ((ArithExprNode) node).getOpType());
                     break;
                 case "class org.abcd.examples.ParLang.AstNodes.DoubleNode":
                     this.print(localIndent, node.getClass() + " with the value: " + ((DoubleNode)node).getValue());
