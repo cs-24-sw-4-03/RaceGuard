@@ -8,14 +8,17 @@ public class Attributes {
 
 
     //C* sets scope after creation of object. TODO: Find out if there any benefit to this?
-    public Attributes(String variableType, String scope, String kind){
+    public Attributes(String variableType, String kind){
         this.variableType = variableType;
-        this.scope = scope;
         this.kind = kind;
     }
 
     public String getVariableType(){
         return this.variableType;
+    }
+
+    public void setScope(String scope){
+        this.scope = scope;
     }
 
     public String getScope(){
