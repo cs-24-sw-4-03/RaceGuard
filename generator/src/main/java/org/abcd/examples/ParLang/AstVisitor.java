@@ -19,14 +19,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            System.out.println(c.getText());
+            //System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
     }
 
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
-        MainDclNode main= new MainDclNode();
+        MainDclNode main= new MainDclNode(ctx.MAIN().getText());
 
         if(!ctx.parameters().getText().equals("()")){
             main.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
@@ -57,17 +57,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
-        ActorStateNode node= new ActorStateNode();
+        ActorStateNode node= new ActorStateNode(ctx.STATE().getText());
         return childVisitor(node,ctx.children);
     }
 
     @Override public AstNode visitActorKnows(ParLangParser.ActorKnowsContext ctx) {
         int numOfChildren=ctx.getChildCount();
-        KnowsNode knowsNode= new KnowsNode();
+        KnowsNode knowsNode= new KnowsNode(ctx.KNOWS().getText());
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
             for (int i = 2; i < numOfChildren; i+=3){
-                System.out.println("her: "+ctx.getChild(i+1).getText());
                 knowsNode.addChild(new ActorIdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             }
         }
@@ -86,7 +85,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitOnMethod(ParLangParser.OnMethodContext ctx) {
-        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),"void","on");
+        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),"void",ctx.ON_METHOD().getText());
         if (ctx.parameters() != null) {
             node.addChild(visit(ctx.parameters()));
         }
@@ -98,7 +97,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
 
     @Override public AstNode visitLocalMethod(ParLangParser.LocalMethodContext ctx) {
-        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),ctx.allTypes().getText(),"local");
+        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),ctx.allTypes().getText(),ctx.LOCAL_METHOD().getText());
         if (ctx.parameters() != null) {
             node.addChild(visit(ctx.parameters()));
         }

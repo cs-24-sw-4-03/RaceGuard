@@ -34,7 +34,7 @@ spawn : SPAWN parameters body;
 // methods of this actor
 actorMethod: onMethod | localMethod;
 onMethod : ON_METHOD  identifier parameters body;
-localMethod: LOCAL_METHOD allTypes identifier parameters body;
+localMethod: LOCAL_METHOD identifier parameters COLON allTypes body;
 
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER

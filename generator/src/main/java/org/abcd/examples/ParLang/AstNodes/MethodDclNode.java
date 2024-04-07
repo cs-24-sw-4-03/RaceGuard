@@ -3,7 +3,6 @@ package org.abcd.examples.ParLang.AstNodes;
 public class MethodDclNode extends DclNode{
 
     private String returnType;
-
     private String methodType;
 
     public MethodDclNode(String id, String returnType, String methodType) {

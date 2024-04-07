@@ -37,7 +37,7 @@ public class AstPrintVisitor {
                     break;
 
                 case "MethodDclNode":
-                    this.print(localIndent, className + " - id: " + ((MethodDclNode)node).getId()+ ", method type : "+ ((MethodDclNode)node).getMethodType()+", return type: "+((MethodDclNode)node).getReturnType());
+                    this.print(localIndent, className + " with id: " + ((MethodDclNode)node).getId()+ ", method type: "+ ((MethodDclNode)node).getMethodType()+" and return type: "+((MethodDclNode)node).getReturnType());
                     break;
                 default:
                     this.print(localIndent, className);
