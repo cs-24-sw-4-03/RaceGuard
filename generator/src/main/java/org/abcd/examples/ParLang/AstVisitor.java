@@ -123,12 +123,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
         ParLangParser.InitializationContext init=ctx.initialization();
         if(init!=null){//variable is initialized
-            AssignNode assignNode=new AssignNode();
-
-            assignNode.addChild(idNode);
-            assignNode.addChild(visit(init.getChild(1)));
-
-            dclNode.addChild(assignNode); //add initialized value as child
+            InitializationNode initializationNode=new InitializationNode();
+            initializationNode.addChild(visit(init.getChild(1)));
+            dclNode.addChild(initializationNode); //add initializationNode as child
         }
         return dclNode;
     }
