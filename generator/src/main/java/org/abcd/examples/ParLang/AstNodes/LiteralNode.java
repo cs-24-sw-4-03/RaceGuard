@@ -1,6 +1,6 @@
-package org.abcd.examples.ParLang.AST;
+package org.abcd.examples.ParLang.AstNodes;
 
-abstract class LiteralNode<T> extends Expression {
+abstract class LiteralNode<T> extends AstNode {
     private T value;
 
     public LiteralNode(T value){

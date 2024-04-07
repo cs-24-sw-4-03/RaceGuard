@@ -1,8 +1,9 @@
 package org.abcd.examples.ParLang;
 
 import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.abcd.examples.ParLang.AST.*;
+import org.abcd.examples.ParLang.AstNodes.*;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
@@ -22,10 +23,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
-        MainFuncDcl main= new MainFuncDcl();
+        MainDclNode main= new MainDclNode();
 
-        if(!ctx.arguments().getText().equals("()")){
-            main.addChild(visit(ctx.arguments()));//arguments not handled yet. The idea is to have arguments as children to the main node.
+        if(!ctx.parameters().getText().equals("()")){
+            main.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
         }
         if(ctx.body()!=null){
             main.addChild(visit(ctx.body()));
@@ -33,9 +34,21 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return main;
     }
 
+    @Override public AstNode visitParameters(ParLangParser.ParametersContext ctx){
+        int numOfChildren=ctx.getChildCount();
+        ParametersNode params = new ParametersNode();
+        if (numOfChildren != 2){ //there are minimum 2 children, the parentheses
+            //If there are more than 2 children, there are parameters
+            for (int i = 1; i < numOfChildren; i+=3){
+                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), LanguageType.valueOf(ctx.getChild(i).getText().toUpperCase())));
+            }
+        }
+        return params;
+    }
+
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
-        Body body=new Body();
-        return childVisitor(body,ctx.children.toArray(ParseTree[]::new));
+        BodyNode bodyNode =new BodyNode();
+        return childVisitor(bodyNode,ctx.children.toArray(ParseTree[]::new));
     }
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
@@ -55,16 +68,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int termIndex=(operatorIndex-1)/2; //index of first term in a list of just the terms (not including operators).
         int nextOperator=operatorIndex+2;
 
-        ArithExpression.Type operator=getArithmeticBinaryOperator(child.getText());
-        Expression leftChild=(Expression) visit(parent.term(termIndex));
-        Expression rightChild;
+        ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
+        ExprNode leftChild=(ExprNode) visit(parent.term(termIndex));
+        ExprNode rightChild;
 
         if(parent.getChild(nextOperator)!= null){ //Are there more operators in the tree?
-            rightChild=(Expression)visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
+            rightChild=(ExprNode)visitArithExpChild(parent.getChild(nextOperator),parent,nextOperator);
         }else {
-            rightChild=(Expression)  visit(parent.term(termIndex+1));
+            rightChild=(ExprNode)  visit(parent.term(termIndex+1));
         }
-        return new ArithExpression(operator,leftChild,rightChild);
+        return new ArithExprNode(operator,leftChild,rightChild);
     }
 
 
@@ -82,16 +95,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int factorIndex=(operatorIndex-1)/2; //index of first factor in a list of just the factors
         int nextOperator=operatorIndex+2;
 
-        ArithExpression.Type operator=getArithmeticBinaryOperator(child.getText());
-        Expression leftChild=(Expression) visit(parent.factor(factorIndex));
-        Expression rightChild;
+        ArithExprNode.Type operator=getArithmeticBinaryOperator(child.getText());
+        ExprNode leftChild=(ExprNode) visit(parent.factor(factorIndex));
+        ExprNode rightChild;
 
         if(parent.getChild(nextOperator)!=null){ //Are there more operators?
-            rightChild=(Expression) visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
+            rightChild=(ExprNode) visitTermChild( parent.getChild(nextOperator),parent,nextOperator); //add right child (operator)
         }else {
-            rightChild=(Expression)  visit(parent.factor(factorIndex+1));
+            rightChild=(ExprNode)  visit(parent.factor(factorIndex+1));
         }
-        return new ArithExpression(operator,leftChild,rightChild);
+        return new ArithExprNode(operator,leftChild,rightChild);
     }
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
@@ -120,20 +133,31 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return new IntegerNode(Integer.parseInt(ctx.getText()));
     }
 
-    private static ArithExpression.Type getArithmeticBinaryOperator(String operator) {
+    private static ArithExprNode.Type getArithmeticBinaryOperator(String operator) {
         switch (operator) {
             case "+":
-                return ArithExpression.Type.PLUS;
+                return ArithExprNode.Type.PLUS;
             case  "-":
-                return ArithExpression.Type.MINUS;
+                return ArithExprNode.Type.MINUS;
             case "*":
-                return ArithExpression.Type.MULTIPLY;
+                return ArithExprNode.Type.MULTIPLY;
             case "/":
-                return ArithExpression.Type.DIVIDE;
+                return ArithExprNode.Type.DIVIDE;
             case "%":
-                return ArithExpression.Type.MODULO;
+                return ArithExprNode.Type.MODULO;
             default:
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
     }
+    @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
+        //Primitives can be: INT, DOUBLE, STRING, and BOOL
+
+        //In case the primitive is a STRING
+        if(ctx.STRING() != null) {
+            return new StringNode(ctx.getText());
+        }
+        return null;
+    }
+
+
 }
