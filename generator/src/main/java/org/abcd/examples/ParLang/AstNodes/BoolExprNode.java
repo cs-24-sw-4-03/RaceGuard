@@ -1,21 +1,35 @@
 package org.abcd.examples.ParLang.AstNodes;
 
 public class BoolExprNode extends ExprNode {
-    private boolean value;
+    public enum BoolType {
+        GREATER(">"),
+        GREATER_OR_EQUAL(">="),
+        LESS("<"),
+        LESS_OR_EQUAL("<="),
+        EQUAL("=="),
+        NOT_EQUAL("!="),
+        LOGIC_NEGATION("!"),
+        LOGIC_AND("&&"),
+        LOGIC_OR("||");
+        private final String value;
 
-    public BoolExprNode(boolean value) {
-        this.value = value;
+        BoolType(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    private final BoolType boolType;
+
+    public BoolExprNode(BoolType t, AstNode l, AstNode r) {
+        this.boolType = t;
+        this.addChild(l);
+        this.addChild(r);
     }
 
-    public boolean getValue() {
-        return value;
-    }
-
-    public void setValue(boolean value) {
-        this.value = value;
-    }
-    @Override
-    public void accept(AstNodeVisitor visitor) {
-        visitor.visit(this);
+    public BoolType getBoolType() {
+        return boolType;
     }
 }
