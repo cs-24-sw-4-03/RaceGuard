@@ -11,6 +11,11 @@ public class IdentifierNode extends AstNode{
         this.type=type;
     }
 
+    public IdentifierNode(String name){
+        this.name=name;
+        this.type=null;
+    }
+
     public String getName() {
         return name;
     }
