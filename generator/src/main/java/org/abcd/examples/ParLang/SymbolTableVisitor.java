@@ -33,7 +33,7 @@ public class SymbolTableVisitor {
 
     //TODO: Are we going to have an INodeVisitor?
     //TODO: Speak to the others about how we identify nodes from one another
-    public visit(IterationNode node){
+    public void visit(IterationNode node){
         symbolTable.addScope(node.getNodeHash());
         this.visitChildren(node);
         symbolTable.leaveScope();
@@ -56,11 +56,30 @@ public class SymbolTableVisitor {
         }
     }
 
+    public void visit(ParametersNode node){
+        String scopeName = symbolTable.getCurrentScope().getScopeName();
+
+        for(AstNode child: node.getChildren()){
+            Attributes attributes = new Attributes(child.type, "param");
+            attributes.setScope(scopeName);
+            symbolTable.insertParams(child.getId, attributes);
+            //TODO: Ask if we can have id (or similar) on ASTNode
+        }
+    }
+
+    public void visit(MethodCallNode node){
+        this.visitChildren(node);
+    }
+
     public void visit(InitNode node){
         this.visitChildren(node);
     }
 
     public void visit(BodyNode node){
+        this.visitChildren(node);
+    }
+
+    public void visit(AssignNode node){
         this.visitChildren(node);
     }
 
