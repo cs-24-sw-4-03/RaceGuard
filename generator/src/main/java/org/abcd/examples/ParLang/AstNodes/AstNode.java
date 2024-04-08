@@ -6,7 +6,6 @@ import java.util.List;
 public abstract class AstNode {
 
     private List<AstNode> children = new ArrayList<>();
-    private String type;
 
     public List<AstNode> getChildren() {
         return children;
@@ -15,4 +14,5 @@ public abstract class AstNode {
     public void addChild(AstNode n){
         children.add(n);
     }
+
 }

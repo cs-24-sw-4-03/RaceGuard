@@ -32,7 +32,10 @@ actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifie
 // defines how to create an instance of this actor type
 spawn : SPAWN parameters body;
 // methods of this actor
-actorMethod : (ON_METHOD | LOCAL_METHOD) identifier parameters body;
+actorMethod: onMethod | localMethod;
+onMethod : ON_METHOD  identifier parameters body;
+localMethod: LOCAL_METHOD identifier parameters COLON allTypes body;
+
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
@@ -48,7 +51,7 @@ controlStructure : ifElse
     ;
 
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
-forLoop : FOR PARAN_OPEN (identifier | declaration)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
+forLoop : FOR PARAN_OPEN (identifier | declaration |assignment)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
 whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
 
@@ -60,7 +63,11 @@ elsePart : elseIf* ELSE body;
 elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
-declaration : (allTypes | identifier)? (identifier (ARRAY_TYPE)? | actorAccess) (ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor))?;
+declaration: allTypes (identifier (ARRAY_TYPE)?) (initialization)?;
+initialization:  ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor);
+
+//assignment used to assign a value to an already defined variable.
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor) ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -101,15 +108,17 @@ compareOther : GREATER // Other compare operators have same precedence
 statement : boolExp SEMICOLON
     | compareExp SEMICOLON
     | declaration SEMICOLON
+    |assignment SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
     | methodCall
     | printCall
     ;
 
-//a for loop can only send messages, make a declaration, or make an arithmetic axpression in the lop-end statement
+//a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
 forStatement : sendMsg
-    | declaration
+    |declaration
+    |assignment
     ;
 
 // body is a block of code
@@ -136,6 +145,9 @@ arrayAssign : arrayAssignLength
 
 // assignment of the length af an array
 arrayAssignLength : identifier ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
+
+//access array
+arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 
 //arbritatry lsit of either ints, doubles, bools, or strings
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;

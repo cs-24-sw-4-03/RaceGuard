@@ -1,25 +1,46 @@
 package org.abcd.examples.ParLang;
 
-import org.abcd.examples.ParLang.AstNodes.ArithExprNode;
-import org.abcd.examples.ParLang.AstNodes.AstNode;
-import org.abcd.examples.ParLang.AstNodes.DoubleNode;
-import org.abcd.examples.ParLang.AstNodes.IntegerNode;
+import org.abcd.examples.ParLang.AstNodes.*;
 
 public class AstPrintVisitor {
     public void visit(int localIndent, AstNode node){
         if(node != null){
-            switch (node.getClass().toString()){
-                case "class org.abcd.examples.ParLang.AstNodes.ArithExpression":
-                    this.print(localIndent, node.getClass() + " of type: " + ((ArithExprNode) node).getType());
+            String className=node.getClass().getSimpleName();
+            switch (className){
+                case "ArithExprNode":
+                    this.print(localIndent, className + " of type: " + ((ArithExprNode) node).getOpType());
                     break;
-                case "class org.abcd.examples.ParLang.AstNodes.DoubleNode":
-                    this.print(localIndent, node.getClass() + " with the value: " + ((DoubleNode)node).getValue());
+                case "DoubleNode":
+                    this.print(localIndent, className + " with the value: " + ((DoubleNode)node).getValue());
                     break;
-                case "class org.abcd.examples.ParLang.AstNodes.IntegerNode":
-                    this.print(localIndent, node.getClass() + " with the value: " + ((IntegerNode)node).getValue());
+                case "IntegerNode":
+                    this.print(localIndent, className + " with the value: " + ((IntegerNode)node).getValue());
+                    break;
+                case "ParametersNode":
+                    this.print(localIndent, className + " with "+  ((ParametersNode)node).getNumberOfIdentifiers() + " identifier(s)");
+                    break;
+                case "IdentifierNode":
+                    if(((IdentifierNode)node).getType()!=null){
+                        this.print(localIndent, className + " with type: " + ((IdentifierNode)node).getType().toString() + " and identifier: " + ((IdentifierNode)node).getName());
+                    }else{
+                        this.print(localIndent, className + " with identifier: " + ((IdentifierNode)node).getName());
+                    }
+                    break;
+                case "ActorIdentifierNode":
+                    this.print(localIndent, className + " with type: " + ((ActorIdentifierNode)node).getActorType()+ " and identifier: " + ((ActorIdentifierNode)node).getName());
+                    break;
+                case "StringNode":
+                    this.print(localIndent, className + " with the value: " + ((StringNode)node).getValue());
+                    break;
+                case "ActorDclNode":
+                    this.print(localIndent, className + " with the id: " + ((ActorDclNode)node).getId());
+                    break;
+
+                case "MethodDclNode":
+                    this.print(localIndent, className + " with id: " + ((MethodDclNode)node).getId()+ ", method type: "+ ((MethodDclNode)node).getMethodType()+" and return type: "+((MethodDclNode)node).getReturnType());
                     break;
                 default:
-                    this.print(localIndent, node.getClass().toString());
+                    this.print(localIndent, className);
                     break;
             }
 
