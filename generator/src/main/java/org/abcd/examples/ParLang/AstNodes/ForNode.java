@@ -10,6 +10,10 @@ public class ForNode extends IterationNode{
         this.update = update;
     }
 
+    public ForNode() {
+        super();
+    }
+
     public AstNode getInit() {
         return init;
     }

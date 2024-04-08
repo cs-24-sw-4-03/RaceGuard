@@ -1,6 +1,6 @@
 package org.abcd.examples.ParLang.AstNodes;
 
-public abstract class IterationNode {
+public abstract class IterationNode extends AstNode{
 
     AstNode condition;
     AstNode body;
@@ -9,6 +9,9 @@ public abstract class IterationNode {
     public IterationNode(AstNode condition, AstNode body) {
         this.condition = condition;
         this.body = body;
+    }
+
+    public IterationNode() {
     }
 
     public AstNode getCondition() {
