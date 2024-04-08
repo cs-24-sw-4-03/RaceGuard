@@ -261,5 +261,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return null;
     }
 
+    @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
+        String accessIndex = ctx.arithExp().getText();
+        //This is always an Integer, coded to try out tree traversal :)
+        int accessTypeIndex = ctx.arithExp().term(0).factor(0).number().integer().STRICT_POS_INT().getSymbol().getType();
+        String accessType = ParLangParser.VOCABULARY.getSymbolicName(accessTypeIndex);
+        return new ArrayAccessNode(accessType, accessIndex);
+    }
 
 }

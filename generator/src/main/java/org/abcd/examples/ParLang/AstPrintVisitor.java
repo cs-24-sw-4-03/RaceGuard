@@ -35,9 +35,11 @@ public class AstPrintVisitor {
                 case "ActorDclNode":
                     this.print(localIndent, className + " with the id: " + ((ActorDclNode)node).getId());
                     break;
-
                 case "MethodDclNode":
                     this.print(localIndent, className + " with id: " + ((MethodDclNode)node).getId()+ ", method type: "+ ((MethodDclNode)node).getMethodType()+" and return type: "+((MethodDclNode)node).getReturnType());
+                    break;
+                case "ArrayAccessNode":
+                    this.print( localIndent, className + " with access identifier " + ((ArrayAccessNode)node).getAccessIdentifier() + " of the type: " + ((ArrayAccessNode)node).getAccessType() );
                     break;
                 default:
                     this.print(localIndent, className);
