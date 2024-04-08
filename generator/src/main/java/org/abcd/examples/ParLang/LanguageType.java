@@ -8,5 +8,7 @@ public enum LanguageType {
     VOID_TYPE,
     ACTOR_TYPE,
     ARRAY_TYPE,
-    SCRIPT_TYPE
+    SCRIPT_TYPE,
+
+    MYACTOR
 }

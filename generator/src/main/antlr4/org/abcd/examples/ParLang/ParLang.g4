@@ -108,7 +108,7 @@ compareOther : GREATER // Other compare operators have same precedence
 statement : boolExp SEMICOLON
     | compareExp SEMICOLON
     | declaration SEMICOLON
-    |assignment SEMICOLON
+    | assignment SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
     | methodCall SEMICOLON
@@ -170,6 +170,7 @@ allTypes : primitiveType
     | primitiveType ARRAY_TYPE
     | ACTOR_TYPE
     | VOID_TYPE
+    | identifier
     ;
 
 //can be any primitive type in language
