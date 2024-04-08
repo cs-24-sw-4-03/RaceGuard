@@ -1,7 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
 public class ArithExprNode extends ExprNode {
-    public enum Type {
+    public enum OpType {
         PLUS("+"),
         MINUS("-"),
         MULTIPLY("*"),
@@ -9,7 +9,7 @@ public class ArithExprNode extends ExprNode {
         MODULO("%");
         private final String value;
 
-        Type(String value) {
+        OpType(String value) {
             this.value = value;
         }
 
@@ -18,15 +18,15 @@ public class ArithExprNode extends ExprNode {
         }
     }
 
-    private final Type type;
+    private final OpType opType;
 
-    public ArithExprNode(Type t, ExprNode l, ExprNode r){
-        type=t;
+    public ArithExprNode(OpType t, AstNode l, AstNode r){
+        opType=t;
         this.addChild(l);
         this.addChild(r);
     }
 
-    public Type getType() {
-        return type;
+    public OpType getOpType() {
+        return opType;
     }
 }
