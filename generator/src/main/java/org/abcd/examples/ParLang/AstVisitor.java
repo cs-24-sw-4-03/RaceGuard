@@ -66,8 +66,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
-        typeContainer.add(ctx.identifier().getText().toUpperCase());
-
         List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
         children.remove(1);//remove identifier from list of children
         return childVisitor(node,children);
@@ -285,6 +283,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return null;
     }
 
+    @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
+        String accessIndex = ctx.arithExp().getText();
+        //This is always an Integer, coded to try out tree traversal :)
+        int accessTypeIndex = ctx.arithExp().term(0).factor(0).number().integer().STRICT_POS_INT().getSymbol().getType();
+        String accessType = ParLangParser.VOCABULARY.getSymbolicName(accessTypeIndex);
+        return new ArrayAccessNode(accessType, accessIndex);
+    }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
         return childVisitor(methodBodyNode,ctx.children);

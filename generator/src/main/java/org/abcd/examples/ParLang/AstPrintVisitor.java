@@ -45,6 +45,9 @@ public class AstPrintVisitor {
                 case "ForNode":
                     this.print(localIndent, className + " with the value: " );
                     break;
+                case "ArrayAccessNode":
+                    this.print( localIndent, className + " with access identifier " + ((ArrayAccessNode)node).getAccessIdentifier() + " of the type: " + ((ArrayAccessNode)node).getAccessType() );
+                    break;
                 default:
                     this.print(localIndent, className);
                     break;
