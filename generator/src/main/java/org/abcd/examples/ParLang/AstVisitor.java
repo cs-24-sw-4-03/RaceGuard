@@ -248,6 +248,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
     }
+
+    @Override public AstNode visitWhileLoop(ParLangParser.WhileLoopContext ctx) {
+        WhileNode whileNode=new WhileNode();
+        return childVisitor(whileNode,ctx.children);
+    }
+
+    @Override public AstNode visitForLoop(ParLangParser.ForLoopContext ctx) {
+        ForNode forNode=new ForNode();
+        return childVisitor(forNode,ctx.children);
+    }
     @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
         //Primitives can be: INT, DOUBLE, STRING, and BOOL
 
