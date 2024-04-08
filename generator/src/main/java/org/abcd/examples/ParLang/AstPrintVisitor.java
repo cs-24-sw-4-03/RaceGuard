@@ -23,11 +23,11 @@ public class AstPrintVisitor {
                     if(((IdentifierNode)node).getType()!=null){
                         this.print(localIndent, className + " with type: " + ((IdentifierNode)node).getType().toString() + " and identifier: " + ((IdentifierNode)node).getName());
                     }else{
-                        this.print(localIndent, className + " with identifier: " + ((IdentifierNode)node).getName());
+                        this.print(localIndent, className + ": " + ((IdentifierNode)node).getName());
                     }
                     break;
                 case "ActorIdentifierNode":
-                    this.print(localIndent, className + " with type: " + ((ActorIdentifierNode)node).getActorType()+ " and identifier: " + ((ActorIdentifierNode)node).getName());
+                    this.print(localIndent, className + " of type: " + ((ActorIdentifierNode)node).getActorType()+ " with identifier: " + ((ActorIdentifierNode)node).getName());
                     break;
                 case "StringNode":
                     this.print(localIndent, className + " with the value: " + ((StringNode)node).getValue());

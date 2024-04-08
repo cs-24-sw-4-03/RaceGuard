@@ -108,10 +108,10 @@ compareOther : GREATER // Other compare operators have same precedence
 statement : boolExp SEMICOLON
     | compareExp SEMICOLON
     | declaration SEMICOLON
-    |assignment SEMICOLON
+    | assignment SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
-    | methodCall
+    | methodCall SEMICOLON
     | printCall
     ;
 
@@ -133,7 +133,7 @@ arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 sendMsg : (identifier | SELF) SEND_MSG identifier arguments;
 
 //way to call a method
-methodCall : identifier arguments SEMICOLON;
+methodCall : identifier arguments;
 
 // to instanziate a new actor of a defined type
 spawnActor : SPAWN identifier arguments;
@@ -170,6 +170,7 @@ allTypes : primitiveType
     | primitiveType ARRAY_TYPE
     | ACTOR_TYPE
     | VOID_TYPE
+    | identifier
     ;
 
 //can be any primitive type in language
