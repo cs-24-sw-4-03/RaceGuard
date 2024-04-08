@@ -256,9 +256,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitForLoop(ParLangParser.ForLoopContext ctx) {
         ForNode forNode=new ForNode();
-        for(ParseTree c:ctx.children){
-            System.out.println(c.getText());
-        }
         return childVisitor(forNode,ctx.children);
     }
     @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
