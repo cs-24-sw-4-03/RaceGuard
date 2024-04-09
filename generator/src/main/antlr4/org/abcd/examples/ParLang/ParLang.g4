@@ -41,6 +41,9 @@ actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
     ;
 
+
+
+
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
 printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
 
@@ -64,7 +67,7 @@ elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
 
 // Declaration used to declare variables
 declaration: allTypes (identifier (ARRAY_TYPE)?) (initialization)?;
-initialization:  ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor);
+initialization:  ASSIGN (arithExp | boolExp | primitive | arrayAssign | identifier | actorAccess | spawnActor);
 
 //assignment used to assign a value to an already defined variable.
 assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor) ;
@@ -72,7 +75,7 @@ assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
-boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
+boolTerm : LOGIC_NEGATION boolTerm  //Negation have higher precedence than AND and OR
     | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE

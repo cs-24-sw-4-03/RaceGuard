@@ -19,7 +19,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            //System.out.println(c.getText());
+            System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
@@ -276,13 +276,15 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         // Visit the rest of the children
         for (int i = 1; i < ctx.boolAndExp().size(); i++) {
             AstNode right = visit(ctx.boolAndExp(i));
-            left = new BoolExprNode(BoolExprNode.BoolType.LOGIC_OR, left, right);
+            left = new BoolExprNode(false, left, right);
         }
         return left;
     }
 
     @Override public AstNode visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) {
+        System.out.println("visitboolAndExp");
         if (ctx.boolTerm().size() == 1) {
+            System.out.println("check");
             return visit(ctx.boolTerm(0));
         }
         AstNode left = visit(ctx.boolTerm(0));
@@ -290,18 +292,19 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         // Iterate through the rest of the BoolTerm contexts (if any) and build AND expressions
         for (int i = 1; i < ctx.boolTerm().size(); i++) {
             AstNode right = visit(ctx.boolTerm(i));
-            left = new BoolExprNode(BoolExprNode.BoolType.LOGIC_AND, left, right);
+            left = new BoolAndExpNode(left, right);
         }
-
         return left;
     }
 
     @Override
     public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
+        System.out.println("visitBoolTerm");
         // logical negation, we create a BoolExprNode with BoolType.LOGIC_NEGATION
         if (ctx.LOGIC_NEGATION() != null) {
-            AstNode negatedExpr = visit(ctx.boolExp());
-            return new BoolExprNode(BoolExprNode.BoolType.LOGIC_NEGATION, negatedExpr, null);
+            System.out.println("visit negated");
+            AstNode negatedExpr = visit(ctx.boolTerm());
+            return new BoolExprNode(true, negatedExpr);
         }
 
         // comparison expression, we visit the comparison expression
@@ -340,7 +343,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         String operator = ctx.compareOperator().getText();
 
         // Create a new node representing the comparison operation
-        CompareExprNode compareNode = new CompareExprNode(operator, leftOperand, rightOperand);
+        CompareExpNode compareNode = new CompareExpNode(operator, leftOperand, rightOperand);
 
         return compareNode;
     }
