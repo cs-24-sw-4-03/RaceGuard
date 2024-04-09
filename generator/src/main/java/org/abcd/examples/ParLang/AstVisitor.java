@@ -267,6 +267,82 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return null;
     }
+    @Override public AstNode visitBoolExp(ParLangParser.BoolExpContext ctx) {
+        if (ctx.boolAndExp().size() == 1) {
+            return visit(ctx.boolAndExp(0));
+        }
+        // Visit first child
+        AstNode left = visit(ctx.boolAndExp(0));
+        // Visit the rest of the children
+        for (int i = 1; i < ctx.boolAndExp().size(); i++) {
+            AstNode right = visit(ctx.boolAndExp(i));
+            left = new BoolExprNode(BoolExprNode.BoolType.LOGIC_OR, left, right);
+        }
+        return left;
+    }
 
+    @Override public AstNode visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) {
+        if (ctx.boolTerm().size() == 1) {
+            return visit(ctx.boolTerm(0));
+        }
+        AstNode left = visit(ctx.boolTerm(0));
+
+        // Iterate through the rest of the BoolTerm contexts (if any) and build AND expressions
+        for (int i = 1; i < ctx.boolTerm().size(); i++) {
+            AstNode right = visit(ctx.boolTerm(i));
+            left = new BoolExprNode(BoolExprNode.BoolType.LOGIC_AND, left, right);
+        }
+
+        return left;
+    }
+
+    @Override
+    public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
+        // logical negation, we create a BoolExprNode with BoolType.LOGIC_NEGATION
+        if (ctx.LOGIC_NEGATION() != null) {
+            AstNode negatedExpr = visit(ctx.boolExp());
+            return new BoolExprNode(BoolExprNode.BoolType.LOGIC_NEGATION, negatedExpr, null);
+        }
+
+        // comparison expression, we visit the comparison expression
+        if (ctx.compareExp() != null) {
+            return visit(ctx.compareExp());
+        }
+
+        // If there are parentheses around the boolean expression, we just visit the nested expression
+        if (ctx.PARAN_OPEN() != null) {
+            return visit(ctx.boolExp());
+        }
+
+        // boolean literal, we visit the boolean literal
+        if (ctx.boolLiteral() != null) {
+            return visit(ctx.boolLiteral());
+        }
+
+        throw new RuntimeException("Unrecognized BoolTerm");
+    }
+
+    @Override
+    public AstNode visitBoolLiteral(ParLangParser.BoolLiteralContext ctx) {
+        // contains either 'TRUE' or 'FALSE'
+        boolean value = ctx.getText().equals("TRUE");
+        return new BoolNode(value);
+    }
+    @Override
+    public AstNode visitCompareExp(ParLangParser.CompareExpContext ctx) {
+        // Visit the left-hand side of the comparison
+        AstNode leftOperand = visit(ctx.arithExp(0));
+
+        // Visit the right-hand side of the comparison
+        AstNode rightOperand = visit(ctx.arithExp(1));
+
+        // Extract the comparison operator as a string
+        String operator = ctx.compareOperator().getText();
+
+        // Create a new node representing the comparison operation
+        CompareExprNode compareNode = new CompareExprNode(operator, leftOperand, rightOperand);
+
+        return compareNode;
+    }
 
 }

@@ -45,6 +45,18 @@ public class AstPrintVisitor {
                 case "ForNode":
                     this.print(localIndent, className + " with the value: " );
                     break;
+                case "BoolExprNode":
+                    this.print(localIndent, className + " with operation: " + ((BoolExprNode)node).getBoolType());
+                    break;
+                case "BoolAndExp":
+                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue());
+                    break;
+                case "CompareExp":
+                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue());
+                    break;
+                case "BoolTerm":
+                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue());
+                    break;
                 default:
                     this.print(localIndent, className);
                     break;
