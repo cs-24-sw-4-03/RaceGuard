@@ -106,9 +106,7 @@ compareOther : GREATER // Other compare operators have same precedence
 
 //ACCEPTS: boolean expressions, arithmetic expressions,
 //comparison of arithmetic expressions declarations, control structures, and sending of messages
-statement : boolExp SEMICOLON
-    | compareExp SEMICOLON
-    | declaration SEMICOLON
+statement : declaration SEMICOLON
     | assignment SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
