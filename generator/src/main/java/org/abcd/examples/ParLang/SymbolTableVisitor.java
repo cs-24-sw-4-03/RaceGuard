@@ -83,8 +83,6 @@ public class SymbolTableVisitor {
         this.visitChildren(node);
     }
 
-    public void visit( node){
-        this.visitChildren(node);
-    }
+
 
 }

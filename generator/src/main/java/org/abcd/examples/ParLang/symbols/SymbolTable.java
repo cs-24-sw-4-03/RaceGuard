@@ -18,6 +18,9 @@ public class SymbolTable {
         return this.currentScope;
     }
 
+    //Creates a new scope and sets the currentScope as its parent if there is no scope with the same name
+    //It then pushes the currentScope onto the stack and sets the new scope as the currentScope
+    //This is done as the currentScope is not located on the stack
     public void addScope(String scopeName){
         if(lookUpScope(scopeName) == null){
             Scope scope = new Scope(scopeName);
@@ -39,16 +42,21 @@ public class SymbolTable {
     }
 
     //TODO: Find better name than searchScope
+    //This method searches for a scope with the given name starting from the given searchScope
+    //This method is recursive, and will most often be called with the globalScope as the searchScope
+    //It then calls itself with the children of the searchScope as the new searchScope
     public Scope findScope(String scopeName, Scope searchScope){
+        //Enters if you are searching for the global scope
         if (this.globalScope.getScopeName().equals(scopeName)){
             return this.globalScope;
         }
 
         Scope scope = null;
-
+        //Iterates through the children of the scope you start the search from
         for(Scope childScope: searchScope.children){
             scope = findScope(scopeName, childScope);
 
+            //Breaks the loop if the scope is found
             if(scope != null){
                 break;
             }
@@ -64,6 +72,8 @@ public class SymbolTable {
     public Attributes lookUpSymbol(String symbol){
         Scope scope = this.currentScope;
 
+        //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
+        //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
             if(!scope.getSymbols().isEmpty() && scope.getSymbols().containsKey(symbol)){
                 return scope.getSymbols().get(symbol);
