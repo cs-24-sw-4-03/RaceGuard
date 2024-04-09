@@ -5,9 +5,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
+
+    List<String> typeContainer = new ArrayList<String>(Arrays.asList("INT", "DOUBLE", "STRING", "BOOL", "VOID", "ACTOR", "ARRAY", "SCRIPT"));
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
         return childVisitor(initNode,ctx.children);
@@ -37,20 +40,34 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return main;
     }
 
+    @Override public AstNode visitMethodCall(ParLangParser.MethodCallContext ctx) {
+        MethodCallNode methodCallNode = new MethodCallNode(ctx.identifier().getText());
+        if(ctx.arguments()!=null){ //If there are arguments
+            return childVisitor(methodCallNode,ctx.children);
+        }
+            return methodCallNode;
+    }
+
     @Override public AstNode visitParameters(ParLangParser.ParametersContext ctx){
         int numOfChildren=ctx.getChildCount();
         ParametersNode params = new ParametersNode();
         if (numOfChildren != 2){ //there are minimum 2 children, the parentheses
             //If there are more than 2 children, there are parameters
             for (int i = 1; i < numOfChildren; i+=3){
-                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), LanguageType.valueOf(ctx.getChild(i).getText().toUpperCase())));
+                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText().toUpperCase()));
             }
         }
         return params;
     }
+    @Override public AstNode visitArguments(ParLangParser.ArgumentsContext ctx){
+        ArgumentsNode args = new ArgumentsNode();
+        return childVisitor(args,ctx.children);
+    }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
+        typeContainer.add(ctx.identifier().getText().toUpperCase());
+
         List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
         children.remove(1);//remove identifier from list of children
         return childVisitor(node,children);
@@ -115,9 +132,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
-        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()));
+        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText().toUpperCase());
 
-        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),LanguageType.valueOf(ctx.allTypes().getText().toUpperCase()));
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText().toUpperCase());
 
         dclNode.addChild(idNode); //add identifier as child
 
@@ -267,6 +284,4 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return null;
     }
-
-
 }
