@@ -51,7 +51,7 @@ controlStructure : ifElse
     ;
 
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
-forLoop : FOR PARAN_OPEN (identifier | declaration |assignment)? SEMICOLON (boolExp | identifier) SEMICOLON forStatement? PARAN_CLOSE body;
+forLoop : FOR PARAN_OPEN (declaration |assignment)? SEMICOLON boolExp SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
 whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
 
@@ -76,6 +76,7 @@ boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and
     | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
+    | identifier
     ;
 
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
@@ -105,9 +106,7 @@ compareOther : GREATER // Other compare operators have same precedence
 
 //ACCEPTS: boolean expressions, arithmetic expressions,
 //comparison of arithmetic expressions declarations, control structures, and sending of messages
-statement : boolExp SEMICOLON
-    | compareExp SEMICOLON
-    | declaration SEMICOLON
+statement : declaration SEMICOLON
     | assignment SEMICOLON
     | sendMsg SEMICOLON
     | controlStructure
@@ -117,7 +116,6 @@ statement : boolExp SEMICOLON
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
 forStatement : sendMsg
-    |declaration
     |assignment
     ;
 
