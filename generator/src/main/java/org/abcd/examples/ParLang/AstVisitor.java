@@ -298,9 +298,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return returnStatementNode;
     }
 
-    @Override public AstNode visitReturnType(ParLangParser.ReturnTypeContext ctx) {
+    /*@Override public AstNode visitReturnType(ParLangParser.ReturnTypeContext ctx) {
         ReturnTypeNode returnTypeNode = new ReturnTypeNode();
 
-    }
+    }*/
 
 }
