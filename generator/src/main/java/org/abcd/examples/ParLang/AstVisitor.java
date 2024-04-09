@@ -118,8 +118,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (ctx.parameters() != null) {
             node.addChild(visit(ctx.parameters()));
         }
-        if(ctx.body()!=null){
-            node.addChild(visit(ctx.body()));
+        if(ctx.localMethodBody()!=null){
+            node.addChild(visit(ctx.localMethodBody()));
         }
         return node;
     }
@@ -283,5 +283,18 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return new StringNode(ctx.getText());
         }
         return null;
+    }
+
+    @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
+        LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
+        return childVisitor(methodBodyNode,ctx.children);
+    }
+
+    @Override public AstNode visitReturnStatement(ParLangParser.ReturnStatementContext ctx){
+        ReturnStatementNode returnStatementNode = new ReturnStatementNode();
+        if(ctx.getChild(1) != null){
+            returnStatementNode.addChild(visit(ctx.getChild(1)));
+        }
+        return returnStatementNode;
     }
 }
