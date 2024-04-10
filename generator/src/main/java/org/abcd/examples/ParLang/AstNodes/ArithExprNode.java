@@ -20,6 +20,8 @@ public class ArithExprNode extends ExprNode {
 
     private final OpType opType;
 
+    private boolean isNegated = false;
+
     public ArithExprNode(OpType t, AstNode l, AstNode r){
         opType=t;
         this.addChild(l);
@@ -28,5 +30,13 @@ public class ArithExprNode extends ExprNode {
 
     public OpType getOpType() {
         return opType;
+    }
+
+    public void setIsNegated(boolean isNegative){
+        this.isNegated = isNegative;
+    }
+
+    public boolean isNegative(){
+        return this.isNegated;
     }
 }

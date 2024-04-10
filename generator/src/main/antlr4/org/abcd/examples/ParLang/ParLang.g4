@@ -90,7 +90,12 @@ term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and M
 factor : number
     | identifier
     | actorAccess
-    | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
+    | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
+    | unaryExp
+    ;
+unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
+    | MINUS number
+    ; // unary minus operator
 
 // operator to compare two arithmetic expressions
 compareOperator : compareEqNEg;
@@ -144,7 +149,7 @@ arrayAssign : arrayAssignLength
     ;
 
 // assignment of the length af an array
-arrayAssignLength : identifier ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
+arrayAssignLength : identifier ASSIGN SQUARE_OPEN INT SQUARE_CLOSE;
 
 //access array
 arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
@@ -153,8 +158,7 @@ arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
 
 // items that can be listed
-listItem : integer
-    | DOUBLE
+listItem : number
     | STRING
     | identifier
     | boolLiteral
@@ -164,7 +168,6 @@ listItem : integer
 identifier : IDENTIFIER
     | actorAccess
     ;
-
 
 // can be any type defined in language
 allTypes : primitiveType
@@ -181,21 +184,16 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | identifier | arithExp | STRICT_POS_INT);
+value : (primitive | identifier | arithExp );
 
-number : integer
-    |DOUBLE
+number : INT
+    | DOUBLE
     ; //number can be either integer or double
 
 //can be any primitive value
-primitive : INT
-    | DOUBLE
+primitive : number
     | STRING
     | boolLiteral
-    ;
-
-integer : INT
-    | STRICT_POS_INT
     ;
 
 //either boolean value true of false
@@ -259,8 +257,7 @@ FOR : 'for';
 MAIN : 'main';
 RETURN : 'return';
 PRINT : 'print';
-STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
-INT :   DIGIT+ ;  // Define token INT as one or more digits
+INT : DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 //strings are inside either quotation marks or double quotation marks
 STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);
