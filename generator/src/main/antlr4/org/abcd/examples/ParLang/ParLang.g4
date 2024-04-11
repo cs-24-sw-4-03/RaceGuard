@@ -61,7 +61,7 @@ whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
-declaration: allTypes identifier (initialization)?;
+declaration: allTypes identifier (initialization)?; //array type is included in allTypes
 initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor);
 
 //assignment used to assign a value to an already defined variable.
