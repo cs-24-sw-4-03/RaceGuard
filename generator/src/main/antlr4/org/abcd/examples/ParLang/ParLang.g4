@@ -45,7 +45,7 @@ printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
 printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
 
 //the different control structures in the language
-controlStructure : ifElse
+controlStructure : selection
     | forLoop
     | whileLoop
     ;
@@ -53,14 +53,10 @@ controlStructure : ifElse
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
 forLoop : FOR PARAN_OPEN (declaration |assignment)? SEMICOLON boolExp SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
-whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
+whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 
 //if statements must contain an if part
-ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body elsePart?;
-//the else part of an if statement is optional
-elsePart : elseIf* ELSE body;
-//else if parts are also optional
-elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
+selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes (identifier (ARRAY_TYPE)?) (initialization)?;

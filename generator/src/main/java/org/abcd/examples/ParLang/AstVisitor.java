@@ -297,4 +297,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return returnStatementNode;
     }
+
+    @Override
+    public AstNode visitSelection(ParLangParser.SelectionContext ctx) {
+        SelectionNode selectionNode = new SelectionNode();
+        childVisitor(selectionNode, ctx.children);
+        return selectionNode;
+    }
 }
