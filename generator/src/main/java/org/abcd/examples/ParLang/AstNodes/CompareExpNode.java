@@ -1,7 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
 public class CompareExpNode extends AstNode {
-    private String operator;
+    private final String operator;
 
     public CompareExpNode(String operator, AstNode leftOperand, AstNode rightOperand) {
         this.operator = operator;
