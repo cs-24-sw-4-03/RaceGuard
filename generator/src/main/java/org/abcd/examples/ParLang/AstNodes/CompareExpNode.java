@@ -12,7 +12,5 @@ public class CompareExpNode extends AstNode {
         return operator;
     }
 
-
-    // Additional methods for pretty printing, visitor pattern, etc. can be added here
 }
 
