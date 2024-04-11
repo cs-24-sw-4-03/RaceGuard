@@ -99,6 +99,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return node;
     }
 
+    @Override public AstNode visitSpawnActor(ParLangParser.SpawnActorContext ctx) {
+        SpawnActorNode spawnNode = new SpawnActorNode(ctx.identifier().getText());
+        if(ctx.arguments() != null){
+            spawnNode.addChild(visit(ctx.arguments()));
+        }
+        return spawnNode;
+    }
+
     @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
         //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER]
         //Need to know: Identifier of what we want to access and the type of the value the identifier points to
@@ -124,7 +132,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return node;
     }
-
 
     @Override public AstNode visitLocalMethod(ParLangParser.LocalMethodContext ctx) {
         MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),ctx.allTypes().getText(),ctx.LOCAL_METHOD().getText());
