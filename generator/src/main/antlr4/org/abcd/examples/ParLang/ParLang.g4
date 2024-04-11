@@ -94,7 +94,7 @@ factor : number
     | unaryExp
     ;
 unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
-    | MINUS number
+    | MINUS (number | identifier | actorAccess)
     ; // unary minus operator
 
 // operator to compare two arithmetic expressions
