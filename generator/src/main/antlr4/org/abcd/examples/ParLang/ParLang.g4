@@ -75,11 +75,13 @@ assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
-boolTerm : LOGIC_NEGATION boolTerm  //Negation have higher precedence than AND and OR
-    | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
+boolTerm : negatedBool
+    | PARAN_OPEN boolExp PARAN_CLOSE
     | compareExp
-    | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
+    | boolLiteral
     ;
+
+negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE;
 
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;

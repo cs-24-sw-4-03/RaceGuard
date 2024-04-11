@@ -282,9 +282,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) {
-        System.out.println("visitboolAndExp");
         if (ctx.boolTerm().size() == 1) {
-            System.out.println("check");
             return visit(ctx.boolTerm(0));
         }
         AstNode left = visit(ctx.boolTerm(0));
@@ -299,10 +297,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
-        System.out.println("visitBoolTerm");
+        //System.out.println("visitBoolTerm");
         // logical negation, we create a BoolExprNode with BoolType.LOGIC_NEGATION
         if (ctx.LOGIC_NEGATION() != null) {
-            System.out.println("visit negated");
+            //System.out.println("visit negated");
             AstNode negatedExpr = visit(ctx.boolTerm());
             return new BoolExprNode(true, negatedExpr);
         }
