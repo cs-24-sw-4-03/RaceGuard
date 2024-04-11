@@ -35,7 +35,6 @@ public class AstPrintVisitor {
                 case "ActorDclNode":
                     this.print(localIndent, className + " with the id: " + ((ActorDclNode)node).getId());
                     break;
-
                 case "MethodDclNode":
                     this.print(localIndent, className + " with id: " + ((MethodDclNode)node).getId()+ ", method type: "+ ((MethodDclNode)node).getMethodType()+" and return type: "+((MethodDclNode)node).getReturnType());
                     break;
@@ -44,6 +43,18 @@ public class AstPrintVisitor {
                     break;
                 case "ForNode":
                     this.print(localIndent, className + " with the value: " );
+                    break;
+                case "ArrayAccessNode":
+                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    break;
+                case "ActorAccessNode":
+                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    break;
+                case "StateAccessNode":
+                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    break;
+                case "KnowsAccessNode":
+                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
                     break;
                 default:
                     this.print(localIndent, className);

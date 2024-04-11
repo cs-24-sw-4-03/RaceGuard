@@ -66,8 +66,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
-        typeContainer.add(ctx.identifier().getText().toUpperCase());
-
         List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
         children.remove(1);//remove identifier from list of children
         return childVisitor(node,children);
@@ -101,6 +99,21 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return node;
     }
 
+    @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
+        //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER]
+        //Need to know: Identifier of what we want to access and the type of the value the identifier points to
+        String accessIdentifier = ctx.IDENTIFIER().getText();
+        String accessType = "EMPTY"; //Until type-checker is implemented
+        return new StateAccessNode(accessType,accessIdentifier);
+    }
+
+    @Override public AstNode visitKnowsAccess(ParLangParser.KnowsAccessContext ctx){
+        //We can accesss Knows within an Actor; Structure:[KNOWS,DOT,IDENTIFIER];
+        String accessIdentifier = ctx.IDENTIFIER().getText();
+        String accessType = "EMPTY"; //Until type-checker is implemented
+        return new KnowsAccessNode(accessType,accessIdentifier);
+    }
+
     @Override public AstNode visitOnMethod(ParLangParser.OnMethodContext ctx) {
         MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),"void",ctx.ON_METHOD().getText());
         if (ctx.parameters() != null) {
@@ -118,8 +131,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (ctx.parameters() != null) {
             node.addChild(visit(ctx.parameters()));
         }
-        if(ctx.body()!=null){
-            node.addChild(visit(ctx.body()));
+        if(ctx.localMethodBody()!=null){
+            node.addChild(visit(ctx.localMethodBody()));
         }
         return node;
     }
@@ -162,7 +175,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitIdentifier(ParLangParser.IdentifierContext ctx) {
-        return new IdentifierNode(ctx.IDENTIFIER().getText());
+        AstNode IdNode = null;
+        if(ctx.IDENTIFIER() != null){
+            IdNode = new IdentifierNode(ctx.IDENTIFIER().getText());
+        }
+        if(ctx.actorAccess() != null){
+            IdNode = visit(ctx.actorAccess());
+        }
+        return IdNode;
     }
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
@@ -283,5 +303,25 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return new StringNode(ctx.getText());
         }
         return null;
+    }
+
+    @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
+        //An array access
+        String accessIdentifier = ctx.identifier().getText();
+        String accessType = "EMPTY";
+        //This is always an Integer, coded to try out tree traversal :)
+        return new ArrayAccessNode(accessType, accessIdentifier);
+    }
+    @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
+        LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
+        return childVisitor(methodBodyNode,ctx.children);
+    }
+
+    @Override public AstNode visitReturnStatement(ParLangParser.ReturnStatementContext ctx){
+        ReturnStatementNode returnStatementNode = new ReturnStatementNode();
+        if(ctx.getChild(1) != null){
+            returnStatementNode.addChild(visit(ctx.getChild(1)));
+        }
+        return returnStatementNode;
     }
 }

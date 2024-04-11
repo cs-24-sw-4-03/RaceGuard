@@ -34,12 +34,14 @@ spawn : SPAWN parameters body;
 // methods of this actor
 actorMethod: onMethod | localMethod;
 onMethod : ON_METHOD  identifier parameters body;
-localMethod: LOCAL_METHOD identifier parameters COLON allTypes body;
+localMethod: LOCAL_METHOD identifier parameters COLON allTypes localMethodBody;
 
 //Ways to acces either the state of an actor or access the actors known of the current actor
-actorAccess : STATE DOT IDENTIFIER
-    | KNOWS DOT IDENTIFIER
+actorAccess : stateAccess
+    | knowsAccess
     ;
+stateAccess: STATE DOT IDENTIFIER;
+knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
 printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
@@ -120,7 +122,9 @@ forStatement : sendMsg
     ;
 
 // body is a block of code
-body : CURLY_OPEN statement* CURLY_CLOSE;
+body : CURLY_OPEN statement*  CURLY_CLOSE;
+localMethodBody: CURLY_OPEN statement* returnStatement CURLY_CLOSE;
+
 
 // defines the parameters of a function
 parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
@@ -163,6 +167,7 @@ identifier : IDENTIFIER
     | actorAccess
     ;
 
+
 // can be any type defined in language
 allTypes : primitiveType
     | primitiveType ARRAY_TYPE
@@ -199,6 +204,17 @@ integer : INT
 boolLiteral : BOOL_TRUE
     | BOOL_FALSE
     ;
+
+returnStatement : RETURN returnType? SEMICOLON;
+
+//Return types
+returnType : identifier
+    | arithExp
+    | boolExp
+    | primitive
+    | actorAccess
+    ;
+
 
 //--------------------------------------------------------------------------------------------------
 
@@ -243,9 +259,10 @@ WHILE : 'while';
 FOR : 'for';
 
 MAIN : 'main';
+RETURN : 'return';
 PRINT : 'print';
 STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
-INT :   (MINUS | ) DIGIT+ ;  // Define token INT as one or more digits
+INT :   DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 //strings are inside either quotation marks or double quotation marks
 STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);
