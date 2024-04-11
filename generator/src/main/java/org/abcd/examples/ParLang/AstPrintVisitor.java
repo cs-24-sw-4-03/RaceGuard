@@ -57,6 +57,9 @@ public class AstPrintVisitor {
                 case "NegatedBoolNode":
                     this.print(localIndent, className);
                     break;
+                case "BoolNode":
+                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue());
+                    break;
                 default:
                     this.print(localIndent, className);
                     break;
