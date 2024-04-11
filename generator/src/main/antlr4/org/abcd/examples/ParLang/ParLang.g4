@@ -37,9 +37,11 @@ onMethod : ON_METHOD  identifier parameters body;
 localMethod: LOCAL_METHOD identifier parameters COLON allTypes localMethodBody;
 
 //Ways to acces either the state of an actor or access the actors known of the current actor
-actorAccess : STATE DOT IDENTIFIER
-    | KNOWS DOT IDENTIFIER
+actorAccess : stateAccess
+    | knowsAccess
     ;
+stateAccess: STATE DOT IDENTIFIER;
+knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
 printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
