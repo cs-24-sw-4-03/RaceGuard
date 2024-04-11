@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
+import  org.abcd.examples.ParLang.Exceptions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +11,9 @@ import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
-    List<String> typeContainer = new ArrayList<String>(Arrays.asList("INT", "DOUBLE", "STRING", "BOOL", "VOID", "ACTOR", "ARRAY", "SCRIPT"));
+    List<String> typeContainer = new ArrayList<String>(Arrays.asList("int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script"));
+
+
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
         return childVisitor(initNode,ctx.children);
@@ -22,7 +25,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            //System.out.println(c.getText());
+            System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
@@ -65,6 +68,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
+        String actorName=ctx.identifier().getText();
+        if(typeContainer.contains(actorName)){
+            throw new DuplicateActorTypeException("Actor with name "+actorName+" already defined");
+        }else {
+            typeContainer.add(actorName);
+            typeContainer.add(actorName+"[]");
+        }
         ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
         List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
         children.remove(1);//remove identifier from list of children
@@ -141,23 +151,35 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children);
+
+
     }
 
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
-        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText().toUpperCase());
-
-        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText().toUpperCase());
-
+        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText());
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());
         dclNode.addChild(idNode); //add identifier as child
 
         ParLangParser.InitializationContext init=ctx.initialization();
         if(init!=null){//variable is initialized
             InitializationNode initializationNode=new InitializationNode();
-            initializationNode.addChild(visit(init.getChild(1)));
+            /*
+            if(init.list()!=null){ // if an array is declared
+               childVisitor(initializationNode,init.list().children);
+            }else {
+                initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization variable.
+            }
+            */
+            initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization value.
             dclNode.addChild(initializationNode); //add initializationNode as child
         }
         return dclNode;
+    }
+
+    @Override
+    public AstNode visitList(ParLangParser.ListContext ctx){
+        return childVisitor(new ListNode(),ctx.children);//return a listNode with the list elements as chidren.
     }
 
     @Override
@@ -172,6 +194,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
         return assignNode;
     }
+
+
 
     @Override
     public AstNode visitIdentifier(ParLangParser.IdentifierContext ctx) {
