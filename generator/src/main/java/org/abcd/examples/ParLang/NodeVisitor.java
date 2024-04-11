@@ -6,6 +6,7 @@ public interface NodeVisitor {
     void visitChildren(AstNode node);
 
     void visit(InitNode node);
+    void visit(BodyNode node);
 
     void visit(IdentifierNode node);
     void visit(ActorIdentifierNode node);

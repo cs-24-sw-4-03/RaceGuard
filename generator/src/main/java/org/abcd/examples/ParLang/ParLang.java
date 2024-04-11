@@ -9,6 +9,7 @@
 
 package org.abcd.examples.ParLang;
 // import ANTLR's runtime libraries
+import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -49,6 +50,10 @@ public class ParLang {
         //print CST
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+
+        SymbolTable symbolTable = new SymbolTable();
+        SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
+        symbolTableVisitor.visit(ast);
     }
 
 }
