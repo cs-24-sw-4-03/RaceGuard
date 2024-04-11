@@ -99,6 +99,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return node;
     }
 
+    @Override public AstNode visitSpawnActor(ParLangParser.SpawnActorContext ctx) {
+        SpawnActorNode spawnNode = new SpawnActorNode(ctx.identifier().getText());
+        if(ctx.arguments() != null){
+            spawnNode.addChild(visit(ctx.arguments()));
+        }
+        return spawnNode;
+    }
+
     @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
         //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER]
         //Need to know: Identifier of what we want to access and the type of the value the identifier points to
@@ -125,7 +133,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return node;
     }
 
-
     @Override public AstNode visitLocalMethod(ParLangParser.LocalMethodContext ctx) {
         MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),ctx.allTypes().getText(),ctx.LOCAL_METHOD().getText());
         if (ctx.parameters() != null) {
@@ -136,8 +143,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return node;
     }
-
-
+    
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children);
@@ -217,7 +223,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitTerm(ParLangParser.TermContext ctx) {
         int childCount= ctx.getChildCount();
-
         if(childCount==1){
             return visit(ctx.factor(0));
         }else{
@@ -242,31 +247,28 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
-        ParseTree child=ctx.getChild(0);
-        if(child instanceof ParLangParser.NumberContext){
-            return visit(ctx.number());
-        }else if (child instanceof ParLangParser.IdentifierContext){
-            return visit(ctx.identifier());
-        }else if(child.getText().equals("(")){//If first child is a parentheses, treat the node as arithmetic expression
-                return visit(ctx.arithExp());
-        }else{
-            return null;
+        if (ctx.getChild(0).getText().equals("(")) {
+            return visit(ctx.arithExp());//If first child is a parentheses, treat the node as arithmetic expression
         }
+        return visit(ctx.getChild(0));
+    }
+
+    @Override public AstNode visitUnaryExp(ParLangParser.UnaryExpContext ctx) {
+        UnaryExpNode unaryExpNode = new UnaryExpNode();
+        if(ctx.getChild(0).getText().equals("-")){
+            unaryExpNode.setIsNegated(true);
+        }
+        List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
+        children.remove(0);//remove the negation token
+        return childVisitor(unaryExpNode,children);
     }
 
     @Override public AstNode visitNumber(ParLangParser.NumberContext ctx) {
         if(ctx.getText().contains(".")){
             return new DoubleNode(Double.parseDouble(ctx.getText()));
-        }else if(ctx.getChild(0) instanceof  ParLangParser.IntegerContext){
-            return visit(ctx.integer());
-        }else{
-            return null;
+        }else {
+            return new IntegerNode(Integer.parseInt(ctx.getText()));
         }
-    }
-
-
-    @Override public AstNode visitInteger(ParLangParser.IntegerContext ctx) {
-        return new IntegerNode(Integer.parseInt(ctx.getText()));
     }
 
     private static ArithExprNode.OpType getArithmeticBinaryOperator(String operator) {

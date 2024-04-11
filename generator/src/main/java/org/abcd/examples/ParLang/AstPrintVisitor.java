@@ -8,53 +8,68 @@ public class AstPrintVisitor {
             String className=node.getClass().getSimpleName();
             switch (className){
                 case "ArithExprNode":
-                    this.print(localIndent, className + " of type: " + ((ArithExprNode) node).getOpType());
+                    this.print(localIndent, className + " : " + ((ArithExprNode) node).getOpType());
+                    break;
+                case "UnaryExpNode":
+                    if (((UnaryExpNode) node).isNegative()){
+                        this.print(localIndent, className + " with negation");
+                    }else{
+                        this.print(localIndent, className);
+                    }
                     break;
                 case "DoubleNode":
-                    this.print(localIndent, className + " with the value: " + ((DoubleNode)node).getValue());
+                    this.print(localIndent, className + " : " + ((DoubleNode)node).getValue());
                     break;
                 case "IntegerNode":
-                    this.print(localIndent, className + " with the value: " + ((IntegerNode)node).getValue());
+                    this.print(localIndent, className + " : " + ((IntegerNode)node).getValue());
                     break;
                 case "ParametersNode":
-                    this.print(localIndent, className + " with "+  ((ParametersNode)node).getNumberOfIdentifiers() + " identifier(s)");
+                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers() + " identifier(s)");
                     break;
                 case "IdentifierNode":
                     if(((IdentifierNode)node).getType()!=null){
-                        this.print(localIndent, className + " with type: " + ((IdentifierNode)node).getType().toString() + " and identifier: " + ((IdentifierNode)node).getName());
+                        this.print(localIndent, className + " type: " + ((IdentifierNode)node).getType().toString() + " id: " + ((IdentifierNode)node).getName());
                     }else{
                         this.print(localIndent, className + ": " + ((IdentifierNode)node).getName());
                     }
                     break;
                 case "ActorIdentifierNode":
-                    this.print(localIndent, className + " of type: " + ((ActorIdentifierNode)node).getActorType()+ " with identifier: " + ((ActorIdentifierNode)node).getName());
+                    this.print(localIndent, className + " type: " + ((ActorIdentifierNode)node).getActorType()+ " id: " + ((ActorIdentifierNode)node).getName());
+                    break;
+                case "SpawnActorNode":
+                    this.print(localIndent, className + " : " + ((SpawnActorNode)node).getActorType());
                     break;
                 case "StringNode":
-                    this.print(localIndent, className + " with the value: " + ((StringNode)node).getValue());
+                    this.print(localIndent, className + " : " + ((StringNode)node).getValue());
                     break;
                 case "ActorDclNode":
-                    this.print(localIndent, className + " with the id: " + ((ActorDclNode)node).getId());
+                    this.print(localIndent, className + " id: " + ((ActorDclNode)node).getId());
                     break;
                 case "MethodDclNode":
-                    this.print(localIndent, className + " with id: " + ((MethodDclNode)node).getId()+ ", method type: "+ ((MethodDclNode)node).getMethodType()+" and return type: "+((MethodDclNode)node).getReturnType());
+                    this.print(localIndent, className + ((MethodDclNode)node).getMethodType()+ " method with" + " id: " + ((MethodDclNode)node).getId()+ " and return type: "+((MethodDclNode)node).getReturnType());
                     break;
                 case "WhileNode":
-                    this.print(localIndent, className + " with the value: " );
+                    this.print(localIndent, className );
                     break;
                 case "ForNode":
-                    this.print(localIndent, className + " with the value: " );
+                    this.print(localIndent, className);
                     break;
                 case "ArrayAccessNode":
-                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    this.print( localIndent, className + " access id " + ((AccessNode)node).getAccessIdentifier() + " of type: " + ((AccessNode)node).getAccessType() );
                     break;
                 case "ActorAccessNode":
-                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    this.print( localIndent, className + " access id " + ((AccessNode)node).getAccessIdentifier() + " of type: " + ((AccessNode)node).getAccessType() );
                     break;
                 case "StateAccessNode":
-                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    this.print( localIndent, className + " access id " + ((AccessNode)node).getAccessIdentifier() + " of type: " + ((AccessNode)node).getAccessType() );
                     break;
                 case "KnowsAccessNode":
-                    this.print( localIndent, className + " with access identifier " + ((AccessNode)node).getAccessIdentifier() + " of the type: " + ((AccessNode)node).getAccessType() );
+                    this.print( localIndent, className + " access id " + ((AccessNode)node).getAccessIdentifier() + " of type: " + ((AccessNode)node).getAccessType() );
+                    break;
+                case "ArgumentsNode":
+                    if (((ArgumentsNode)node).getChildren().size() > 0){
+                        this.print(localIndent, className);
+                    }
                     break;
                 default:
                     this.print(localIndent, className);
