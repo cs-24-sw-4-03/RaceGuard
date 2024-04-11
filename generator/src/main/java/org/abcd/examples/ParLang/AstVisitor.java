@@ -11,8 +11,7 @@ import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
-    List<String> typeContainer = new ArrayList<String>(Arrays.asList("int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script"));
-
+    List<String> typeContainer = new ArrayList<String>(Arrays.asList("int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script")); //Is extended when actors are decalred. see visitActor.
 
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
@@ -25,7 +24,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            System.out.println(c.getText());
+            //System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;
@@ -69,9 +68,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         String actorName=ctx.identifier().getText();
-        if(typeContainer.contains(actorName)){
+        if(typeContainer.contains(actorName)){//if another actor is declared with the same name we may have conflicting types.
             throw new DuplicateActorTypeException("Actor with name "+actorName+" already defined");
-        }else {
+        }else {//extend the typeContainer list with new types
             typeContainer.add(actorName);
             typeContainer.add(actorName+"[]");
         }
@@ -157,26 +156,17 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children);
-
-
     }
 
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
         VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText());
-        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
         dclNode.addChild(idNode); //add identifier as child
 
         ParLangParser.InitializationContext init=ctx.initialization();
         if(init!=null){//variable is initialized
             InitializationNode initializationNode=new InitializationNode();
-            /*
-            if(init.list()!=null){ // if an array is declared
-               childVisitor(initializationNode,init.list().children);
-            }else {
-                initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization variable.
-            }
-            */
             initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization value.
             dclNode.addChild(initializationNode); //add initializationNode as child
         }
@@ -201,8 +191,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return assignNode;
     }
 
-
-
     @Override
     public AstNode visitIdentifier(ParLangParser.IdentifierContext ctx) {
         AstNode IdNode = null;
@@ -218,7 +206,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
         return visit(ctx.getChild(0));//if statement has more than one child, the second one is ";". We just visit the  child always.
     }
-
 
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
         if(ctx.getChildCount()==1){
