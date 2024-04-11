@@ -147,10 +147,7 @@ arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
 
 // items that can be listed
-listItem : number
-    | STRING
-    | identifier
-    | boolLiteral
+listItem : value //alternatively "primitive | identifier" instead of value if we dont want somehting like "2+2" as element in an integer array.
     | list
     ;
 

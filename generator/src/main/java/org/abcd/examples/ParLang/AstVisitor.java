@@ -328,7 +328,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if(ctx.STRING() != null) {
             return new StringNode(ctx.getText());
         }
-        return null;
+        return visitChildren(ctx);
     }
 
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
