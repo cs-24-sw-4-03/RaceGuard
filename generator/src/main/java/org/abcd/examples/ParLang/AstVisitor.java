@@ -260,7 +260,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
     @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
         //Primitives can be: INT, DOUBLE, STRING, and BOOL
-
         //In case the primitive is a STRING
         if(ctx.STRING() != null) {
             return new StringNode(ctx.getText());
@@ -271,7 +270,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (ctx.boolAndExp().size() == 1) {
             return visit(ctx.boolAndExp(0));
         }
-        // Visit first child
         AstNode left = visit(ctx.boolAndExp(0));
         // Visit the rest of the children
         for (int i = 1; i < ctx.boolAndExp().size(); i++) {
@@ -287,7 +285,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         AstNode left = visit(ctx.boolTerm(0));
 
-        // Iterate through the rest of the BoolTerm contexts (if any) and build AND expressions
+        // Iterate through the rest of the BoolTerms (if any) and build AND expressions
         for (int i = 1; i < ctx.boolTerm().size(); i++) {
             AstNode right = visit(ctx.boolTerm(i));
             left = new BoolAndExpNode(left, right);
@@ -297,26 +295,18 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
-        // logical negation, we create a BoolExprNode with BoolType.LOGIC_NEGATION
-        if (ctx.negatedBool() != null) {
+        if (ctx.negatedBool() != null) { // !
             return visit(ctx.negatedBool());
         }
-
-        // comparison expression, we visit the comparison expression
-        if (ctx.compareExp() != null) {
+        if (ctx.compareExp() != null) { // <, >, <=, >=, !=, ==
             return visit(ctx.compareExp());
         }
-
-        // If there are parentheses around the boolean expression, we just visit the nested expression
-        if (ctx.PARAN_OPEN() != null) {
+        if (ctx.PARAN_OPEN() != null) { // Visit the nested expression
             return visit(ctx.boolExp());
         }
-
-        // boolean literal, we visit the boolean literal
-        if (ctx.boolLiteral() != null) {
+        if (ctx.boolLiteral() != null) { // TRUE or FALSE
             return visit(ctx.boolLiteral());
         }
-
         throw new RuntimeException("Unrecognized BoolTerm");
     }
 
@@ -343,7 +333,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         String operator = ctx.compareOperator().getText();
 
         // Create a new node representing the comparison operation
-        return new CompareExpNode(operator, leftOperand, rightOperand);;
+        return new CompareExpNode(operator, leftOperand, rightOperand);
     }
 
 }

@@ -46,7 +46,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " with the value: " );
                     break;
                 case "BoolExprNode":
-                    this.print(localIndent, className + " with isNegated: " + ((BoolExprNode)node).getIsNegated());
+                    this.print(localIndent, className);
                     break;
                 case "BoolAndExpNode":
                     this.print(localIndent, className);
