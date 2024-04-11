@@ -100,7 +100,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitSpawnActor(ParLangParser.SpawnActorContext ctx) {
-        return new SpawnActorNode(ctx.identifier().getText());
+        SpawnActorNode spawnNode = new SpawnActorNode(ctx.identifier().getText());
+        if(ctx.arguments() != null){
+            spawnNode.addChild(visit(ctx.arguments()));
+        }
+        return spawnNode;
     }
 
     @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
