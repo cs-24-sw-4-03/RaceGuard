@@ -297,12 +297,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
-        //System.out.println("visitBoolTerm");
         // logical negation, we create a BoolExprNode with BoolType.LOGIC_NEGATION
-        if (ctx.LOGIC_NEGATION() != null) {
-            //System.out.println("visit negated");
-            AstNode negatedExpr = visit(ctx.boolTerm());
-            return new BoolExprNode(true, negatedExpr);
+        if (ctx.negatedBool() != null) {
+            return visit(ctx.negatedBool());
         }
 
         // comparison expression, we visit the comparison expression
@@ -324,6 +321,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override
+    public AstNode visitNegatedBool(ParLangParser.NegatedBoolContext ctx) {
+        return new NegatedBoolNode(visit(ctx.boolExp()));
+    }
+
+    @Override
     public AstNode visitBoolLiteral(ParLangParser.BoolLiteralContext ctx) {
         // contains either 'TRUE' or 'FALSE'
         boolean value = ctx.getText().equals("TRUE");
@@ -341,9 +343,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         String operator = ctx.compareOperator().getText();
 
         // Create a new node representing the comparison operation
-        CompareExpNode compareNode = new CompareExpNode(operator, leftOperand, rightOperand);
-
-        return compareNode;
+        return new CompareExpNode(operator, leftOperand, rightOperand);;
     }
 
 }
