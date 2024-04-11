@@ -41,9 +41,6 @@ actorAccess : STATE DOT IDENTIFIER
     | KNOWS DOT IDENTIFIER
     ;
 
-
-
-
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
 printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
 

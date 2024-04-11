@@ -19,7 +19,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 continue;
             }
             //print can be used for debugging
-            System.out.println(c.getText());
+            //System.out.println(c.getText());
             node.addChild( visit(c));
         }
         return node;

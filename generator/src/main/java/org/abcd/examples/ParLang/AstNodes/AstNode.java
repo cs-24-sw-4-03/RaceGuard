@@ -3,7 +3,7 @@ package org.abcd.examples.ParLang.AstNodes;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AstNode { //
+public abstract class AstNode {
 
     private List<AstNode> children = new ArrayList<>();
 
