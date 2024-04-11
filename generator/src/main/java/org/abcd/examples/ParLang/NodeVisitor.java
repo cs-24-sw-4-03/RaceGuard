@@ -12,7 +12,7 @@ public interface NodeVisitor {
     void visit(ActorIdentifierNode node);
     void visit(ParametersNode node);
     void visit(ReturnStatementNode node);
-    //void visit(SpawnCallNode node);
+    void visit(SpawnActorNode node);
     void visit(MethodCallNode node);
     void visit(AssignNode node);
 

@@ -34,11 +34,21 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
 
-    @Override
-    //TODO: Are we going to have an INodeVisitor? Answer: Yes
     //TODO: Speak to the others about how we identify nodes from one another. Find a way to identify the nodes
-    //Creates a new scope as an iteration node is a new scope and leaves it after visiting the children
-    public void visit(IterationNode node){
+    //Creates a new scope as a while iteration node is a new scope and leaves it after visiting the children
+    @Override
+    public void visit(WhileNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
+        //Visits the children of the node to add the symbols to the symbol table
+        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the iteration node are not available outside the iteration node
+        this.symbolTable.leaveScope();
+    }
+
+    //TODO: Speak to the others about how we identify nodes from one another. Find a way to identify the nodes
+    //Creates a new scope as a for iteration node is a new scope and leaves it after visiting the children
+    @Override
+    public void visit(ForNode node) {
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
@@ -88,6 +98,11 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(SpawnActorNode node) {
         this.visitChildren(node);
     }
 
@@ -166,15 +181,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    @Override
-    public void visit(WhileNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ForNode node) {
-        this.visitChildren(node);
-    }
 
     @Override
     public void visit(ArrayAccessNode node) {
