@@ -71,19 +71,27 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
-        String actorName=ctx.identifier().getText(); //get the name of the actorType
-        if(typeContainer.contains(actorName)){
-            //if another actor is declared with the same name we have conflicting types.
-            throw new DuplicateActorTypeException("Actor with name "+actorName+" already defined");
-        }else {//extend the typeContainer list with new types
-            typeContainer.add(actorName); //add the actorType to the typeContainer
-            typeContainer.add(actorName+"[]"); //add the array holding actorType to the typeContainer
+        try {
+            String actorName = ctx.identifier().getText(); //get the name of the actorType
+            if (typeContainer.contains(actorName)) {
+                //if another actor is declared with the same name we have conflicting types.
+                throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
+            } else {//extend the typeContainer list with new types
+                typeContainer.add(actorName); //add the actorType to the typeContainer
+                typeContainer.add(actorName + "[]"); //add the array holding actorType to the typeContainer
+            }
+            ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
+            List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
+            children.remove(1);//remove identifier from list of children
+            //visit all children of the actor node and add them as children to the actorNode
+            return childVisitor(node, children);
+        }catch (DuplicateActorTypeException e){ //if error just return null to continue visiting
+            System.out.println(e.getMessage());
+            return null; 
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
         }
-        ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
-        List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
-        children.remove(1);//remove identifier from list of children
-        //visit all children of the actor node and add them as children to the actorNode
-        return childVisitor(node,children);
     }
 
     @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
@@ -292,19 +300,27 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     private static ArithExprNode.OpType getArithmeticBinaryOperator(String operator) {
-        switch (operator) { //return the operatorType based on the operator
-            case "+":
-                return ArithExprNode.OpType.PLUS;
-            case  "-":
-                return ArithExprNode.OpType.MINUS;
-            case "*":
-                return ArithExprNode.OpType.MULTIPLY;
-            case "/":
-                return ArithExprNode.OpType.DIVIDE;
-            case "%":
-                return ArithExprNode.OpType.MODULO;
-            default: //If the operator is not recognized
-                throw new UnsupportedOperationException("Unsupported operator: " + operator);
+        try {
+            switch (operator) { //return the operatorType based on the operator
+                case "+":
+                    return ArithExprNode.OpType.PLUS;
+                case "-":
+                    return ArithExprNode.OpType.MINUS;
+                case "*":
+                    return ArithExprNode.OpType.MULTIPLY;
+                case "/":
+                    return ArithExprNode.OpType.DIVIDE;
+                case "%":
+                    return ArithExprNode.OpType.MODULO;
+                default: //If the operator is not recognized
+                    throw new UnsupportedOperationException("Unsupported operator: " + operator);
+            }
+        } catch (UnsupportedOperationException e) { //if exception return unknown to continue visiting
+            System.out.println(e.getMessage());
+            return ArithExprNode.OpType.UNKNOWN;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ArithExprNode.OpType.UNKNOWN;
         }
     }
 
