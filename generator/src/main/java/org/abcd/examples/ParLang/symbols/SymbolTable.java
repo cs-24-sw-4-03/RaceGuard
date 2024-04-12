@@ -1,5 +1,6 @@
 package org.abcd.examples.ParLang.symbols;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class SymbolTable {
@@ -7,6 +8,8 @@ public class SymbolTable {
     private Scope currentScope;
     final private Scope globalScope;
     final private Stack<Scope> scopeStack = new Stack<>();
+    public ArrayList<String> declaredMethods = new ArrayList<>();
+    public ArrayList<String> calledMethods = new ArrayList<>();
 
 
     public SymbolTable() {
