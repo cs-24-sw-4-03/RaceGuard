@@ -38,7 +38,7 @@ public interface NodeVisitor {
 
     void visit(WhileNode node);
     void visit(ForNode node);
-    //void visit(SelectNode);
+    void visit(SelectionNode node);
 
     void visit(ArrayAccessNode node);
     void visit(StateAccessNode node);

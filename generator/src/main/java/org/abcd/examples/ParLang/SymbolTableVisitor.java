@@ -58,7 +58,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     //Creates a new scope as a select node is a new scope and leaves it after visiting the children
-    public void visit(SelectNode node){
+    public void visit(SelectionNode node){
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
