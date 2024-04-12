@@ -61,11 +61,11 @@ whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
-declaration: allTypes (identifier (ARRAY_TYPE)?) (initialization)?;
-initialization:  ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor);
+declaration: allTypes identifier (initialization)?; //array type is included in allTypes
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor) ;
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor) ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -140,15 +140,6 @@ methodCall : identifier arguments;
 
 // to instanziate a new actor of a defined type
 spawnActor : SPAWN identifier arguments;
-
-// can define the length of the array or specify the array elements in between curly braces
-arrayAssign : arrayAssignLength
-    | list
-    ;
-
-// assignment of the length af an array
-arrayAssignLength : identifier ASSIGN SQUARE_OPEN INT SQUARE_CLOSE;
-
 //access array
 arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 
@@ -156,10 +147,7 @@ arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
 
 // items that can be listed
-listItem : number
-    | STRING
-    | identifier
-    | boolLiteral
+listItem : value //alternatively "primitive | identifier" instead of value if we dont want somehting like "2+2" as element in an integer array.
     | list
     ;
 
