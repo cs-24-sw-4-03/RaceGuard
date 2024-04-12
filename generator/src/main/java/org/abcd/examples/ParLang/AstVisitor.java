@@ -67,17 +67,25 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
-        String actorName=ctx.identifier().getText();
-        if(typeContainer.contains(actorName)){//if another actor is declared with the same name we may have conflicting types.
-            throw new DuplicateActorTypeException("Actor with name "+actorName+" already defined");
-        }else {//extend the typeContainer list with new types
-            typeContainer.add(actorName);
-            typeContainer.add(actorName+"[]");
+        try {
+            String actorName = ctx.identifier().getText();
+            if (typeContainer.contains(actorName)) {//if another actor is declared with the same name we may have conflicting types.
+                throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
+            } else {//extend the typeContainer list with new types
+                typeContainer.add(actorName);
+                typeContainer.add(actorName + "[]");
+            }
+            ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
+            List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
+            children.remove(1);//remove identifier from list of children
+            return childVisitor(node, children);
+        }catch (DuplicateActorTypeException e){
+            System.out.println(e.getMessage());
+            return null;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
         }
-        ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
-        List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
-        children.remove(1);//remove identifier from list of children
-        return childVisitor(node,children);
     }
 
     @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
