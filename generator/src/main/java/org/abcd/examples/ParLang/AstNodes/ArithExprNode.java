@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class ArithExprNode extends ExprNode {
     public enum OpType {
         PLUS("+"),
@@ -39,5 +41,9 @@ public class ArithExprNode extends ExprNode {
 
     public boolean isNegative(){
         return this.isNegated;
+    }
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }
