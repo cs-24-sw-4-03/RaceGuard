@@ -291,19 +291,27 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     private static ArithExprNode.OpType getArithmeticBinaryOperator(String operator) {
-        switch (operator) {
-            case "+":
-                return ArithExprNode.OpType.PLUS;
-            case  "-":
-                return ArithExprNode.OpType.MINUS;
-            case "*":
-                return ArithExprNode.OpType.MULTIPLY;
-            case "/":
-                return ArithExprNode.OpType.DIVIDE;
-            case "%":
-                return ArithExprNode.OpType.MODULO;
-            default:
-                throw new UnsupportedOperationException("Unsupported operator: " + operator);
+        try {
+            switch (operator) {
+                case "+":
+                    return ArithExprNode.OpType.PLUS;
+                case "-":
+                    return ArithExprNode.OpType.MINUS;
+                case "*":
+                    return ArithExprNode.OpType.MULTIPLY;
+                case "/":
+                    return ArithExprNode.OpType.DIVIDE;
+                case "%":
+                    return ArithExprNode.OpType.MODULO;
+                default:
+                    throw new UnsupportedOperationException("Unsupported operator: " + operator);
+            }
+        } catch (UnsupportedOperationException e) {
+            System.out.println(e.getMessage());
+            return ArithExprNode.OpType.UNKNOWN;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ArithExprNode.OpType.UNKNOWN;
         }
     }
 
