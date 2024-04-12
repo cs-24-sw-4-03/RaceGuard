@@ -128,6 +128,11 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(SelectionNode node) {
+
+    }
+
+    @Override
     public void visit(ArrayAccessNode node) {
         this.visitChildren(node);
     }
