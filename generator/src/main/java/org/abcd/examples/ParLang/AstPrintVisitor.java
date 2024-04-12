@@ -10,6 +10,13 @@ public class AstPrintVisitor {
                 case "ArithExprNode":
                     this.print(localIndent, className + " : " + ((ArithExprNode) node).getOpType());
                     break;
+                case "UnaryExpNode":
+                    if (((UnaryExpNode) node).isNegative()){
+                        this.print(localIndent, className + " with negation");
+                    }else{
+                        this.print(localIndent, className);
+                    }
+                    break;
                 case "DoubleNode":
                     this.print(localIndent, className + " : " + ((DoubleNode)node).getValue());
                     break;

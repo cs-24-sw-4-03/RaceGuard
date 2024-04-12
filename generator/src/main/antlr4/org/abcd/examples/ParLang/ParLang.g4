@@ -47,7 +47,7 @@ printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
 printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
 
 //the different control structures in the language
-controlStructure : ifElse
+controlStructure : selection
     | forLoop
     | whileLoop
     ;
@@ -55,32 +55,27 @@ controlStructure : ifElse
 // for loop can take an identifier or declare one and have an evaluation expression and end of loop statement executed at the end of each run through
 forLoop : FOR PARAN_OPEN (declaration |assignment)? SEMICOLON boolExp SEMICOLON forStatement? PARAN_CLOSE body;
 //while loop only having a evaluation before each loop
-whileLoop : WHILE PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body;
+whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 
 //if statements must contain an if part
-ifElse : IF PARAN_OPEN (boolExp | identifier) PARAN_CLOSE body elsePart?;
-//the else part of an if statement is optional
-elsePart : elseIf* ELSE body;
-//else if parts are also optional
-elseIf : ELSE_IF PARAN_OPEN boolExp PARAN_CLOSE body;
+selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
-declaration: allTypes (identifier (ARRAY_TYPE)?) (initialization)?;
-initialization:  ASSIGN (arithExp | boolExp | primitive | arrayAssign | identifier | actorAccess | spawnActor);
+declaration: allTypes identifier (initialization)?; //array type is included in allTypes
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | arrayAssign | identifier | actorAccess | spawnActor) ;
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor) ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
-boolTerm : negatedBool
-    | PARAN_OPEN boolExp PARAN_CLOSE
+boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
+    | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
-    | boolLiteral
+    | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
+    | identifier
     ;
-
-negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE;
 
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;
@@ -93,7 +88,12 @@ term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and M
 factor : number
     | identifier
     | actorAccess
-    | PARAN_OPEN arithExp PARAN_CLOSE; // parenthesis have highest precedence when evaluating arithmetic expressions
+    | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
+    | unaryExp
+    ;
+unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
+    | MINUS (number | identifier | actorAccess)
+    ; // unary minus operator
 
 // operator to compare two arithmetic expressions
 compareOperator : compareEqNEg;
@@ -140,15 +140,6 @@ methodCall : identifier arguments;
 
 // to instanziate a new actor of a defined type
 spawnActor : SPAWN identifier arguments;
-
-// can define the length of the array or specify the array elements in between curly braces
-arrayAssign : arrayAssignLength
-    | list
-    ;
-
-// assignment of the length af an array
-arrayAssignLength : identifier ASSIGN SQUARE_OPEN STRICT_POS_INT SQUARE_CLOSE;
-
 //access array
 arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 
@@ -156,18 +147,13 @@ arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
 
 // items that can be listed
-listItem : integer
-    | DOUBLE
-    | STRING
-    | identifier
-    | boolLiteral
+listItem : value //alternatively "primitive | identifier" instead of value if we dont want somehting like "2+2" as element in an integer array.
     | list
     ;
 
 identifier : IDENTIFIER
     | actorAccess
     ;
-
 
 // can be any type defined in language
 allTypes : primitiveType
@@ -184,21 +170,16 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | identifier | arithExp | STRICT_POS_INT);
+value : (primitive | identifier | arithExp );
 
-number : integer
-    |DOUBLE
+number : INT
+    | DOUBLE
     ; //number can be either integer or double
 
 //can be any primitive value
-primitive : INT
-    | DOUBLE
+primitive : number
     | STRING
     | boolLiteral
-    ;
-
-integer : INT
-    | STRICT_POS_INT
     ;
 
 //either boolean value true of false
@@ -262,8 +243,7 @@ FOR : 'for';
 MAIN : 'main';
 RETURN : 'return';
 PRINT : 'print';
-STRICT_POS_INT : POS_DIGIT DIGIT* ; // Define INT that is strictly positive 0 not included
-INT :   DIGIT+ ;  // Define token INT as one or more digits
+INT : DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 //strings are inside either quotation marks or double quotation marks
 STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);

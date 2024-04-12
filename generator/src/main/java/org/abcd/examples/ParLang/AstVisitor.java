@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
+import  org.abcd.examples.ParLang.Exceptions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +11,8 @@ import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
-    List<String> typeContainer = new ArrayList<String>(Arrays.asList("INT", "DOUBLE", "STRING", "BOOL", "VOID", "ACTOR", "ARRAY", "SCRIPT"));
+    List<String> typeContainer = new ArrayList<String>(Arrays.asList("int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script")); //Is extended when actors are decalred. see visitActor.
+
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         InitNode initNode=new InitNode();
         return childVisitor(initNode,ctx.children);
@@ -65,6 +67,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
+        String actorName=ctx.identifier().getText();
+        if(typeContainer.contains(actorName)){//if another actor is declared with the same name we may have conflicting types.
+            throw new DuplicateActorTypeException("Actor with name "+actorName+" already defined");
+        }else {//extend the typeContainer list with new types
+            typeContainer.add(actorName);
+            typeContainer.add(actorName+"[]");
+        }
         ActorDclNode node=new ActorDclNode(ctx.identifier().getText());
         List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
         children.remove(1);//remove identifier from list of children
@@ -143,8 +152,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return node;
     }
-
-
+    
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children);
@@ -152,19 +160,22 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
-        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText().toUpperCase());
-
-        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText().toUpperCase());
-
+        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText());
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
         dclNode.addChild(idNode); //add identifier as child
 
         ParLangParser.InitializationContext init=ctx.initialization();
         if(init!=null){//variable is initialized
             InitializationNode initializationNode=new InitializationNode();
-            initializationNode.addChild(visit(init.getChild(1)));
+            initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization value (value can also be a list).
             dclNode.addChild(initializationNode); //add initializationNode as child
         }
         return dclNode;
+    }
+
+    @Override
+    public AstNode visitList(ParLangParser.ListContext ctx){
+        return childVisitor(new ListNode(),ctx.children);//return a listNode with the list elements as chidren.
     }
 
     @Override
@@ -196,7 +207,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return visit(ctx.getChild(0));//if statement has more than one child, the second one is ";". We just visit the  child always.
     }
 
-
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
         if(ctx.getChildCount()==1){
             return visit(ctx.term(0));
@@ -224,7 +234,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitTerm(ParLangParser.TermContext ctx) {
         int childCount= ctx.getChildCount();
-
         if(childCount==1){
             return visit(ctx.factor(0));
         }else{
@@ -249,31 +258,28 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
-        ParseTree child=ctx.getChild(0);
-        if(child instanceof ParLangParser.NumberContext){
-            return visit(ctx.number());
-        }else if (child instanceof ParLangParser.IdentifierContext){
-            return visit(ctx.identifier());
-        }else if(child.getText().equals("(")){//If first child is a parentheses, treat the node as arithmetic expression
-                return visit(ctx.arithExp());
-        }else{
-            return null;
+        if (ctx.getChild(0).getText().equals("(")) {
+            return visit(ctx.arithExp());//If first child is a parentheses, treat the node as arithmetic expression
         }
+        return visit(ctx.getChild(0));
+    }
+
+    @Override public AstNode visitUnaryExp(ParLangParser.UnaryExpContext ctx) {
+        UnaryExpNode unaryExpNode = new UnaryExpNode();
+        if(ctx.getChild(0).getText().equals("-")){
+            unaryExpNode.setIsNegated(true);
+        }
+        List<ParseTree> children=new ArrayList<ParseTree>(ctx.children);
+        children.remove(0);//remove the negation token
+        return childVisitor(unaryExpNode,children);
     }
 
     @Override public AstNode visitNumber(ParLangParser.NumberContext ctx) {
         if(ctx.getText().contains(".")){
             return new DoubleNode(Double.parseDouble(ctx.getText()));
-        }else if(ctx.getChild(0) instanceof  ParLangParser.IntegerContext){
-            return visit(ctx.integer());
-        }else{
-            return null;
+        }else {
+            return new IntegerNode(Integer.parseInt(ctx.getText()));
         }
-    }
-
-
-    @Override public AstNode visitInteger(ParLangParser.IntegerContext ctx) {
-        return new IntegerNode(Integer.parseInt(ctx.getText()));
     }
 
     private static ArithExprNode.OpType getArithmeticBinaryOperator(String operator) {
@@ -308,7 +314,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if(ctx.STRING() != null) {
             return new StringNode(ctx.getText());
         }
-        return null;
+        return visitChildren(ctx);
     }
     @Override public AstNode visitBoolExp(ParLangParser.BoolExpContext ctx) {
         if (ctx.boolAndExp().size() == 1) {
@@ -397,5 +403,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             returnStatementNode.addChild(visit(ctx.getChild(1)));
         }
         return returnStatementNode;
+    }
+
+    @Override
+    public AstNode visitSelection(ParLangParser.SelectionContext ctx) {
+        SelectionNode selectionNode = new SelectionNode();
+        childVisitor(selectionNode, ctx.children);
+        return selectionNode;
     }
 }
