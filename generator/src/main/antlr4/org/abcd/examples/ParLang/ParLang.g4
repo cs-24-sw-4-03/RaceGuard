@@ -62,7 +62,7 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor);
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | boolExp);
 
 //assignment used to assign a value to an already defined variable.
 assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor) ;
