@@ -75,8 +75,13 @@ boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     | identifier
+    | negatedBool
     ;
-
+negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE
+    | LOGIC_NEGATION identifier
+    | LOGIC_NEGATION boolLiteral
+    | LOGIC_NEGATION stateAccess
+    ;
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;
 
@@ -87,12 +92,12 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
     | identifier
-    | actorAccess
+    | stateAccess
     | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
     | unaryExp
     ;
 unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
-    | MINUS (number | identifier | actorAccess)
+    | MINUS (number | identifier | stateAccess)
     ; // unary minus operator
 
 // operator to compare two arithmetic expressions
