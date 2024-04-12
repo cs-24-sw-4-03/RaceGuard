@@ -14,7 +14,6 @@ public class FuncVisitor implements NodeVisitor {
     public void visitChildren(AstNode node) {
         for(AstNode child : node.getChildren()){
             child.accept(this);
-            //TODO: Talk about accept() in AstNode with the visitor group. Answer: Yes, probably
         }
     }
 
