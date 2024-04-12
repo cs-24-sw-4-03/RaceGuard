@@ -88,10 +88,10 @@ public class SymbolTableVisitor implements NodeVisitor {
 
         //Iterates through the children of the node and adds them to the symbol table
         for(AstNode child: node.getChildren()){
-            Attributes attributes = new Attributes(child.type, "param");
+            IdentifierNode paramNode = (IdentifierNode)child;
+            Attributes attributes = new Attributes(paramNode.getType(), "param");
             attributes.setScope(scopeName);
-            this.symbolTable.insertParams(child.getId, attributes);
-            //TODO: Ask if we can have id (or similar) on ASTNode. Answer: I think it was a yes
+            this.symbolTable.insertParams(paramNode.getName(), attributes);
         }
     }
 
