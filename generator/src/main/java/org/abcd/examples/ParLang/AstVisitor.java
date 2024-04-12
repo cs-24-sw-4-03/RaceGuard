@@ -66,6 +66,46 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return childVisitor(args,ctx.children);
     }
 
+    @Override public AstNode visitScript(ParLangParser.ScriptContext ctx) {
+        try {
+            String scriptName = ctx.identifier().getText();
+            ScriptDclNode node = new ScriptDclNode(scriptName);
+            if (typeContainer.contains(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
+                throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
+            } else {//extend the typeContainer list with new types
+                typeContainer.add(scriptName);
+                typeContainer.add(scriptName + "[]");
+            }
+            List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
+            children.remove(1);//remove identifier from list of children
+            return childVisitor(node, children);
+        } catch (DuplicateScriptTypeException e) {
+            System.out.println(e.getMessage());
+            return null;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    @Override public AstNode visitScriptMethod(ParLangParser.ScriptMethodContext ctx) {
+        String methodType = ctx.getChild(0).getText(); //methodType is either "on" or "local"
+        String returnType; //returnType is either "void" or the type of the method
+        switch (methodType) {
+            case "on": //on-methods always return void
+                returnType = "void";
+                break;
+            case "local": //local-methods can return any type
+                returnType = ctx.allTypes().getText();
+                break;
+            default: //should never happen
+                returnType = null;
+        }
+        ScriptMethodNode node = new ScriptMethodNode(ctx.identifier().getText(), returnType, methodType);
+        node.addChild(visit(ctx.parameters())); //add parameters as children
+        return node; //return the node
+    }
+
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         try {
             String actorName = ctx.identifier().getText();
@@ -154,9 +194,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),ctx.allTypes().getText(),ctx.LOCAL_METHOD().getText());
         if (ctx.parameters() != null) {
             node.addChild(visit(ctx.parameters()));
-        }
-        if(ctx.localMethodBody()!=null){
-            node.addChild(visit(ctx.localMethodBody()));
         }
         return node;
     }

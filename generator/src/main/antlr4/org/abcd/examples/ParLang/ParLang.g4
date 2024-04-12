@@ -17,8 +17,8 @@ init : (actor | script)* mainFunc (actor | script)* EOF;  // must have a main fu
 mainFunc : MAIN parameters body;
 
 //scripts can define methods that need to be implemented by following actors
-script : SCRIPT_TYPE identifier CURLY_OPEN scriptBody+ CURLY_CLOSE;
-scriptBody : (ON_METHOD | LOCAL_METHOD) identifier parameters SEMICOLON;
+script : SCRIPT_TYPE identifier CURLY_OPEN scriptMethod+ CURLY_CLOSE;
+scriptMethod : (ON_METHOD | LOCAL_METHOD) identifier parameters (COLON allTypes)? SEMICOLON;
 
 //defines the scripts an actor follows
 follow : FOLLOWS identifier (COMMA identifier)*;

@@ -12,7 +12,7 @@ public class AstPrintVisitor {
                     break;
                 case "UnaryExpNode":
                     if (((UnaryExpNode) node).isNegative()){
-                        this.print(localIndent, className + " with negation");
+                        this.print(localIndent, className + " negated");
                     }else{
                         this.print(localIndent, className);
                     }
@@ -24,7 +24,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " : " + ((IntegerNode)node).getValue());
                     break;
                 case "ParametersNode":
-                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers() + " identifier(s)");
+                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers());
                     break;
                 case "IdentifierNode":
                     if(((IdentifierNode)node).getType()!=null){
@@ -46,7 +46,10 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " id: " + ((ActorDclNode)node).getId());
                     break;
                 case "MethodDclNode":
-                    this.print(localIndent, className + ((MethodDclNode)node).getMethodType()+ " method with" + " id: " + ((MethodDclNode)node).getId()+ " and return type: "+((MethodDclNode)node).getReturnType());
+                    this.print(localIndent, className + " " +((MethodDclNode)node).getMethodType()+ " id: " + ((MethodDclNode)node).getId()+ " return type: "+((MethodDclNode)node).getReturnType());
+                    break;
+                case "ScriptMethodNode":
+                    this.print(localIndent, className +" "+ ((ScriptMethodNode)node).getMethodType()+ " id: " + ((ScriptMethodNode)node).getId()+ " return type: "+((ScriptMethodNode)node).getReturnType());
                     break;
                 case "WhileNode":
                     this.print(localIndent, className );
