@@ -317,30 +317,27 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return visitChildren(ctx);
     }
     @Override public AstNode visitBoolExp(ParLangParser.BoolExpContext ctx) {
-        if (ctx.boolAndExp().size() == 1) {
-            return visit(ctx.boolAndExp(0));
+        int childCount = ctx.getChildCount();
+        if (childCount == 1) {
+            return visit(ctx.getChild(0)); // Visit the child
         }
-        AstNode left = visit(ctx.boolAndExp(0));
-        // Visit the rest of the children
-        for (int i = 1; i < ctx.boolAndExp().size(); i++) {
-            AstNode right = visit(ctx.boolAndExp(i));
-            left = new BoolExprNode(false, left, right);
+        BoolExprNode boolExprNode = new BoolExprNode();
+        for (int i = 0; i < childCount; i += 2) {
+            boolExprNode.addChild(visit(ctx.getChild(i)));
         }
-        return left;
+        return boolExprNode;
     }
 
     @Override public AstNode visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) {
-        if (ctx.boolTerm().size() == 1) {
-            return visit(ctx.boolTerm(0));
+        int childCount = ctx.getChildCount();
+        if (childCount == 1) {
+            return visit(ctx.getChild(0)); // Visit the child
         }
-        AstNode left = visit(ctx.boolTerm(0));
-
-        // Iterate through the rest of the BoolTerms (if any) and build AND expressions
-        for (int i = 1; i < ctx.boolTerm().size(); i++) {
-            AstNode right = visit(ctx.boolTerm(i));
-            left = new BoolAndExpNode(left, right);
+        BoolAndExpNode boolAndExpNode = new BoolAndExpNode();
+        for (int i = 0; i < childCount; i += 2) {
+            boolAndExpNode.addChild(visit(ctx.getChild(i)));
         }
-        return left;
+        return boolAndExpNode;
     }
 
     @Override
@@ -362,7 +359,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
   
     @Override
     public AstNode visitNegatedBool(ParLangParser.NegatedBoolContext ctx) {
-        return new NegatedBoolNode(visit(ctx.boolExp()));
+        NegatedBoolNode boolNode = new NegatedBoolNode();
+        if (ctx.getChild(1).getText().equals("(")) { // !(boolExp)
+            boolNode.addChild(visit(ctx.getChild(2)));
+        } else { // !(boolTerm)
+            boolNode.addChild(visit(ctx.getChild(1)));
+        }
+        return boolNode;
     }
 
     @Override

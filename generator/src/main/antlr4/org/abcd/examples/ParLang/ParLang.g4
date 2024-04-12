@@ -70,8 +70,7 @@ assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
-boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
-    | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
+boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     | identifier
