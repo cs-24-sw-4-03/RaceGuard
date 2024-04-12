@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class SpawnActorNode extends AstNode{
     private final String ActorType;
 
@@ -9,5 +11,10 @@ public class SpawnActorNode extends AstNode{
 
     public String getActorType(){
         return this.ActorType;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }

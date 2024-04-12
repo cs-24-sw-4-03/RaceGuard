@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class UnaryExpNode extends ExprNode{
     private boolean isNegated = false;
 
@@ -12,5 +14,9 @@ public class UnaryExpNode extends ExprNode{
 
     public boolean isNegative(){
         return this.isNegated;
+    }
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }
