@@ -49,7 +49,11 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " " +((MethodDclNode)node).getMethodType()+ " id: " + ((MethodDclNode)node).getId()+ " return type: "+((MethodDclNode)node).getReturnType());
                     break;
                 case "ScriptMethodNode":
-                    this.print(localIndent, className +" "+ ((ScriptMethodNode)node).getMethodType()+ " id: " + ((ScriptMethodNode)node).getId()+ " return type: "+((ScriptMethodNode)node).getReturnType());
+                    if (((ScriptMethodNode)node).getMethodType().equals("on")) {
+                        this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId());
+                    }else{
+                        this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId() + " return type: " + ((ScriptMethodNode) node).getReturnType());
+                    }
                     break;
                 case "WhileNode":
                     this.print(localIndent, className );
@@ -73,6 +77,9 @@ public class AstPrintVisitor {
                     if (((ArgumentsNode)node).getChildren().size() > 0){
                         this.print(localIndent, className);
                     }
+                    break;
+                case "SendMsgNode":
+                    this.print( localIndent, className + " " + ((SendMsgNode)node).getMsgName() + " to: " + ((SendMsgNode)node).getReceiver() );
                     break;
                 default:
                     this.print(localIndent, className);

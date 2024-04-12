@@ -32,7 +32,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
         MainDclNode main= new MainDclNode(ctx.MAIN().getText());
-
         if(!ctx.parameters().getText().equals("()")){
             main.addChild(visit(ctx.parameters()));//parameters not handled yet. The idea is to have arguments as children to the main node.
         }
@@ -48,6 +47,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return childVisitor(methodCallNode,ctx.children);
         }
             return methodCallNode;
+    }
+
+    @Override public AstNode visitSendMsg(ParLangParser.SendMsgContext ctx) {
+        //SendMsg has the structure: [IDENTIFIER,SEND_MSG,IDENTIFIER,LPAREN,ARGUMENTS,RPAREN]
+        SendMsgNode sendMsgNode = new SendMsgNode(ctx.getChild(0).getText(), ctx.getChild(2).getText());
+        sendMsgNode.addChild(visit(ctx.arguments())); //add arguments as children
+        return sendMsgNode;
     }
 
     @Override public AstNode visitParameters(ParLangParser.ParametersContext ctx){
