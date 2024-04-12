@@ -4,6 +4,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+//TODO: Find out if scope checking also includes checking for legal calls to other actors
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -22,7 +23,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     //Declares a variable in the symbol table if it does not already exist
     private void declareNode(VarDclNode node){
         if(this.symbolTable.lookUpSymbol(node.getId()) == null){
-            Attributes attributes = new Attributes(node.getType().toString(), "dcl");
+            Attributes attributes = new Attributes(node.getType(), "dcl");
             this.symbolTable.insertSymbol(node.getId(), attributes);
         }
         //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override?
@@ -33,8 +34,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         declareNode(node);
     }
 
-
-    //TODO: Speak to the others about how we identify nodes from one another. Find a way to identify the nodes
     //Creates a new scope as a while iteration node is a new scope and leaves it after visiting the children
     @Override
     public void visit(WhileNode node) {
@@ -45,7 +44,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Speak to the others about how we identify nodes from one another. Find a way to identify the nodes
     //Creates a new scope as a for iteration node is a new scope and leaves it after visiting the children
     @Override
     public void visit(ForNode node) {
@@ -55,6 +53,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         //Leaves the scope after visiting the children, as the variables in the iteration node are not available outside the iteration node
         this.symbolTable.leaveScope();
     }
+
 
     @Override
     //Creates a new scope as a select node is a new scope and leaves it after visiting the children
@@ -97,17 +96,70 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(ActorDclNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
+        //Visits the children of the node to add the symbols to the symbol table
+        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the iteration node
+        this.symbolTable.leaveScope();
+    }
+
+    @Override
+    public void visit(MainDclNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
+        //Visits the children of the node to add the symbols to the symbol table
+        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the Main node are not available outside the iteration node
+        this.symbolTable.leaveScope();
+    }
+
+    @Override
+    public void visit(SpawnActorNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
+        //Visits the children of the node to add the symbols to the symbol table
+        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the Spawn node are not available outside the iteration node
+        this.symbolTable.leaveScope();
+    }
+
+
+    @Override
+    public void visit(SpawnDclNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ExprNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(AccessNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(SpawnActorNode node) {
+    public void visit(MethodCallNode node){
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(MethodCallNode node){
+    public void visit(LocalMethodBodyNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ArgumentsNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(DclNode node) {
         this.visitChildren(node);
     }
 
@@ -137,7 +189,12 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorDclNode node) {
+    public void visit(InitializationNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ListNode node) {
         this.visitChildren(node);
     }
 
@@ -148,16 +205,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(MainDclNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(SpawnDclNode node) {
         this.visitChildren(node);
     }
 
@@ -181,6 +228,10 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    @Override
+    public void visit(IterationNode node) {
+        this.visitChildren(node);
+    }
 
     @Override
     public void visit(ArrayAccessNode node) {

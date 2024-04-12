@@ -58,7 +58,32 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(LocalMethodBodyNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ArgumentsNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(DclNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(AssignNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(InitializationNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ListNode node) {
         this.visitChildren(node);
     }
 
@@ -98,6 +123,11 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(ExprNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(IntegerNode node) {
         this.visitChildren(node);
     }
@@ -118,6 +148,11 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(IterationNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(WhileNode node) {
         this.visitChildren(node);
     }
@@ -128,8 +163,13 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SelectionNode node) {
+    public void visit(AccessNode node) {
+        this.visitChildren(node);
+    }
 
+    @Override
+    public void visit(SelectionNode node) {
+        this.visitChildren(node);
     }
 
     @Override
