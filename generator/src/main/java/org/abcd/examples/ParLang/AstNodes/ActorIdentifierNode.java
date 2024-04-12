@@ -1,6 +1,5 @@
 package org.abcd.examples.ParLang.AstNodes;
-
-import org.abcd.examples.ParLang.LanguageType;
+import org.abcd.examples.ParLang.NodeVisitor;
 
 public class ActorIdentifierNode extends AstNode{
     private final String name;
@@ -17,5 +16,10 @@ public class ActorIdentifierNode extends AstNode{
 
     public String getActorType() {
         return actorType;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }
