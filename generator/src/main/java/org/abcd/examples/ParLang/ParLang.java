@@ -9,6 +9,7 @@
 
 package org.abcd.examples.ParLang;
 // import ANTLR's runtime libraries
+import org.abcd.examples.ParLang.AstNodes.InitNode;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -40,7 +41,7 @@ public class ParLang {
 
         ParLangBaseVisitor<AstNode> visitor=new AstVisitor();
 
-        AstNode ast=tree.accept(visitor);
+        InitNode ast=(InitNode) tree.accept(visitor);
 
         //print AST
         System.out.println("AST:");
@@ -52,6 +53,8 @@ public class ParLang {
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
 
         SymbolTable symbolTable = new SymbolTable();
+        FuncVisitor funcVisitor = new FuncVisitor(symbolTable);
+        funcVisitor.visit(ast);
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
     }
