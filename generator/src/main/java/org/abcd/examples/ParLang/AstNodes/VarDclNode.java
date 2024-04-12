@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
 import org.abcd.examples.ParLang.LanguageType;
+import org.abcd.examples.ParLang.NodeVisitor;
 
 public class VarDclNode extends DclNode{
     private final String type;
@@ -10,5 +11,10 @@ public class VarDclNode extends DclNode{
     }
     public String getType() {
         return type;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }

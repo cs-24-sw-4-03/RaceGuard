@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class MethodDclNode extends DclNode{
 
     private String returnType;
@@ -19,5 +21,10 @@ public class MethodDclNode extends DclNode{
 
     public void setReturnType(String returnType) {
         this.returnType = returnType;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }

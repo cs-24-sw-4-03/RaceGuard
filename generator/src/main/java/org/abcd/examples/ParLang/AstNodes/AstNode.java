@@ -1,5 +1,8 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+import org.w3c.dom.Node;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,5 +23,6 @@ public abstract class AstNode {
     public String getNodeHash() {
         return String.valueOf(this.hashCode());
     }
+    public abstract void accept(NodeVisitor visitor);
 
 }
