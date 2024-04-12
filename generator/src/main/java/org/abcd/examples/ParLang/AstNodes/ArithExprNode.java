@@ -6,7 +6,8 @@ public class ArithExprNode extends ExprNode {
         MINUS("-"),
         MULTIPLY("*"),
         DIVIDE("/"),
-        MODULO("%");
+        MODULO("%"),
+        UNKNOWN("unknown");
         private final String value;
 
         OpType(String value) {
