@@ -6,6 +6,10 @@ public class AstPrintVisitor {
     public void visit(int localIndent, AstNode node){
         if(node != null){
             String className=node.getClass().getSimpleName();
+            if(node.getParent()!=null){
+                String parent=node.getParent().getClass().getSimpleName();
+                className+=" (parent: "+parent+") ";
+            }
             switch (className){
                 case "ArithExprNode":
                     this.print(localIndent, className + " : " + ((ArithExprNode) node).getOpType());

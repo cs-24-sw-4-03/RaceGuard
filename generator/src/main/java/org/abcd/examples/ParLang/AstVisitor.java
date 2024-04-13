@@ -27,7 +27,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             if(c.getPayload() instanceof CommonToken){
                 continue; //if child is a CommonToken, e.g. "{", then skip.
             }
-            node.addChild(visit(c)); //visit the child and add it to the node
+            AstNode astChild=visit(c);
+            astChild.setParent(node);
+            node.addChild(astChild); //visit the child and add it to the node
         }
         return node; //return the node with all children added
     }
@@ -35,11 +37,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
         //Main function is the entry point of the program
         MainDclNode main= new MainDclNode(ctx.MAIN().getText());
+        AstNode mainChild;
         if(!ctx.parameters().getText().equals("()")){ //If there are parameters
-            main.addChild(visit(ctx.parameters())); //add parameters as children to the main node
+            mainChild=visit(ctx.parameters());
+            mainChild.setParent(main);
+            main.addChild(mainChild); //add parameters as children to the main node
         }
         if(ctx.body()!=null){ //If there is a body
-            main.addChild(visit(ctx.body())); //visit the body and add it as a child to the main node
+            mainChild=visit(ctx.body());
+            mainChild.setParent(main);
+            main.addChild(mainChild); //visit the body and add it as a child to the main node
         }
         return main;
     }

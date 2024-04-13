@@ -9,12 +9,21 @@ import java.util.Objects;
 
 public abstract class AstNode {
     private List<AstNode> children = new ArrayList<>();
+    private AstNode parent;
     public List<AstNode> getChildren() {
         return children;
     }
 
     public void addChild(AstNode n){
         children.add(n);
+    }
+
+    public void setParent(AstNode parent) {
+        this.parent = parent;
+    }
+
+    public AstNode getParent() {
+        return parent;
     }
 
     //Generates a hash code based on the memory address of the object
