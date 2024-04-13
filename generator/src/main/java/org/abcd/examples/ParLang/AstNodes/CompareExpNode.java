@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class CompareExpNode extends AstNode {
     private final String operator;
 
@@ -11,6 +13,13 @@ public class CompareExpNode extends AstNode {
     public String getOperator() {
         return operator;
     }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
+    }
+
+
 
 }
 
