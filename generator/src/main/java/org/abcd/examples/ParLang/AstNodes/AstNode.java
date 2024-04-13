@@ -15,7 +15,8 @@ public abstract class AstNode {
     }
 
     public void addChild(AstNode n){
-        children.add(n);
+        children.add(n); // add n as child to this AstNode
+        n.setParent(this); // set this AstNode as parent to n
     }
 
     public void setParent(AstNode parent) {

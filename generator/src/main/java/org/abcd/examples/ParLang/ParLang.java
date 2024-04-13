@@ -22,6 +22,11 @@ import org.abcd.examples.ParLang.AstNodes.AstNode;
 
 
 public class ParLang {
+    /***
+     *
+     * @param args running main with "1" as args[0] tells AstPrintVisitor to print AstNodes with information about parent fields.
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         // create a CharStream that reads from standard input
         ANTLRInputStream input = new ANTLRInputStream(System.in);
@@ -44,7 +49,7 @@ public class ParLang {
         //print AST
         System.out.println("AST:");
         AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
-        astPrintVisitor.visit(0, ast);
+        astPrintVisitor.visit(0, ast, args[0]); //if args[0] is "1" then tree is printed with info about parent node of each AstNode.
 
         //print CST
         System.out.println("CST:");
