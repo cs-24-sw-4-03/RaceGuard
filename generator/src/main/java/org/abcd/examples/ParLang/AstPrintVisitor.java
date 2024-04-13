@@ -81,6 +81,21 @@ public class AstPrintVisitor {
                 case "SendMsgNode":
                     this.print( localIndent, className + " " + ((SendMsgNode)node).getMsgName() + " to: " + ((SendMsgNode)node).getReceiver() );
                     break;
+                case "BoolExprNode":
+                    this.print(localIndent, className);
+                    break;
+                case "BoolAndExpNode":
+                    this.print(localIndent, className);
+                    break;
+                case "CompareExpNode":
+                    this.print(localIndent, className + " with operator: " + ((CompareExpNode)node).getOperator());
+                    break;
+                case "NegatedBoolNode":
+                    this.print(localIndent, className);
+                    break;
+                case "BoolNode":
+                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue());
+                    break;
                 default:
                     this.print(localIndent, className);
                     break;
