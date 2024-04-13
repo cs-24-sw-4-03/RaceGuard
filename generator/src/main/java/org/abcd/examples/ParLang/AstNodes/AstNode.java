@@ -23,6 +23,8 @@ public abstract class AstNode {
     public String getNodeHash() {
         return String.valueOf(this.hashCode());
     }
+
     public abstract void accept(NodeVisitor visitor);
+
 
 }
