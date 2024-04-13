@@ -326,14 +326,84 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
     @Override public AstNode visitPrimitive(ParLangParser.PrimitiveContext ctx){
         //Primitives can be: INT, DOUBLE, STRING, and BOOL
-
         //In case the primitive is a STRING
         if(ctx.STRING() != null) {
             return new StringNode(ctx.getText());
         }
         return visitChildren(ctx);
     }
+    @Override public AstNode visitBoolExp(ParLangParser.BoolExpContext ctx) {
+        int childCount = ctx.getChildCount();
+        if (childCount == 1) {
+            return visit(ctx.getChild(0)); // Visit the child
+        }
+        BoolExprNode boolExprNode = new BoolExprNode();
+        for (int i = 0; i < childCount; i += 2) {
+            boolExprNode.addChild(visit(ctx.getChild(i)));
+        }
+        return boolExprNode;
+    }
 
+    @Override public AstNode visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) {
+        int childCount = ctx.getChildCount();
+        if (childCount == 1) {
+            return visit(ctx.getChild(0)); // Visit the child
+        }
+        BoolAndExpNode boolAndExpNode = new BoolAndExpNode();
+        for (int i = 0; i < childCount; i += 2) {
+            boolAndExpNode.addChild(visit(ctx.getChild(i)));
+        }
+        return boolAndExpNode;
+    }
+
+    @Override
+    public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
+        if (ctx.negatedBool() != null) { // !
+            return visit(ctx.negatedBool());
+        }
+        if (ctx.compareExp() != null) { // <, >, <=, >=, !=, ==
+            return visit(ctx.compareExp());
+        }
+        if (ctx.PARAN_OPEN() != null) { // Visit the nested expression
+            return visit(ctx.boolExp());
+        }
+        if (ctx.boolLiteral() != null) { // TRUE or FALSE
+            return visit(ctx.boolLiteral());
+        }
+        throw new RuntimeException("Unrecognized BoolTerm");
+    }
+  
+    @Override
+    public AstNode visitNegatedBool(ParLangParser.NegatedBoolContext ctx) {
+        NegatedBoolNode boolNode = new NegatedBoolNode();
+        if (ctx.getChild(1).getText().equals("(")) { // !(boolExp)
+            boolNode.addChild(visit(ctx.getChild(2)));
+        } else { // !(boolTerm)
+            boolNode.addChild(visit(ctx.getChild(1)));
+        }
+        return boolNode;
+    }
+
+    @Override
+    public AstNode visitBoolLiteral(ParLangParser.BoolLiteralContext ctx) {
+        // contains either 'TRUE' or 'FALSE'
+        boolean value = ctx.getText().equals("TRUE");
+        return new BoolNode(value);
+    }
+    @Override
+    public AstNode visitCompareExp(ParLangParser.CompareExpContext ctx) {
+        // Visit the left-hand side of the comparison
+        AstNode leftOperand = visit(ctx.arithExp(0));
+
+        // Visit the right-hand side of the comparison
+        AstNode rightOperand = visit(ctx.arithExp(1));
+
+        // Extract the comparison operator as a string
+        String operator = ctx.compareOperator().getText();
+
+        // Create a new node representing the comparison operation
+        return new CompareExpNode(operator, leftOperand, rightOperand);
+    }
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
         //An array access
         String accessIdentifier = ctx.identifier().getText();
