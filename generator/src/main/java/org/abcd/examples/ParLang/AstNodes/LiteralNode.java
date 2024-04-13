@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 abstract class LiteralNode<T> extends AstNode {
     private T value;
 
@@ -24,4 +26,5 @@ abstract class LiteralNode<T> extends AstNode {
     public boolean isNegated(){
         return this.isNegated;
     }
+
 }

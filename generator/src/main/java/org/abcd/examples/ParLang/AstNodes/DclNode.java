@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public abstract class DclNode extends AstNode {
     private String id;
 
@@ -9,5 +11,9 @@ public abstract class DclNode extends AstNode {
 
     public String getId() {
         return id;
+    }
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }

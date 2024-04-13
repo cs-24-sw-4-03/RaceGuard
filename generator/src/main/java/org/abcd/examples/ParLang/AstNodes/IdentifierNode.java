@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
 import org.abcd.examples.ParLang.LanguageType;
+import org.abcd.examples.ParLang.NodeVisitor;
 
 public class IdentifierNode extends AstNode{
     private final String name;
@@ -22,5 +23,9 @@ public class IdentifierNode extends AstNode{
 
     public String getType() {
         return type;
+    }
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }
