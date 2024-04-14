@@ -35,7 +35,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitMainFunc(ParLangParser.MainFuncContext ctx) {
         //Main function is the entry point of the program
         MainDclNode main= new MainDclNode(ctx.MAIN().getText());
-        AstNode mainChild;
         if(!ctx.parameters().getText().equals("()")){ //If there are parameters
             main.addChild(visit(ctx.parameters())); //add parameters as children to the main node
         }
@@ -114,7 +113,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 returnType = null;
         }
         ScriptMethodNode node = new ScriptMethodNode(ctx.identifier().getText(), returnType, methodType);
-        node.addChild(visit(ctx.parameters())); //add parameters as children
+        if(!ctx.parameters().getText().equals("()")){ //If there are parameters
+            node.addChild(visit(ctx.parameters())); //add parameters as children
+        }
         return node; //return the node
     }
 

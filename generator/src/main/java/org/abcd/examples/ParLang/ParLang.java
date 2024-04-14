@@ -49,7 +49,11 @@ public class ParLang {
         //print AST
         System.out.println("AST:");
         AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
-        astPrintVisitor.visit(0, ast, args[0]); //if args[0] is "parents" then tree is printed with info about parent node of each AstNode.
+        String printOption="";
+        if(args.length>0){
+            printOption=args[0];
+        }
+        astPrintVisitor.visit(0, ast, printOption); //if printOption is "parents" then tree is printed with info about parent node of each AstNode.
 
         //print CST
         System.out.println("CST:");

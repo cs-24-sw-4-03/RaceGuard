@@ -5,6 +5,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 public interface NodeVisitor {
     void visitChildren(AstNode node);
 
+    void visit(SendMsgNode node);
     void visit(InitNode node);
     void visit(BodyNode node);
     void visit(SelectionNode node);

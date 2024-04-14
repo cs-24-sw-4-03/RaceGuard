@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class SendMsgNode extends AstNode{
 
     private final String msgName;
@@ -16,5 +18,10 @@ public class SendMsgNode extends AstNode{
 
     public String getReceiver(){
         return this.receiver;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
     }
 }
