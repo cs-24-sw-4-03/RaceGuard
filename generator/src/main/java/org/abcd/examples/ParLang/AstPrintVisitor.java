@@ -4,6 +4,9 @@ import org.abcd.examples.ParLang.AstNodes.*;
 
 public class AstPrintVisitor {
 
+    public static final String ANSI_RED = "\u001B[31m"; //for printing red text to the terminal
+    public static final String ANSI_RESET = "\u001B[0m"; //for stopping to print red text.
+
     /***
      *
      * @param localIndent number of \t before information about the AstNode is printed. Shows the depth of the AstNode in the AST.
@@ -16,7 +19,7 @@ public class AstPrintVisitor {
             String className=node.getClass().getSimpleName();
 
             if(printParentField.equals("1")){
-                className+=" "+node.getNodeHash();// print hashcode for each node in order to compare with hash code of the object in the parent fields of the children.
+                className+=" "+ANSI_RED+node.getNodeHash()+ANSI_RESET;// print hashcode for each node in red in order to compare with hash code of the AstNode-object in the parent fields of the children.
                 if(node.getParent()!=null){//only attempt to getClass if parent is not null (parent should only be null for the InitNode)
                     AstNode parent=node.getParent();//get the AstNode stored in the parent field of node.
                     className+=" (parent: "+parent.getClass().getSimpleName()+" "+parent.getNodeHash()+") ";//concatanate parent's className and hashCode to the string printed for node
