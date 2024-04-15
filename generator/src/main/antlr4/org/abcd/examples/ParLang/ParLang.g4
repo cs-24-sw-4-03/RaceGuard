@@ -7,7 +7,7 @@ grammar ParLang;
 //PARSER RULES -----------------------------------------------------------------------
 
 // init used as start non-terminal for parser
-init : (actor | script)* mainFunc (actor | script)* EOF;  // must have a main function end on an end of file character
+init : script* actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
 /** TO DO !!!!!!!!!!!!!!!!
 
@@ -174,7 +174,8 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | identifier | arithExp );
+value : (primitive | identifier | arithExp | boolExp | actorAccess | arrayAccess)
+    ;
 
 number : INT
     | DOUBLE
