@@ -18,6 +18,16 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(ScriptDclNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ScriptMethodNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(SendMsgNode node) {
         this.visitChildren(node);
     }
@@ -108,6 +118,11 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(FollowsNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(KnowsNode node) {
         this.visitChildren(node);
     }
@@ -144,6 +159,11 @@ public class SemanticsVisitor implements NodeVisitor {
 
     @Override
     public void visit(StringNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(BoolExprNode node) {
         this.visitChildren(node);
     }
 
@@ -204,6 +224,11 @@ public class SemanticsVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsAccessNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(PrintCallNode node) {
         this.visitChildren(node);
     }
 

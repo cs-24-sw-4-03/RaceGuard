@@ -17,6 +17,17 @@ public class FuncVisitor implements NodeVisitor {
         }
     }
 
+    //TODO: Find out if ScriptDclNode and ScriptMethodNode needs special implementation
+    @Override
+    public void visit(ScriptDclNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ScriptMethodNode node) {
+        this.visitChildren(node);
+    }
+
     @Override
     public void visit(MethodDclNode node){
         symbolTable.declaredMethods.add(node.getId());
@@ -110,6 +121,11 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolExprNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(ArithExprNode node) {
         this.visitChildren(node);
     }
@@ -175,6 +191,11 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(PrintCallNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(AssignNode node) {
         this.visitChildren(node);
     }
@@ -201,6 +222,11 @@ public class FuncVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorStateNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(FollowsNode node) {
         this.visitChildren(node);
     }
 

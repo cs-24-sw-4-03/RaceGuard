@@ -21,6 +21,17 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
+    //TODO: Find out if ScriptDclNode and ScriptMethodNode needs special implementation
+    @Override
+    public void visit(ScriptDclNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ScriptMethodNode node) {
+        this.visitChildren(node);
+    }
+
     //Declares a variable in the symbol table if it does not already exist
     private void declareNode(VarDclNode node){
         System.out.println("Symbol: " + node.getId());
@@ -212,6 +223,11 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(FollowsNode node) {
+
+    }
+
+    @Override
     public void visit(KnowsNode node) {
         this.visitChildren(node);
     }
@@ -228,6 +244,11 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(StringNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(BoolExprNode node) {
         this.visitChildren(node);
     }
 
@@ -273,6 +294,11 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsAccessNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(PrintCallNode node) {
         this.visitChildren(node);
     }
 }
