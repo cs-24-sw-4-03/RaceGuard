@@ -10,6 +10,9 @@ public class Scope {
     //TODO: Research whether Hashmaps are the best for these lists
     private final HashMap<String, Attributes> symbols = new HashMap<>();
     private final Map<String, Attributes> params = new LinkedHashMap<>();
+    private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
+    private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
+
 
     //Nested scopes within the current scope
     public final List<Scope> children = new ArrayList<>();
@@ -46,4 +49,19 @@ public class Scope {
         return this.params;
     }
 
+    public void addStateSymbols(String id, Attributes attributes) {
+        this.stateSymbols.put(id, attributes);
+    }
+
+    public Map<String, Attributes> getStateSymbols() {
+        return this.stateSymbols;
+    }
+
+    public void addKnowsSymbols(String id, Attributes attributes) {
+        this.knowsSymbols.put(id, attributes);
+    }
+
+    public Map<String, Attributes> getKnowsSymbols() {
+        return this.knowsSymbols;
+    }
 }

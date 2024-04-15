@@ -6,7 +6,6 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 //TODO: Find out if scope checking also includes checking for legal calls to other actors
 //TODO: Implement ArrayDcl?
-//TODO: Make sure that State and Knows variables are identifiable from normal variables
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -31,18 +30,28 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     //Declares a variable in the symbol table if it does not already exist
-    private void declareNode(VarDclNode node){
-        System.out.println("Symbol: " + node.getId());
-        if(this.symbolTable.lookUpSymbol(node.getId()) == null){
-            Attributes attributes = new Attributes(node.getType(), "dcl");
-            this.symbolTable.insertSymbol(node.getId(), attributes);
-        }
-        //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override? Error?
-    }
-
     @Override
     public void visit(VarDclNode node){
-        declareNode(node);
+        System.out.println("Symbol: " + node.getId());
+        if(node.getParent() instanceof ActorStateNode){
+            if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
+                Attributes attributes = new Attributes(node.getType(), "dcl");
+                this.symbolTable.insertStateSymbol(node.getId(), attributes);
+            }
+
+        } else if (node.getParent() instanceof KnowsNode) {
+            if(this.symbolTable.lookUpKnowsSymbol(node.getId()) == null){
+                Attributes attributes = new Attributes(node.getType(), "dcl");
+                this.symbolTable.insertKnowsSymbol(node.getId(), attributes);
+            }
+
+        }else{
+            if(this.symbolTable.lookUpSymbol(node.getId()) == null){
+                Attributes attributes = new Attributes(node.getType(), "dcl");
+                this.symbolTable.insertSymbol(node.getId(), attributes);
+            }
+        }
+        //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override? Error?
     }
 
     //Creates a new scope as a while iteration node is a new scope and leaves it after visiting the children
@@ -134,7 +143,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Set up error handling if symbol not found
+    //TODO: Set up error handling if symbol not found for normal symbols, State symbols and Knows symbols
     @Override
     public void visit(IdentifierNode node) {
         if(this.symbolTable.lookUpSymbol(node.getName()) != null){
@@ -143,6 +152,30 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Not found symbol: " + node.getName());
         }
     }
+
+    @Override
+    public void visit(StateAccessNode node) {
+        if(this.symbolTable.lookUpStateSymbol(node.getAccessIdentifier()) != null){
+            System.out.println("Found state symbol: " + node.getAccessIdentifier());
+        }else{
+            System.out.println("Not found state symbol: " + node.getAccessIdentifier());
+        }
+
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(KnowsAccessNode node) {
+        if(this.symbolTable.lookUpKnowsSymbol(node.getAccessIdentifier()) != null){
+            System.out.println("Found state symbol: " + node.getAccessIdentifier());
+        }else{
+            System.out.println("Not found state symbol: " + node.getAccessIdentifier());
+        }
+
+        this.visitChildren(node);
+    }
+
+
 
     @Override
     public void visit(SendMsgNode node) {
@@ -281,16 +314,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArrayAccessNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(StateAccessNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(KnowsAccessNode node) {
         this.visitChildren(node);
     }
 

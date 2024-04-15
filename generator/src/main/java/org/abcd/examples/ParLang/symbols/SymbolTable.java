@@ -95,6 +95,38 @@ public class SymbolTable {
         return null;
     }
 
+    public Attributes lookUpStateSymbol(String symbol){
+        Scope scope = this.currentScope;
+
+        //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
+        //Returns the symbol if it is found or returns null if the symbol is not found
+        while(scope != null){
+            if(!scope.getStateSymbols().isEmpty() && scope.getStateSymbols().containsKey(symbol)){
+                return scope.getStateSymbols().get(symbol);
+            }
+
+            scope = scope.getParent();
+        }
+        System.out.println("State symbol: " + symbol + " not found");
+        return null;
+    }
+
+    public Attributes lookUpKnowsSymbol(String symbol){
+        Scope scope = this.currentScope;
+
+        //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
+        //Returns the symbol if it is found or returns null if the symbol is not found
+        while(scope != null){
+            if(!scope.getKnowsSymbols().isEmpty() && scope.getKnowsSymbols().containsKey(symbol)){
+                return scope.getKnowsSymbols().get(symbol);
+            }
+
+            scope = scope.getParent();
+        }
+        System.out.println("State symbol: " + symbol + " not found");
+        return null;
+    }
+
     public void insertSymbol(String symbol, Attributes attributes){
         this.currentScope.addSymbol(symbol, attributes);
     }
@@ -102,6 +134,10 @@ public class SymbolTable {
     public void insertParams(String param, Attributes attributes){
         this.currentScope.addParams(param, attributes);
     }
+
+    public void insertStateSymbol(String symbol, Attributes attributes){this.currentScope.addStateSymbols(symbol, attributes);}
+
+    public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
 
 
 }
