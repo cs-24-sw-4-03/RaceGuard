@@ -21,7 +21,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Implement ScriptDclNode
     @Override
     public void visit(ScriptDclNode node) {
         this.symbolTable.addScope(node.getNodeHash());
@@ -135,6 +134,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
+    //TODO: Set up error handling if symbol not found
     @Override
     public void visit(IdentifierNode node) {
         if(this.symbolTable.lookUpSymbol(node.getName()) != null){
@@ -144,6 +144,10 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
+    @Override
+    public void visit(SendMsgNode node) {
+        this.visitChildren(node);
+    }
 
     @Override
     public void visit(SpawnActorNode node) {
@@ -267,11 +271,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(CompareExpNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(SendMsgNode node) {
         this.visitChildren(node);
     }
 

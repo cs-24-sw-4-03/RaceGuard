@@ -11,9 +11,8 @@ public class SymbolTable {
     public ArrayList<String> declaredMethods = new ArrayList<>();
     public ArrayList<String> calledMethods = new ArrayList<>();
     public ArrayList<String> declaredActors = new ArrayList<>();
-    public ArrayList<String> calledActors = new ArrayList<>();
+    public ArrayList<String> calledMsgReceiver = new ArrayList<>();
     public ArrayList<String> declaredScripts = new ArrayList<>();
-    public ArrayList<String> calledScripts = new ArrayList<>();
 
 
 

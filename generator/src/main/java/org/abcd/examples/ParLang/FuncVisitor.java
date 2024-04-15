@@ -17,6 +17,7 @@ public class FuncVisitor implements NodeVisitor {
         }
     }
 
+    //TODO: Find a way to differentiate between local and on methods
     //TODO: Find a way to identify a specific Script, Actor, Method or ScriptMethod
     @Override
     public void visit(ScriptMethodNode node) {
@@ -46,6 +47,13 @@ public class FuncVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node){
         symbolTable.calledMethods.add(node.getMethodName());
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(SendMsgNode node) {
+        symbolTable.calledMethods.add(node.getMsgName());
+        symbolTable.calledMsgReceiver.add(node.getReceiver());
         this.visitChildren(node);
     }
 
@@ -151,11 +159,6 @@ public class FuncVisitor implements NodeVisitor {
 
     @Override
     public void visit(CompareExpNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(SendMsgNode node) {
         this.visitChildren(node);
     }
 
