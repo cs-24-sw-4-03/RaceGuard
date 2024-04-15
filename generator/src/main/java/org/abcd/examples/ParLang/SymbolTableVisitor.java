@@ -5,6 +5,8 @@ import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 //TODO: Find out if scope checking also includes checking for legal calls to other actors
+//TODO: Implement ArrayDcl?
+//TODO: Make sure that State and Knows variables are identifiable from normal variables
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -21,11 +23,12 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     //Declares a variable in the symbol table if it does not already exist
     private void declareNode(VarDclNode node){
+        System.out.println("Symbol: " + node.getId());
         if(this.symbolTable.lookUpSymbol(node.getId()) == null){
             Attributes attributes = new Attributes(node.getType(), "dcl");
             this.symbolTable.insertSymbol(node.getId(), attributes);
         }
-        //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override?
+        //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override? Error?
     }
 
     @Override
@@ -90,10 +93,12 @@ public class SymbolTableVisitor implements NodeVisitor {
             IdentifierNode paramNode = (IdentifierNode)child;
             Attributes attributes = new Attributes(paramNode.getType(), "param");
             attributes.setScope(scopeName);
+            System.out.println("Param: " + paramNode.getName());
             this.symbolTable.insertParams(paramNode.getName(), attributes);
         }
     }
 
+    //TODO: Make it add itself to global Scope
     @Override
     public void visit(ActorDclNode node) {
         this.symbolTable.addScope(node.getNodeHash());
@@ -113,7 +118,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SpawnActorNode node) {
+    public void visit(SpawnDclNode node) {
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
@@ -121,9 +126,18 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
+    @Override
+    public void visit(IdentifierNode node) {
+        if(this.symbolTable.lookUpSymbol(node.getName()) != null){
+            System.out.println("Found symbol: " + node.getName());
+        }else{
+            System.out.println("Not found symbol: " + node.getName());
+        }
+    }
+
 
     @Override
-    public void visit(SpawnDclNode node) {
+    public void visit(SpawnActorNode node) {
         this.visitChildren(node);
     }
 
@@ -169,11 +183,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(BodyNode node){
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(IdentifierNode node) {
         this.visitChildren(node);
     }
 

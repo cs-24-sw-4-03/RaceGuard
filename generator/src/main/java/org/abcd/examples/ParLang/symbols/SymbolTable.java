@@ -13,6 +13,7 @@ public class SymbolTable {
 
 
     public SymbolTable() {
+        System.out.println("Creating SymbolTable");
         this.globalScope = new Scope("global");
         this.currentScope = this.globalScope;
     }
@@ -86,6 +87,7 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
+        System.out.println("Symbol: " + symbol + " not found");
         return null;
     }
 

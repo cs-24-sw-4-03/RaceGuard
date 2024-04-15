@@ -61,6 +61,7 @@ public class ParLang {
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
 
+        System.out.println("Scoping");
         SymbolTable symbolTable = new SymbolTable();
         FuncVisitor funcVisitor = new FuncVisitor(symbolTable);
         funcVisitor.visit(ast);
