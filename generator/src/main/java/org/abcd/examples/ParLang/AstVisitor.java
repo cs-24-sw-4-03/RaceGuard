@@ -113,7 +113,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 returnType = null;
         }
         ScriptMethodNode node = new ScriptMethodNode(ctx.identifier().getText(), returnType, methodType);
-        node.addChild(visit(ctx.parameters())); //add parameters as children
+        if(!ctx.parameters().getText().equals("()")){ //If there are parameters
+            node.addChild(visit(ctx.parameters())); //add parameters as children
+        }
         return node; //return the node
     }
 
@@ -474,8 +476,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitReturnStatement(ParLangParser.ReturnStatementContext ctx){
         ReturnStatementNode returnStatementNode = new ReturnStatementNode();
-        if(ctx.getChild(1) != null){ //If there is a return value
-            returnStatementNode.addChild(visit(ctx.getChild(1)));
+        if(ctx.returnType() != null){ //If there is a return value
+            returnStatementNode.addChild(visit(ctx.returnType()));
         }
         return returnStatementNode; //return the returnStatementNode with the return value added as a child
     }
