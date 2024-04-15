@@ -5,6 +5,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 public interface NodeVisitor {
     void visitChildren(AstNode node);
 
+    void visit(SendMsgNode node);
     void visit(InitNode node);
     void visit(BodyNode node);
     void visit(SelectionNode node);
@@ -46,6 +47,9 @@ public interface NodeVisitor {
     //void visit(CompareExprNode node);
     //void visit(BoolExprNode node);
     void visit(ArithExprNode node);
+    void visit(NegatedBoolNode node);
+    void visit(BoolNode node);
+    void visit(CompareExpNode node);
 
     void visit(IterationNode node);
     void visit(WhileNode node);

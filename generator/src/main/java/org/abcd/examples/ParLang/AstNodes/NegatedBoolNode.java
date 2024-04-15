@@ -1,10 +1,11 @@
 package org.abcd.examples.ParLang.AstNodes;
+
 import org.abcd.examples.ParLang.NodeVisitor;
 
-public class MethodDclNode extends ScriptMethodNode{
-    public MethodDclNode(String id, String returnType, String methodType) {
-        super(id, returnType, methodType);
-    }
+public class NegatedBoolNode extends AstNode {
+        public NegatedBoolNode() {
+            super();
+        }
 
     @Override
     public void accept(NodeVisitor visitor) {

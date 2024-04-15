@@ -1,9 +1,10 @@
 package org.abcd.examples.ParLang.AstNodes;
+
 import org.abcd.examples.ParLang.NodeVisitor;
 
-public class MethodDclNode extends ScriptMethodNode{
-    public MethodDclNode(String id, String returnType, String methodType) {
-        super(id, returnType, methodType);
+public class BoolNode extends LiteralNode<Boolean>{
+    public BoolNode(boolean value){
+        super(value);
     }
 
     @Override

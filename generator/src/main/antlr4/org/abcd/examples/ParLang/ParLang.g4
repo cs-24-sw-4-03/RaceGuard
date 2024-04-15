@@ -17,8 +17,8 @@ init : (actor | script)* mainFunc (actor | script)* EOF;  // must have a main fu
 mainFunc : MAIN parameters body;
 
 //scripts can define methods that need to be implemented by following actors
-script : SCRIPT_TYPE identifier CURLY_OPEN scriptBody+ CURLY_CLOSE;
-scriptBody : (ON_METHOD | LOCAL_METHOD) identifier parameters SEMICOLON;
+script : SCRIPT_TYPE identifier CURLY_OPEN scriptMethod+ CURLY_CLOSE;
+scriptMethod : (ON_METHOD | LOCAL_METHOD) identifier parameters (COLON allTypes)? SEMICOLON;
 
 //defines the scripts an actor follows
 follow : FOLLOWS identifier (COMMA identifier)*;
@@ -62,7 +62,7 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor);
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | boolExp);
 
 //assignment used to assign a value to an already defined variable.
 assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor) ;
@@ -70,13 +70,17 @@ assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
 boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
-boolTerm : LOGIC_NEGATION boolExp //Negation have higher precedence than AND and OR
-    | PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
+boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     | identifier
+    | negatedBool
     ;
-
+negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE
+    | LOGIC_NEGATION identifier
+    | LOGIC_NEGATION boolLiteral
+    | LOGIC_NEGATION stateAccess
+    ;
 // expression evaluating boolean value of two arithmetic expressions based on compare operator
 compareExp : arithExp compareOperator arithExp;
 
@@ -87,12 +91,12 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
     | identifier
-    | actorAccess
+    | stateAccess
     | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
     | unaryExp
     ;
 unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
-    | MINUS (number | identifier | actorAccess)
+    | MINUS (number | identifier | stateAccess)
     ; // unary minus operator
 
 // operator to compare two arithmetic expressions
