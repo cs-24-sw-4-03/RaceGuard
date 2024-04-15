@@ -21,15 +21,14 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Find out if ScriptDclNode and ScriptMethodNode needs special implementation
+    //TODO: Implement ScriptDclNode
     @Override
     public void visit(ScriptDclNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
+        //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ScriptMethodNode node) {
-        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node
+        this.symbolTable.leaveScope();
     }
 
     //Declares a variable in the symbol table if it does not already exist
@@ -74,7 +73,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the select node are not available outside the select node
+        //Leaves the scope after visiting the children, as the variables in the select node are not available outside the selection node
         this.symbolTable.leaveScope();
     }
 
@@ -109,13 +108,12 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Make it add itself to global Scope
     @Override
     public void visit(ActorDclNode node) {
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the iteration node
+        //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the Actor node
         this.symbolTable.leaveScope();
     }
 
@@ -124,7 +122,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the Main node are not available outside the iteration node
+        //Leaves the scope after visiting the children, as the variables in the Main node are not available outside the Main node
         this.symbolTable.leaveScope();
     }
 
@@ -133,7 +131,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the Spawn node are not available outside the iteration node
+        //Leaves the scope after visiting the children, as the variables in the Spawn node are not available outside the Spawn node
         this.symbolTable.leaveScope();
     }
 
@@ -224,7 +222,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-
+        this.visitChildren(node);
     }
 
     @Override
@@ -294,6 +292,11 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsAccessNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ScriptMethodNode node) {
         this.visitChildren(node);
     }
 

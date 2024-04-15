@@ -17,17 +17,26 @@ public class FuncVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Find out if ScriptDclNode and ScriptMethodNode needs special implementation
-    @Override
-    public void visit(ScriptDclNode node) {
-        this.visitChildren(node);
-    }
-
+    //TODO: Find a way to identify a specific Script, Actor, Method or ScriptMethod
     @Override
     public void visit(ScriptMethodNode node) {
+        this.symbolTable.declaredMethods.add(node.getId());
         this.visitChildren(node);
     }
 
+    @Override
+    public void visit(ScriptDclNode node) {
+        this.symbolTable.declaredScripts.add(node.getId());
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ActorDclNode node) {
+        this.symbolTable.declaredActors.add(node.getId());
+        this.visitChildren(node);
+    }
+
+    //TODO:  Find out if it is a problem that Dcl uses Id and Call uses Name
     @Override
     public void visit(MethodDclNode node){
         symbolTable.declaredMethods.add(node.getId());
@@ -216,11 +225,6 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorDclNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(ActorStateNode node) {
         this.visitChildren(node);
     }
@@ -234,4 +238,5 @@ public class FuncVisitor implements NodeVisitor {
     public void visit(KnowsNode node) {
         this.visitChildren(node);
     }
+
 }

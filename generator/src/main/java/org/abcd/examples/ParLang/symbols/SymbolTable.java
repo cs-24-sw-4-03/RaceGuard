@@ -10,6 +10,11 @@ public class SymbolTable {
     final private Stack<Scope> scopeStack = new Stack<>();
     public ArrayList<String> declaredMethods = new ArrayList<>();
     public ArrayList<String> calledMethods = new ArrayList<>();
+    public ArrayList<String> declaredActors = new ArrayList<>();
+    public ArrayList<String> calledActors = new ArrayList<>();
+    public ArrayList<String> declaredScripts = new ArrayList<>();
+    public ArrayList<String> calledScripts = new ArrayList<>();
+
 
 
     public SymbolTable() {
@@ -98,5 +103,6 @@ public class SymbolTable {
     public void insertParams(String param, Attributes attributes){
         this.currentScope.addParams(param, attributes);
     }
+
 
 }
