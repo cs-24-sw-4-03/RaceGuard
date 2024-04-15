@@ -143,6 +143,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
     }
 
+    @Override public AstNode visitFollow(ParLangParser.FollowContext ctx) {
+        FollowsNode followNode = new FollowsNode();
+        List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
+        children.remove(0);//remove "follows" from list of children
+        return childVisitor(followNode,children); //visit all children of the follow node and add them as children to the followNode
+    }
+
     @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
         ActorStateNode node= new ActorStateNode(ctx.STATE().getText());
         //visit all children of the actorState node and add them as children to the actorStateNode
@@ -220,6 +227,28 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children); //visit all children of the body node and add them as children to the bodyNode
+    }
+
+    @Override public AstNode visitPrintCall(ParLangParser.PrintCallContext ctx) {
+        //PrintCall has the structure: [PRINT,LPAREN,PRINT_BODY,RPAREN]
+        PrintCallNode printCallNode = new PrintCallNode();
+        if(ctx.printBody()!=null){ //If there is a printBody
+            printCallHelper(printCallNode,ctx.printBody()); //visit the printBody and add it as a child to the printCallNode
+        }
+        return printCallNode; //return the printCallNode with the printBody added as a child
+    }
+
+    private AstNode printCallHelper(AstNode parent, ParLangParser.PrintBodyContext ctx){
+        //helper method to visit all children of the printBody node and add them as children to the parent
+        int childCount=ctx.getChildCount();
+        for (int i = 0; i < childCount; i+=2){
+            if (ctx.getChild(i).getText().contains("\"")) {
+                parent.addChild(new StringNode(ctx.getChild(i).getText()));
+            } else {
+                parent.addChild(visit(ctx.getChild(i)));
+            }
+        }
+        return parent; //return the parent
     }
 
     @Override
