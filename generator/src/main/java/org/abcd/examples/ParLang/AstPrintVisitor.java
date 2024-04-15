@@ -73,6 +73,9 @@ public class AstPrintVisitor {
                         this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId() + " return type: " + ((ScriptMethodNode) node).getReturnType());
                     }
                     break;
+                case "ScriptDclNode":
+                    this.print(localIndent, className + " " +((ScriptDclNode)node).getId());
+                    break;
                 case "WhileNode":
                     this.print(localIndent, className );
                     break;

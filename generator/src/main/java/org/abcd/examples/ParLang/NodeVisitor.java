@@ -5,6 +5,8 @@ import org.abcd.examples.ParLang.AstNodes.*;
 public interface NodeVisitor {
     void visitChildren(AstNode node);
 
+    void visit(ScriptDclNode node);
+    void visit(ScriptMethodNode node);
     void visit(SendMsgNode node);
     void visit(InitNode node);
     void visit(BodyNode node);
@@ -14,6 +16,7 @@ public interface NodeVisitor {
     void visit(ActorDclNode node);
     void visit(ActorIdentifierNode node);
     void visit(ActorStateNode node);
+    void visit(FollowsNode node);
 
 
     void visit(ParametersNode node);
@@ -28,6 +31,8 @@ public interface NodeVisitor {
     void visit(IdentifierNode node);
     void visit(AssignNode node);
     void visit(InitializationNode node);
+
+
 
 
     void visit(ListNode node);
@@ -59,4 +64,6 @@ public interface NodeVisitor {
     void visit(ArrayAccessNode node);
     void visit(StateAccessNode node);
     void visit(KnowsAccessNode node);
+
+    void visit(PrintCallNode printCallNode);
 }
