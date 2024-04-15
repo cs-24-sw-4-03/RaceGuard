@@ -62,7 +62,7 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | boolExp);
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp);
 
 //assignment used to assign a value to an already defined variable.
 assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor) ;
@@ -75,6 +75,7 @@ boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
     | identifier
     | negatedBool
+    | methodCall
     ;
 negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE
     | LOGIC_NEGATION identifier
