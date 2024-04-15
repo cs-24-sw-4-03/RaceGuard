@@ -18,6 +18,11 @@ public class SemanticsVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(SendMsgNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(InitNode node) {
         this.visitChildren(node);
     }
@@ -144,6 +149,21 @@ public class SemanticsVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArithExprNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(NegatedBoolNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(BoolNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(CompareExpNode node) {
         this.visitChildren(node);
     }
 

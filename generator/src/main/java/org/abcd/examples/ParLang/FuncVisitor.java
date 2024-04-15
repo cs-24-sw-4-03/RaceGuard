@@ -115,6 +115,26 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(NegatedBoolNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(BoolNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(CompareExpNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(SendMsgNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(IterationNode node) {
         this.visitChildren(node);
     }
