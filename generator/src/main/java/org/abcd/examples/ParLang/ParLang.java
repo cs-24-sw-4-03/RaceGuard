@@ -13,13 +13,7 @@ import org.abcd.examples.ParLang.AstNodes.InitNode;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.misc.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.abcd.examples.ParLang.AstNodes.AstNode;
 
 
@@ -67,6 +61,10 @@ public class ParLang {
         funcVisitor.visit(ast);
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
+        
+        System.out.println("Type Checking");
+        TypeVisitor typeVisitor = new TypeVisitor(symbolTable);
+        typeVisitor.visit(ast);
     }
 
 }

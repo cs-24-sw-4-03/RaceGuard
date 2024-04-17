@@ -3,10 +3,10 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-public class SemanticsVisitor implements NodeVisitor {
+public class TypeVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
-    public SemanticsVisitor(SymbolTable symbolTable) {
+    public TypeVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
 
