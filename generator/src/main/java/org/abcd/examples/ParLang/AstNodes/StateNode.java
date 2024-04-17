@@ -1,9 +1,9 @@
 package org.abcd.examples.ParLang.AstNodes;
 import org.abcd.examples.ParLang.NodeVisitor;
 
-public class ActorStateNode extends DclNode{
+public class StateNode extends DclNode{
 
-    public ActorStateNode(String id) {
+    public StateNode(String id) {
         super(id);
     }
 
