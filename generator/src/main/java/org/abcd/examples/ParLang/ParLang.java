@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.misc.Utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.abcd.examples.ParLang.AstNodes.AstNode;
@@ -58,7 +59,18 @@ public class ParLang {
         //print CST
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+        CodeGenVisitor codeGenVisitor = new CodeGenVisitor();
+        codeGenVisitor.visit(ast);
+
+        try {
+            codeGenVisitor.generate();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+
+        }
     }
+
 
 }
 
