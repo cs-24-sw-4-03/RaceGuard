@@ -33,7 +33,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node){
         System.out.println("Symbol: " + node.getId());
-        if(node.getParent() instanceof ActorStateNode){
+        if(node.getParent() instanceof StateNode){
             if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
@@ -193,7 +193,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ExprNode node) {
+    public void visit(ExpNode node) {
         this.visitChildren(node);
     }
 
@@ -238,11 +238,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorIdentifierNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(AssignNode node){
         this.visitChildren(node);
     }
@@ -258,7 +253,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorStateNode node) {
+    public void visit(StateNode node) {
         this.visitChildren(node);
     }
 
@@ -283,12 +278,12 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolExprNode node) {
+    public void visit(BoolExpNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(ArithExprNode node) {
+    public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
 
