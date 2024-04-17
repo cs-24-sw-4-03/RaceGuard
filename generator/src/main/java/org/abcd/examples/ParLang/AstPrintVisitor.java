@@ -26,7 +26,7 @@ public class AstPrintVisitor {
 
             switch (className){
                 case "ArithExprNode":
-                    this.print(localIndent, className + " : " + ((ArithExprNode) node).getOpType());
+                    this.print(localIndent, className + " : " + ((ArithExpNode) node).getOpType());
                     break;
                 case "UnaryExpNode":
                     if (((UnaryExpNode) node).isNegative()){
@@ -50,9 +50,6 @@ public class AstPrintVisitor {
                     }else{
                         this.print(localIndent, className + ": " + ((IdentifierNode)node).getName());
                     }
-                    break;
-                case "ActorIdentifierNode":
-                    this.print(localIndent, className + " type: " + ((ActorIdentifierNode)node).getActorType()+ " id: " + ((ActorIdentifierNode)node).getName());
                     break;
                 case "SpawnActorNode":
                     this.print(localIndent, className + " : " + ((SpawnActorNode)node).getActorType());

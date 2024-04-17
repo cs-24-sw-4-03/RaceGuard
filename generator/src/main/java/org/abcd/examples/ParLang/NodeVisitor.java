@@ -14,8 +14,7 @@ public interface NodeVisitor {
 
     void visit(SpawnActorNode node);
     void visit(ActorDclNode node);
-    void visit(ActorIdentifierNode node);
-    void visit(ActorStateNode node);
+    void visit(StateNode node);
     void visit(FollowsNode node);
 
 
@@ -43,13 +42,12 @@ public interface NodeVisitor {
     void visit(MainDclNode node);
     void visit(SpawnDclNode node);
 
-    void visit(ExprNode node);
+    void visit(ExpNode node);
     void visit(IntegerNode node);
     void visit(DoubleNode node);
     void visit(StringNode node);
-
-    void visit(BoolExprNode node);
-    void visit(ArithExprNode node);
+    void visit(BoolExpNode node);
+    void visit(ArithExpNode node);
     void visit(NegatedBoolNode node);
     void visit(BoolNode node);
     void visit(CompareExpNode node);

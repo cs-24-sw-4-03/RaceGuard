@@ -2,7 +2,7 @@ package org.abcd.examples.ParLang.AstNodes;
 
 import org.abcd.examples.ParLang.NodeVisitor;
 
-public class ArithExprNode extends ExprNode {
+public class ArithExpNode extends ExpNode {
     public enum OpType {
         PLUS("+"),
         MINUS("-"),
@@ -25,7 +25,7 @@ public class ArithExprNode extends ExprNode {
 
     private boolean isNegated = false;
 
-    public ArithExprNode(OpType t, AstNode l, AstNode r){
+    public ArithExpNode(OpType t, AstNode l, AstNode r){
         opType=t;
         this.addChild(l);
         this.addChild(r);
