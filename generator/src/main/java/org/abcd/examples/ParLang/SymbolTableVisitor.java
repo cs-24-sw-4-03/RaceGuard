@@ -3,8 +3,15 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
+/*TODO:
+    * 1. Change FuncVisitor to declare all on methods in the global scope, or similar globally accessible place, that only contains the on methods
+    * 2. Add local functions to the scope of the Actor they are declared in
+    * 3. Create a new Visitor that checks that all calls to methods are legal.
+    * This includes that on methods are called as messages and that local methods are called from the Actor they are in
+    * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
+ */
 
-//TODO: Find out if scope checking also includes checking for legal calls to other actors
+
 //TODO: Implement ArrayDcl?
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
