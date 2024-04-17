@@ -3,12 +3,14 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
+
 /*TODO:
     * 1. Change FuncVisitor to declare all on methods in the global scope, or similar globally accessible place, that only contains the on methods
     * 2. Add local functions to the scope of the Actor they are declared in
     * 3. Create a new Visitor that checks that all calls to methods are legal.
     * This includes that on methods are called as messages and that local methods are called from the Actor they are in
     * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
+    * 5. Find out when it makes sense to check for duplicate method names in an Actor
  */
 
 
@@ -85,20 +87,14 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Check whether the if statement should be in this method
     @Override
-    //Adds a method to the symbol table if it does not already exist
+    //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
-        if(this.symbolTable.lookUpSymbol(node.getId()) == null){
-            Attributes attributes = new Attributes(node.getReturnType(), "method");
-            this.symbolTable.insertSymbol(node.getId(), attributes);
-
-            this.symbolTable.addScope(node.getNodeHash());
-            //Visits the children of the node to add the symbols to the symbol table
-            this.visitChildren(node);
-            //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
-            this.symbolTable.leaveScope();
-        }
+        this.symbolTable.addScope(node.getNodeHash());
+        //Visits the children of the node to add the symbols to the symbol table
+        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
+        this.symbolTable.leaveScope();
     }
 
 
