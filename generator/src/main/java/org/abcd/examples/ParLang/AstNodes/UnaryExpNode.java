@@ -2,7 +2,7 @@ package org.abcd.examples.ParLang.AstNodes;
 
 import org.abcd.examples.ParLang.NodeVisitor;
 
-public class UnaryExpNode extends ExprNode{
+public class UnaryExpNode extends ExpNode {
     private boolean isNegated = false;
 
     public  UnaryExpNode(){

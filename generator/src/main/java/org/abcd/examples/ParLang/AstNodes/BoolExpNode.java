@@ -1,8 +1,8 @@
 package org.abcd.examples.ParLang.AstNodes;
 
-public class BoolExprNode extends ExprNode {
+public class BoolExpNode extends ExpNode {
     private final String opType = "||";
 
-    public BoolExprNode() {
+    public BoolExpNode() {
     }
 }
