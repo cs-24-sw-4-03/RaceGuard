@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+//TODO: Find out how to differentiate between local and on methods and whether it is called from the correct Actor
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 

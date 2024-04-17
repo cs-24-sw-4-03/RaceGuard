@@ -6,6 +6,7 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 //TODO: Find out if scope checking also includes checking for legal calls to other actors
 //TODO: Implement ArrayDcl?
+//TODO: Make sure you handle Knows identifier nodes correctly
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -29,6 +30,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
+    //TODO: Knows does not use a VarDeclarationNode, so it must be handled somewhere else
     //Declares a variable in the symbol table if it does not already exist
     @Override
     public void visit(VarDclNode node){
@@ -85,6 +87,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
+    //TODO: Check whether the if statement should be in this method
     @Override
     //Adds a method to the symbol table if it does not already exist
     public void visit(MethodDclNode node){
