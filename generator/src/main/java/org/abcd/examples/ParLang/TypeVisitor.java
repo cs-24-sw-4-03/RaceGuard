@@ -5,9 +5,11 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 public class TypeVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    TypeContainer typeContainer;
 
-    public TypeVisitor(SymbolTable symbolTable) {
+    public TypeVisitor(SymbolTable symbolTable, TypeContainer typeContainer) {
         this.symbolTable = symbolTable;
+        this.typeContainer = typeContainer;
     }
 
     @Override

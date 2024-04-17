@@ -11,9 +11,12 @@ import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     //Holds all recognized Types, Is extended when actors or Scripts are declared. see visitActor.
-    List<String> typeContainer = new ArrayList<String>(Arrays.asList(
-            "int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script"));
+    private TypeContainer typeContainer;
 
+    public AstVisitor(TypeContainer typeContainer) {
+        super();
+        this.typeContainer = typeContainer;
+    }
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         //Init is the root of the AST
         InitNode initNode=new InitNode();
@@ -81,11 +84,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         try {
             String scriptName = ctx.identifier().getText();
             ScriptDclNode node = new ScriptDclNode(scriptName);
-            if (typeContainer.contains(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
+            if (typeContainer.hasType(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
                 throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
             } else {//extend the typeContainer list with new types
-                typeContainer.add(scriptName);
-                typeContainer.add(scriptName + "[]");
+                typeContainer.addType(scriptName);
+                typeContainer.addType(scriptName + "[]");
             }
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
             children.remove(1);//remove identifier from list of children
@@ -122,12 +125,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         try {
             String actorName = ctx.identifier().getText(); //get the name of the actorType
-            if (typeContainer.contains(actorName)) {
+            if (typeContainer.hasType(actorName)) {
                 //if another actor is declared with the same name we have conflicting types.
                 throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
             } else {//extend the typeContainer list with new types
-                typeContainer.add(actorName); //add the actorType to the typeContainer
-                typeContainer.add(actorName + "[]"); //add the array holding actorType to the typeContainer
+                typeContainer.addType(actorName); //add the actorType to the typeContainer
+                typeContainer.addType(actorName + "[]"); //add the array holding actorType to the typeContainer
             }
             ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);

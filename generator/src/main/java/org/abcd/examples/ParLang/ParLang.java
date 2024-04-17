@@ -38,7 +38,8 @@ public class ParLang {
 
         ParseTree tree = parser.init(); // begin parsing at init
 
-        ParLangBaseVisitor<AstNode> visitor=new AstVisitor();
+        TypeContainer typeContainer = new TypeContainer();
+        ParLangBaseVisitor<AstNode> visitor=new AstVisitor(typeContainer);
 
         InitNode ast=(InitNode) tree.accept(visitor);
 
@@ -63,7 +64,8 @@ public class ParLang {
         symbolTableVisitor.visit(ast);
         
         System.out.println("Type Checking");
-        TypeVisitor typeVisitor = new TypeVisitor(symbolTable);
+
+        TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);
     }
 
