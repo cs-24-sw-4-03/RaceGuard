@@ -50,11 +50,6 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorIdentifierNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(ParametersNode node) {
         this.visitChildren(node);
     }
@@ -115,7 +110,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorStateNode node) {
+    public void visit(StateNode node) {
         this.visitChildren(node);
     }
 
@@ -145,7 +140,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ExprNode node) {
+    public void visit(ExpNode node) {
         this.visitChildren(node);
     }
 
@@ -165,12 +160,12 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolExprNode node) {
+    public void visit(BoolExpNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(ArithExprNode node) {
+    public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
 
