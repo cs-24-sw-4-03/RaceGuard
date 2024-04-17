@@ -6,7 +6,6 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 //TODO: Find out if scope checking also includes checking for legal calls to other actors
 //TODO: Implement ArrayDcl?
-//TODO: Make sure you handle Knows identifier nodes correctly
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -30,7 +29,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Knows does not use a VarDeclarationNode, so it must be handled somewhere else
     //Declares a variable in the symbol table if it does not already exist
     @Override
     public void visit(VarDclNode node){
@@ -40,13 +38,6 @@ public class SymbolTableVisitor implements NodeVisitor {
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
             }
-
-        } else if (node.getParent() instanceof KnowsNode) {
-            if(this.symbolTable.lookUpKnowsSymbol(node.getId()) == null){
-                Attributes attributes = new Attributes(node.getType(), "dcl");
-                this.symbolTable.insertKnowsSymbol(node.getId(), attributes);
-            }
-
         }else{
             if(this.symbolTable.lookUpSymbol(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
@@ -178,6 +169,17 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    @Override
+    public void visit(KnowsNode node) {
+        for(AstNode child: node.getChildren()){
+            IdentifierNode idChildNode = (IdentifierNode)child;
+            if (this.symbolTable.lookUpKnowsSymbol(idChildNode.getName()) == null) {
+                Attributes attributes = new Attributes(idChildNode.getType(), "dcl");
+                this.symbolTable.insertKnowsSymbol(idChildNode.getName(), attributes);
+            }
+        }
+    }
+
 
 
     @Override
@@ -262,11 +264,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(KnowsNode node) {
         this.visitChildren(node);
     }
 
