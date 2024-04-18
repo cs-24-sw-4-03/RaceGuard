@@ -185,7 +185,7 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         ArithExpNode leftChild = ((ArithExpNode) node.getChildren().get(0));
         ArithExpNode rightChild = ((ArithExpNode) node.getChildren().get(1));
-        if (leftChild.getOpType() == rightChild.getOpType()) {
+        if (leftChild.getType() == rightChild.getType()) {
             node.setType("Bool");
         } else {
             throw new CompareTypeMatchingException("Type mismatch in comparison expression");
