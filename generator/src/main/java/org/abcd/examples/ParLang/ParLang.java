@@ -64,7 +64,6 @@ public class ParLang {
         symbolTableVisitor.visit(ast);
         
         System.out.println("Type Checking");
-
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);
     }
