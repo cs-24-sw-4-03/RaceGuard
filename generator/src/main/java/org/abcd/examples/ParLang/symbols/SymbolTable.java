@@ -77,6 +77,15 @@ public class SymbolTable {
         return findScope(scopeName, this.globalScope);
     }
 
+    public void enterScope(String scopeName){
+        Scope scope = this.findScope(scopeName, this.globalScope);
+
+        if(scope != null){
+            this.scopeStack.push(this.currentScope);
+            this.currentScope = scope;
+        }
+    }
+
     public Attributes lookUpSymbol(String symbol){
         Scope scope = this.currentScope;
 

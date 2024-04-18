@@ -6,9 +6,11 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 public class TypeVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    TypeContainer typeContainer;
 
-    public TypeVisitor(SymbolTable symbolTable) {
+    public TypeVisitor(SymbolTable symbolTable, TypeContainer typeContainer) {
         this.symbolTable = symbolTable;
+        this.typeContainer = typeContainer;
     }
 
     @Override
@@ -45,11 +47,6 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ActorIdentifierNode node) {
         this.visitChildren(node);
     }
 
@@ -114,7 +111,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ActorStateNode node) {
+    public void visit(StateNode node) {
         this.visitChildren(node);
     }
 
@@ -144,7 +141,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ExprNode node) {
+    public void visit(ExpNode node) {
         this.visitChildren(node);
     }
 
@@ -164,12 +161,12 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolExprNode node) {
+    public void visit(BoolExpNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(ArithExprNode node) {
+    public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
 
