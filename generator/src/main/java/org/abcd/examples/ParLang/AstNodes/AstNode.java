@@ -10,6 +10,8 @@ import java.util.Objects;
 public abstract class AstNode {
     private List<AstNode> children = new ArrayList<>();
     private AstNode parent;
+
+    private String type;
     public List<AstNode> getChildren() {
         return children;
     }
@@ -36,5 +38,12 @@ public abstract class AstNode {
 
     public abstract void accept(NodeVisitor visitor);
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
 }

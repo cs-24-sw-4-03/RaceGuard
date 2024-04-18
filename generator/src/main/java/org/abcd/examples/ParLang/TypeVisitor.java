@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 public class TypeVisitor implements NodeVisitor {
@@ -185,6 +186,13 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(CompareExpNode node) {
         this.visitChildren(node);
+        ArithExprNode leftChild = ((ArithExprNode) node.getChildren().get(0));
+        ArithExprNode rightChild = ((ArithExprNode) node.getChildren().get(1));
+        if (leftChild.getOpType() == rightChild.getOpType()) {
+            node.setType("Bool");
+        } else {
+            throw new CompareTypeMatchingException("Type mismatch in comparison expression");
+        }
     }
 
     @Override
