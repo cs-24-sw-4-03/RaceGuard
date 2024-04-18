@@ -183,8 +183,8 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(CompareExpNode node) {
         this.visitChildren(node);
-        ArithExprNode leftChild = ((ArithExprNode) node.getChildren().get(0));
-        ArithExprNode rightChild = ((ArithExprNode) node.getChildren().get(1));
+        ArithExpNode leftChild = ((ArithExpNode) node.getChildren().get(0));
+        ArithExpNode rightChild = ((ArithExpNode) node.getChildren().get(1));
         if (leftChild.getOpType() == rightChild.getOpType()) {
             node.setType("Bool");
         } else {
