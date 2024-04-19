@@ -67,7 +67,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        this.visitChildren(node);
+        node.setType(symbolTable.lookUpSymbol(node.getName()).getVariableType());
     }
 
     @Override
@@ -78,6 +78,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
+        node.setType(node.getChildren().get(0).getType());
+        if (node.getType() == null) {
+            throw new ReturnNodeException("Type is not defined for return statement");
+        }
     }
 
     @Override
@@ -101,6 +105,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
+        node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
+        if (node.getType() == null) {
+            throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
+        }
     }
 
     @Override
@@ -145,11 +153,23 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(DclNode node) {
         this.visitChildren(node);
+        String identifierType = node.getChildren().get(0).getType();
+        String initType = node.getChildren().get(1).getType();
+        if (!identifierType.equals(initType)) {
+            throw new varDclNodeExeption("Type mismatch in declaration DclNode");
+        }
+        node.setType(identifierType);
     }
 
     @Override
     public void visit(AssignNode node) {
         this.visitChildren(node);
+        String identifierType = node.getChildren().get(0).getType();
+        String assignType = node.getChildren().get(1).getType();
+        if (!identifierType.equals(assignType)) {
+            throw new AssignExecption("Type mismatch in assignment");
+        }
+        node.setType(identifierType);
     }
 
     @Override
@@ -208,6 +228,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         this.visitChildren(node);
+        String childType = node.getChildren().get(1).getType();
+        if (node.getType().equals(childType)) {
+            throw new MethodDclNodeException("Return does not match returnType of method");
+        }
     }
 
     @Override
@@ -274,6 +298,27 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
+        //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
+        String leftType = node.getChildren().get(0).getType();
+        String rightType = node.getChildren().get(1).getType();
+        String resultType = findResultingType(leftType,rightType);
+        if(resultType == null){
+            throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType);
+        }
+        node.setType(resultType);
+    }
+
+    private String findResultingType(String leftType, String rightType){
+        if (leftType.equals("int") && rightType.equals("int"))
+        {
+            return "int";
+        }
+        if (leftType.equals("int") && rightType.equals("double") ||
+            leftType.equals("double") && rightType.equals("int")){
+            return "double";
+        }
+        //All other cases returns null(Also where left or right type == null)
+        return null;
     }
 
     @Override
@@ -356,6 +401,4 @@ public class TypeVisitor implements NodeVisitor {
             }
         }
     }
-
-
 }
