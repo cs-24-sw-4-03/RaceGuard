@@ -47,7 +47,12 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(SendMsgNode node) {
+        if (symbolTable.lookUpSymbol(node.getMsgName()) == null){
+            throw new MethodCallException("Method: " + node.getMsgName() + " not found");
+        }
+        symbolTable.enterScope(node.getMsgName());
         this.visitChildren(node);
+        symbolTable.leaveScope();
     }
 
     @Override
@@ -87,6 +92,7 @@ public class TypeVisitor implements NodeVisitor {
         }
         symbolTable.enterScope(node.getMethodName());
         this.visitChildren(node);
+        symbolTable.leaveScope();
     }
 
     @Override
