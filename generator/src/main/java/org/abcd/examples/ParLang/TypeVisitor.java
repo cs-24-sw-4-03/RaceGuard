@@ -2,16 +2,7 @@ package org.abcd.examples.ParLang;
 
 import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.abcd.examples.ParLang.Exceptions.BoolExpException;
-import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
-import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
-import org.abcd.examples.ParLang.Exceptions.DoubleNodeException;
-import org.abcd.examples.ParLang.Exceptions.IntegerNodeException;
-import org.abcd.examples.ParLang.Exceptions.StringNodeException;
-import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
-import org.abcd.examples.ParLang.Exceptions.ListNodeException;
-import org.abcd.examples.ParLang.Exceptions.PrintException;
-import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
+import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
@@ -59,7 +50,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        this.visitChildren(node);
+        node.setType(symbolTable.lookUpSymbol(node.getName()).getVariableType());
     }
 
     @Override
@@ -95,11 +86,23 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(DclNode node) {
         this.visitChildren(node);
+        String identifierType = node.getChildren().get(0).getType();
+        String initType = node.getChildren().get(1).getType();
+        if (!identifierType.equals(initType)) {
+            throw new varDclNodeExeption("Type mismatch in declaration DclNode");
+        }
+        node.setType(identifierType);
     }
 
     @Override
     public void visit(AssignNode node) {
         this.visitChildren(node);
+        String identifierType = node.getChildren().get(0).getType();
+        String assignType = node.getChildren().get(1).getType();
+        if (!identifierType.equals(assignType)) {
+            throw new AssignExecption("Type mismatch in assignment");
+        }
+        node.setType(identifierType);
     }
 
     @Override
@@ -306,6 +309,4 @@ public class TypeVisitor implements NodeVisitor {
             }
         }
     }
-
-
 }
