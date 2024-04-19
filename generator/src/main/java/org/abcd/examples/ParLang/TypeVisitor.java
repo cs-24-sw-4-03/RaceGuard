@@ -5,6 +5,13 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.BoolExpException;
 import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
 import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
+import org.abcd.examples.ParLang.Exceptions.DoubleNodeException;
+import org.abcd.examples.ParLang.Exceptions.IntegerNodeException;
+import org.abcd.examples.ParLang.Exceptions.StringNodeException;
+import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
+import org.abcd.examples.ParLang.Exceptions.ListNodeException;
+import org.abcd.examples.ParLang.Exceptions.PrintException;
+import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
@@ -98,16 +105,34 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(InitializationNode node) {
         this.visitChildren(node);
+        String childType = node.getChildren().get(0).getType();
+        if (childType == null) {
+            throw new InitializationNodeException("Type is not defined for initialization node");
+        }
+        node.setType(childType);
     }
 
     @Override
     public void visit(ListNode node) {
         this.visitChildren(node);
+        String listType = node.getChildren().get(0).getType();
+        for (AstNode child : node.getChildren()) {
+            if (!child.getType().equals(listType)) {
+                throw new ListNodeException("List elements must be of the same type");
+            }
+        }
+        node.setType(listType + "[]");
     }
 
     @Override
     public void visit(VarDclNode node) {
         this.visitChildren(node);
+        String identifierType = node.getChildren().get(0).getType();
+        String initType = node.getChildren().get(1).getType();
+        if (!identifierType.equals(initType)) {
+            throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable");
+        }
+        node.setType(identifierType);
     }
 
     @Override
@@ -152,17 +177,26 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        this.visitChildren(node);
+        if (((IntegerNode) node).getValue() == null) {
+            throw new IntegerNodeException("IntegerNode value is null");
+        }
+        node.setType("int");
     }
 
     @Override
     public void visit(DoubleNode node) {
-        this.visitChildren(node);
+        if (((DoubleNode) node).getValue() == null) {
+            throw new DoubleNodeException("DoubleNode value is null");
+        }
+        node.setType("double");
     }
 
     @Override
     public void visit(StringNode node) {
-        this.visitChildren(node);
+        if (((StringNode) node).getValue() == null) {
+            throw new StringNodeException("StringNode value is null");
+        }
+        node.setType("string");
     }
 
     @Override
@@ -266,6 +300,11 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(PrintCallNode node) {
         this.visitChildren(node);
+        for (AstNode child : node.getChildren()) {
+            if (!child.getType().equals("string")) {
+                throw new PrintException("Print statement only accepts string arguments");
+            }
+        }
     }
 
 
