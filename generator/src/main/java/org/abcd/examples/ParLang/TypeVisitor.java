@@ -2,6 +2,7 @@ package org.abcd.examples.ParLang;
 
 import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.BoolExpException;
 import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
 import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
@@ -165,8 +166,25 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
+        for (AstNode child : node.getChildren()) {
+            if (!child.getType().equals("bool")){
+                throw new BoolExpException("all BoolAndExpNode children does not have type bool");
+            }
+        }
+        node.setType("bool");
+    }
+
+    @Override
     public void visit(BoolExpNode node) {
         this.visitChildren(node);
+        for (AstNode child : node.getChildren()) {
+            if (!child.getType().equals("bool")){
+                throw new BoolExpException("all BoolExpNode children does not have type bool");
+            }
+        }
+        node.setType("bool");
     }
 
     @Override

@@ -46,6 +46,7 @@ public interface NodeVisitor {
     void visit(IntegerNode node);
     void visit(DoubleNode node);
     void visit(StringNode node);
+    void visit(BoolAndExpNode node);
     void visit(BoolExpNode node);
     void visit(ArithExpNode node);
     void visit(NegatedBoolNode node);
