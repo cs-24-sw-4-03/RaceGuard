@@ -89,11 +89,16 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
-        this.symbolTable.addScope(node.getNodeHash());
-        //Visits the children of the node to add the symbols to the symbol table
-        this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
-        this.symbolTable.leaveScope();
+        if(this.symbolTable.lookUpSymbol(node.getId()) == null){
+            Attributes attributes = new Attributes(node.getType(), "method");
+            this.symbolTable.insertSymbol(node.getId(), attributes);
+
+            this.symbolTable.addScope(node.getNodeHash());
+            //Visits the children of the node to add the symbols to the symbol table
+            this.visitChildren(node);
+            //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
+            this.symbolTable.leaveScope();
+        }
     }
 
 
