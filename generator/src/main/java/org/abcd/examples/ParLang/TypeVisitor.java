@@ -83,6 +83,9 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SpawnActorNode node) {
         this.visitChildren(node);
+        if (node.getType() == null){
+            throw new SpawnActorException("Type is not defined for spawn actor node");
+        }
     }
 
     @Override
