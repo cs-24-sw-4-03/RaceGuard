@@ -2,16 +2,7 @@ package org.abcd.examples.ParLang;
 
 import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.abcd.examples.ParLang.Exceptions.BoolExpException;
-import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
-import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
-import org.abcd.examples.ParLang.Exceptions.DoubleNodeException;
-import org.abcd.examples.ParLang.Exceptions.IntegerNodeException;
-import org.abcd.examples.ParLang.Exceptions.StringNodeException;
-import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
-import org.abcd.examples.ParLang.Exceptions.ListNodeException;
-import org.abcd.examples.ParLang.Exceptions.PrintException;
-import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
+import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
@@ -224,6 +215,27 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
+        //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
+        String leftType = node.getChildren().get(0).getType();
+        String rightType = node.getChildren().get(1).getType();
+        String resultType = findResultingType(leftType,rightType);
+        if(resultType == null){
+            throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType);
+        }
+        node.setType(resultType);
+    }
+
+    private String findResultingType(String leftType, String rightType){
+        if (leftType.equals("int") && rightType.equals("int"))
+        {
+            return "int";
+        }
+        if (leftType.equals("int") && rightType.equals("double") ||
+            leftType.equals("double") && rightType.equals("int")){
+            return "double";
+        }
+        //All other cases returns null(Also where left or right type == null)
+        return null;
     }
 
     @Override

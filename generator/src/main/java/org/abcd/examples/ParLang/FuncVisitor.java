@@ -134,6 +134,11 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(BoolExpNode node) {
         this.visitChildren(node);
     }
