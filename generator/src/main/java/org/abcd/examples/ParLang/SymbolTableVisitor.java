@@ -83,7 +83,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     //Adds a method to the symbol table if it does not already exist
     public void visit(MethodDclNode node){
         if(this.symbolTable.lookUpSymbol(node.getId()) == null){
-            Attributes attributes = new Attributes(node.getReturnType(), "method");
+            Attributes attributes = new Attributes(node.getType(), "method");
             this.symbolTable.insertSymbol(node.getId(), attributes);
 
             this.symbolTable.addScope(node.getNodeHash());
