@@ -1,6 +1,9 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.DoubleNodeException;
+import org.abcd.examples.ParLang.Exceptions.IntegerNodeException;
+import org.abcd.examples.ParLang.Exceptions.StringNodeException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 public class TypeVisitor implements NodeVisitor {
@@ -146,17 +149,26 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        this.visitChildren(node);
+        if (((IntegerNode) node).getValue() == null) {
+            throw new IntegerNodeException("IntegerNode value is null");
+        }
+        node.setType("int");
     }
 
     @Override
     public void visit(DoubleNode node) {
-        this.visitChildren(node);
+        if (((DoubleNode) node).getValue() == null) {
+            throw new DoubleNodeException("DoubleNode value is null");
+        }
+        node.setType("double");
     }
 
     @Override
     public void visit(StringNode node) {
-        this.visitChildren(node);
+        if (((StringNode) node).getValue() == null) {
+            throw new StringNodeException("StringNode value is null");
+        }
+        node.setType("string");
     }
 
     @Override
