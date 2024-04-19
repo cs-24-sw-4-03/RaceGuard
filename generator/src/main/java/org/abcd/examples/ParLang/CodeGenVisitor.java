@@ -14,15 +14,25 @@ public class CodeGenVisitor implements NodeVisitor {
 
     String dirPath = System.getProperty("user.dir") + "/output";
 
-    StringBuilder stringBuilder = new StringBuilder();
 
+    StringBuilder stringBuilder = new StringBuilder();
+    ArrayList<String> codeOutput = new ArrayList<>();
+
+    int localIndent = 0; //indent for akka file generated
 
     public void generate() throws IOException {
+        codeOutput.add(getLine());
+
+        for (String line : codeOutput) {
+            stringBuilder.append(line);
+        }
+
         File dir = new File(dirPath);
 
         if(!dir.exists()){
             dir.mkdirs();
         }
+
 
         File file = new File(filePath);
         System.out.println(file);
@@ -33,16 +43,30 @@ public class CodeGenVisitor implements NodeVisitor {
 
     }
 
+    private String getLine(){
+        String line = stringBuilder.toString();
+        stringBuilder.setLength(0); // Resets string builder
+        int indent = localIndent;
+
+        if (line.endsWith("}\n")){
+            indent--;
+        }
+
+
+        return line;
+    }
     public void visit(AstNode node) {
-        for (AstNode childNode : node.getChildren())     {
+        for (AstNode childNode : node.getChildren()) {
             System.out.println(childNode.getChildren());
             childNode.accept(this);
         }
-
     }
 
     @Override
     public void visitChildren(AstNode node) {
+        for (AstNode childNode : node.getChildren()) {
+            childNode.accept(this);
+        }
 
     }
 
@@ -84,7 +108,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(BodyNode node) {
         System.out.println("BODY NODE");
-
+        stringBuilder.append("Body");
     }
 
     @Override
@@ -170,8 +194,12 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
-        System.out.println("VISIT MAIN!!!");
+        stringBuilder.append("public static void main(String[] args){");
+        stringBuilder.append("\n");
+        this.visitChildren(node);
+        stringBuilder.append("}");
     }
+
 
     @Override
     public void visit(MethodCallNode node) {
