@@ -2,16 +2,7 @@ package org.abcd.examples.ParLang;
 
 import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.abcd.examples.ParLang.Exceptions.BoolExpException;
-import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
-import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
-import org.abcd.examples.ParLang.Exceptions.DoubleNodeException;
-import org.abcd.examples.ParLang.Exceptions.IntegerNodeException;
-import org.abcd.examples.ParLang.Exceptions.StringNodeException;
-import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
-import org.abcd.examples.ParLang.Exceptions.ListNodeException;
-import org.abcd.examples.ParLang.Exceptions.PrintException;
-import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
+import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
@@ -70,6 +61,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
+        node.setType(node.getChildren().get(0).getType());
+        if (node.getType() == null) {
+            throw new ReturnNodeException("Type is not defined for return statement");
+        }
     }
 
     @Override
