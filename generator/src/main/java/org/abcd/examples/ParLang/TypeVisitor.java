@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
 import org.abcd.examples.ParLang.Exceptions.ListNodeException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
@@ -93,6 +94,11 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(InitializationNode node) {
         this.visitChildren(node);
+        String childType = node.getChildren().get(0).getType();
+        if (childType == null) {
+            throw new InitializationNodeException("Type mismatch in assignment");
+        }
+        node.setType(childType);
     }
 
     @Override
