@@ -4,6 +4,8 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import java.util.Objects;
+
 /*TODO:
     * 3. Create a new Visitor that checks that all calls to methods are legal.
     * This includes that on methods are called as messages and that local methods are called from the Actor they are in
@@ -89,6 +91,9 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
+        if(Objects.equals(node.getMethodType(), "local")){
+            this.symbolTable.insertLocalMethod(node.getNodeHash());
+        }
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);

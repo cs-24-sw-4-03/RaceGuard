@@ -158,5 +158,13 @@ public class SymbolTable {
 
     public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
 
+    public void insertLocalMethod(String symbol){
+        this.currentScope.addDeclaredLocalMethod(symbol);
+    }
+
+    public ArrayList<String> getDeclaredLocalMethods(){
+        return currentScope.getDeclaredLocalMethods();
+    }
+
 
 }

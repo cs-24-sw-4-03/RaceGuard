@@ -1,0 +1,24 @@
+main(int z){
+int c = 7;
+}
+
+Actor Test{
+	State{int y;}
+	Knows{}
+
+	Spawn(int x){
+		State.y = x;
+	}
+
+	local TestLocal(): void{
+		for(int y = 0; y<x ; y = y+1){
+
+		}
+		Test <- TestOn();
+
+	}
+
+
+	on TestOn(){
+	}
+}

@@ -5,7 +5,7 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
 
-//TODO: Find out how to check whether it is called from the correct Actor
+//TODO: Find out how to check whether methods are called from the correct Actor
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
