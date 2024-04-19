@@ -76,6 +76,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 return type;
         }
     }
+
+    public void visitChild(AstNode node){
+        node.accept(this);
+    }
     @Override
     public void visitChildren(AstNode node) {
         for (AstNode childNode : node.getChildren()) {
@@ -111,19 +115,22 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArithExprNode node) {
+        AstNode leftChild = node.getChildren().get(0);
+        AstNode rightChild = node.getChildren().get(1);
 
+        visitChild(leftChild);
+        stringBuilder.append(" " + node.getOpType().getValue() + " ");
+        visitChild(rightChild);
     }
 
     @Override
     public void visit(AssignNode node) {
-        AstNode leftChild = node.getChildren().get(0);
-        AstNode rightChild = node.getChildren().get(1);
+
 
     }
 
     @Override
     public void visit(BodyNode node) {
-        //stringBuilder.append("Body");
         stringBuilder.append("{\n");
         codeOutput.add(getLine());
         localIndent++;
@@ -151,6 +158,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(DoubleNode node) {
+        stringBuilder.append(node.getValue());
 
     }
 
@@ -171,22 +179,26 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-
+        stringBuilder.append(VariableConverter(node.getType()));
+        stringBuilder.append(" ");
+        stringBuilder.append(node.getName());
     }
 
     @Override
     public void visit(InitializationNode node) {
-
+        stringBuilder.append(" = ");
+        this.visitChildren(node);
     }
 
     @Override
     public void visit(InitNode node) {
-        System.out.println("ÌNIT NODE");
+
 
     }
 
     @Override
     public void visit(IntegerNode node) {
+        stringBuilder.append(node.getValue());
 
     }
 
@@ -299,9 +311,8 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
-        stringBuilder.append(VariableConverter(node.getType()));
-        stringBuilder.append(" ");
-        stringBuilder.append(node.getId());
+        visitChildren(node);
+        stringBuilder.append(";\n");
         codeOutput.add(getLine());
     }
 
