@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.ListNodeException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 public class TypeVisitor implements NodeVisitor {
@@ -97,6 +98,13 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ListNode node) {
         this.visitChildren(node);
+        String listType = node.getChildren().get(0).getType();
+        for (AstNode child : node.getChildren()) {
+            if (!child.getType().equals(listType)) {
+                throw new ListNodeException("List elements must be of the same type");
+            }
+        }
+        node.setType(listType + "[]");
     }
 
     @Override
