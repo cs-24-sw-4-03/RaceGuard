@@ -5,13 +5,14 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class TypeVisitor implements NodeVisitor {
     SymbolTable symbolTable;
     TypeContainer typeContainer;
-    List<RuntimeException> exceptions;
+    List<RuntimeException> exceptions = new ArrayList<>();
 
     public TypeVisitor(SymbolTable symbolTable, TypeContainer typeContainer) {
         this.symbolTable = symbolTable;
