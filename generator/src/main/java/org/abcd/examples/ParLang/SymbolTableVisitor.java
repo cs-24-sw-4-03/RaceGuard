@@ -4,7 +4,15 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-//TODO: Find out if scope checking also includes checking for legal calls to other actors
+/*TODO:
+    * 3. Create a new Visitor that checks that all calls to methods are legal.
+    * This includes that on methods are called as messages and that local methods are called from the Actor they are in
+    * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
+    * 5. Find out when it makes sense to check for duplicate method names in an Actor
+    * 6. Error handling
+ */
+
+
 //TODO: Implement ArrayDcl?
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
@@ -39,7 +47,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
             }
         }else{
-            if(this.symbolTable.lookUpSymbol(node.getId()) == null){
+            if(this.symbolTable.lookUpSymbolCurrentScope(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertSymbol(node.getId(), attributes);
             }
@@ -78,9 +86,8 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Check whether the if statement should be in this method
     @Override
-    //Adds a method to the symbol table if it does not already exist
+    //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
         if(this.symbolTable.lookUpSymbol(node.getId()) == null){
             Attributes attributes = new Attributes(node.getType(), "method");
