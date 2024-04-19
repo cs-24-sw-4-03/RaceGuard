@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
 import org.abcd.examples.ParLang.Exceptions.ListNodeException;
+import org.abcd.examples.ParLang.Exceptions.PrintException;
 import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
@@ -248,6 +249,11 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(PrintCallNode node) {
         this.visitChildren(node);
+        for (AstNode child : node.getChildren()) {
+            if (!child.getType().equals("string")) {
+                throw new PrintException("Print statement only accepts string arguments");
+            }
+        }
     }
 
 
