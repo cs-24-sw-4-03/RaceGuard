@@ -11,6 +11,9 @@ Actor Test{
 	}
 
 	local TestLocal(): void{
+	    int[] intArray = {2, 3, 5};
+	    int testArray = intArray[2];
+
 		for(int y = 0; y<x ; y = y+1){
 
 		}

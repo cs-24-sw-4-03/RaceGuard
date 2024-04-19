@@ -12,10 +12,10 @@ import java.util.Objects;
     * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
     * 5. Find out when it makes sense to check for duplicate method names in an Actor
     * 6. Error handling
+    * 7. Find out how we declare an array, and implement handling of it
+    * 8. Implement handling of arrayAccessNode
  */
 
-
-//TODO: Implement ArrayDcl?
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -54,6 +54,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 this.symbolTable.insertSymbol(node.getId(), attributes);
             }
         }
+        this.visitChildren(node);
         //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override? Error?
     }
 
@@ -162,6 +163,12 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Not found state symbol: " + node.getAccessIdentifier());
         }
 
+        this.visitChildren(node);
+    }
+
+    //TODO: Implement this and find out how we declare an array
+    @Override
+    public void visit(ArrayAccessNode node) {
         this.visitChildren(node);
     }
 
@@ -311,11 +318,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(IterationNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ArrayAccessNode node) {
         this.visitChildren(node);
     }
 
