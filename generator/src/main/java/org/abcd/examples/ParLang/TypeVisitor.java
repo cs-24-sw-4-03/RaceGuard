@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
 import org.abcd.examples.ParLang.Exceptions.ListNodeException;
+import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 public class TypeVisitor implements NodeVisitor {
@@ -96,7 +97,7 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         String childType = node.getChildren().get(0).getType();
         if (childType == null) {
-            throw new InitializationNodeException("Type mismatch in assignment");
+            throw new InitializationNodeException("Type is not defined for initialization node");
         }
         node.setType(childType);
     }
@@ -116,6 +117,12 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         this.visitChildren(node);
+        String identifierType = node.getChildren().get(0).getType();
+        String initType = node.getChildren().get(1).getType();
+        if (!identifierType.equals(initType)) {
+            throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable");
+        }
+        node.setType(identifierType);
     }
 
     @Override
