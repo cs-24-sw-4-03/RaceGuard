@@ -82,10 +82,11 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         try {
             this.visitChildren(node);
-            node.setType(node.getChildren().get(0).getType());
-            if (node.getType() == null) {
+            String returnType = node.getChildren().get(0).getType();
+            if (returnType == null) {
                 throw new ReturnNodeException("Type is not defined for return statement");
             }
+            node.setType(returnType);
         }
         catch (ReturnNodeException e) {
             exceptions.add(e);
@@ -132,27 +133,32 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArgumentsNode node) {
-        this.visitChildren(node);
-        Map<String, Attributes> params = symbolTable.getCurrentScope().getParams();
-        AstNode parent = node.getParent();
-        int numOfChildren = node.getChildren().size();
-        if (parent instanceof MethodCallNode){
-            MethodCallNode methodCallNode = (MethodCallNode) parent;
-            String methodName = methodCallNode.getMethodName();
-            checkArgTypes(node, params, methodName);
+        try {
+            this.visitChildren(node);
+            Map<String, Attributes> params = symbolTable.getCurrentScope().getParams();
+            AstNode parent = node.getParent();
+            int numOfChildren = node.getChildren().size();
+            if (parent instanceof MethodCallNode) {
+                MethodCallNode methodCallNode = (MethodCallNode) parent;
+                String methodName = methodCallNode.getMethodName();
+                checkArgTypes(node, params, methodName);
+            } else if (parent instanceof SpawnActorNode) {
+                SpawnActorNode spawnActorNode = (SpawnActorNode) parent;
+                String actorName = spawnActorNode.getType();
+                checkArgTypes(node, params, actorName);
+            } else if (parent instanceof SendMsgNode) {
+                SendMsgNode sendMsgNode = (SendMsgNode) parent;
+                String msgName = sendMsgNode.getMsgName();
+                checkArgTypes(node, params, msgName);
+            } else {
+                throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
+            }
         }
-        else if (parent instanceof SpawnActorNode) {
-            SpawnActorNode spawnActorNode = (SpawnActorNode) parent;
-            String actorName = spawnActorNode.getType();
-            checkArgTypes(node, params, actorName);
+        catch (ArgumentsException e) {
+            exceptions.add(e);
         }
-        else if (parent instanceof SendMsgNode){
-            SendMsgNode sendMsgNode = (SendMsgNode) parent;
-            String msgName = sendMsgNode.getMsgName();
-            checkArgTypes(node, params, msgName);
-        }
-        else {
-            throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
+        catch (Exception e) {
+            exceptions.add(new ArgumentsException(e.getMessage() + " in ArgumentsNode"));
         }
     }
     private void checkArgTypes(ArgumentsNode node, Map<String, Attributes> params, String msgName){
