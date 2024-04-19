@@ -2,16 +2,7 @@ package org.abcd.examples.ParLang;
 
 import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.abcd.examples.ParLang.Exceptions.BoolExpException;
-import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
-import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
-import org.abcd.examples.ParLang.Exceptions.DoubleNodeException;
-import org.abcd.examples.ParLang.Exceptions.IntegerNodeException;
-import org.abcd.examples.ParLang.Exceptions.StringNodeException;
-import org.abcd.examples.ParLang.Exceptions.InitializationNodeException;
-import org.abcd.examples.ParLang.Exceptions.ListNodeException;
-import org.abcd.examples.ParLang.Exceptions.PrintException;
-import org.abcd.examples.ParLang.Exceptions.varDclNodeExeption;
+import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
@@ -35,11 +26,21 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptDclNode node) {
         this.visitChildren(node);
+        if (node.getId() == null){
+            throw new ScriptDclException("Type is not defined for script declaration node");
+        }
+        node.setType(node.getId());
     }
 
     @Override
     public void visit(ScriptMethodNode node) {
         this.visitChildren(node);
+        if (node.getType() == null){
+            throw new ScriptMethodException("Type is not defined for script method node");
+        }
+        if (node.getMethodType() == null){
+            throw new ScriptMethodException("(on/local) Method type is not defined for script method node");
+        }
     }
 
     @Override
