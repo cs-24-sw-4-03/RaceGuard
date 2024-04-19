@@ -48,10 +48,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.setLength(0); // Resets string builder
         int indent = localIndent;
 
-        if (line.endsWith("}\n")){
-            indent--;
-        }
-
+        line = line.indent(indent * 4);
 
         return line;
     }
@@ -62,6 +59,20 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    private String VariableConverter(String type){
+        switch (type) {
+            case "int":
+                return "long";
+            case "double":
+                return "double";
+            case "bool":
+                return "boolean";
+            case "string":
+                return "String";
+            default:
+                return type;
+        }
+    }
     @Override
     public void visitChildren(AstNode node) {
         for (AstNode childNode : node.getChildren()) {
@@ -102,13 +113,35 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(AssignNode node) {
+        AstNode leftChild = node.getChildren().get(0);
+        AstNode rightChild = node.getChildren().get(1);
 
     }
 
     @Override
     public void visit(BodyNode node) {
-        System.out.println("BODY NODE");
-        stringBuilder.append("Body");
+        //stringBuilder.append("Body");
+        stringBuilder.append("{\n");
+        System.out.println("builder1 " + stringBuilder.toString());
+        System.out.println("PRINT1" + codeOutput.toString());
+        System.out.println("ident: " + localIndent);
+        localIndent++;
+        codeOutput.add(getLine());
+
+        this.visitChildren(node);
+        System.out.println("builder2 " + stringBuilder.toString());
+        System.out.println("PRINT2" + codeOutput.toString());
+        System.out.println("ident: " + localIndent);
+
+        System.out.println("builder3 " + stringBuilder.toString());
+        System.out.println("PRINT3" + codeOutput.toString());
+        System.out.println("ident: " + localIndent);
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLine());
+        System.out.println("builder4 " + stringBuilder.toString());
+        System.out.println("PRINT4" + codeOutput.toString());
+        System.out.println("ident: " + localIndent);
     }
 
     @Override
@@ -194,10 +227,8 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
-        stringBuilder.append("public static void main(String[] args){");
-        stringBuilder.append("\n");
+        stringBuilder.append("public static void main(String[] args)");
         this.visitChildren(node);
-        stringBuilder.append("}");
     }
 
 
@@ -278,7 +309,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
-
+        stringBuilder.append(VariableConverter(node.getType()));
+        stringBuilder.append(" ");
+        stringBuilder.append(node.getId());
     }
 
     @Override

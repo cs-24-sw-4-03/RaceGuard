@@ -39,6 +39,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             main.addChild(visit(ctx.parameters())); //add parameters as children to the main node
         }
         if(ctx.body()!=null){ //If there is a body
+
             main.addChild(visit(ctx.body())); //visit the body and add it as a child to the main node
         }
         return main;
