@@ -10,6 +10,7 @@ import java.util.Objects;
 public abstract class AstNode {
     private List<AstNode> children = new ArrayList<>();
     private AstNode parent;
+    private String type;
     public List<AstNode> getChildren() {
         return children;
     }
@@ -25,6 +26,13 @@ public abstract class AstNode {
 
     public AstNode getParent() {
         return parent;
+    }
+
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
     }
 
     //Generates a hash code based on the memory address of the object
