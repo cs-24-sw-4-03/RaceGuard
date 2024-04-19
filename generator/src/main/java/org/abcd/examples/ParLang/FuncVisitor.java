@@ -3,7 +3,9 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-//TODO: Find out how to differentiate between local and on methods and whether it is called from the correct Actor
+import java.util.Objects;
+
+//TODO: Find out how to check whether it is called from the correct Actor
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -18,11 +20,10 @@ public class FuncVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Find a way to differentiate between local and on methods
     //TODO: Find a way to identify a specific Script, Actor, Method or ScriptMethod
     @Override
     public void visit(ScriptMethodNode node) {
-        this.symbolTable.declaredMethods.add(node.getId());
+        this.symbolTable.declaredOnMethods.add(node.getId());
         this.visitChildren(node);
     }
 
@@ -41,20 +42,19 @@ public class FuncVisitor implements NodeVisitor {
     //TODO:  Find out if it is a problem that Dcl uses Id and Call uses Name
     @Override
     public void visit(MethodDclNode node){
-        symbolTable.declaredMethods.add(node.getId());
+        if (Objects.equals(node.getMethodType(), "on")){
+            symbolTable.declaredOnMethods.add(node.getId());
+        }
         this.visitChildren(node);
     }
 
     @Override
     public void visit(MethodCallNode node){
-        symbolTable.calledMethods.add(node.getMethodName());
         this.visitChildren(node);
     }
 
     @Override
     public void visit(SendMsgNode node) {
-        symbolTable.calledMethods.add(node.getMsgName());
-        symbolTable.calledMsgReceiver.add(node.getReceiver());
         this.visitChildren(node);
     }
 

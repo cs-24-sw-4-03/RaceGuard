@@ -7,11 +7,11 @@ public class Scope {
     private Scope parent;
 
     //The symbols in the scope
-    //TODO: Research whether Hashmaps are the best for these lists
     private final HashMap<String, Attributes> symbols = new HashMap<>();
     private final Map<String, Attributes> params = new LinkedHashMap<>();
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
+    private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
 
 
     //Nested scopes within the current scope
@@ -63,5 +63,13 @@ public class Scope {
 
     public Map<String, Attributes> getKnowsSymbols() {
         return this.knowsSymbols;
+    }
+
+    public void addDeclaredLocalMethod(String id) {
+        this.declaredLocalMethods.add(id);
+    }
+
+    public ArrayList<String> getDeclaredLocalMethods() {
+        return this.declaredLocalMethods;
     }
 }
