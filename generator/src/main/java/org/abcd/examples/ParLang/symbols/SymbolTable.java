@@ -8,10 +8,8 @@ public class SymbolTable {
     private Scope currentScope;
     final private Scope globalScope;
     final private Stack<Scope> scopeStack = new Stack<>();
-    public ArrayList<String> declaredMethods = new ArrayList<>();
-    public ArrayList<String> calledMethods = new ArrayList<>();
+    public ArrayList<String> declaredOnMethods = new ArrayList<>();
     public ArrayList<String> declaredActors = new ArrayList<>();
-    public ArrayList<String> calledMsgReceiver = new ArrayList<>();
     public ArrayList<String> declaredScripts = new ArrayList<>();
 
 
@@ -84,6 +82,18 @@ public class SymbolTable {
             this.scopeStack.push(this.currentScope);
             this.currentScope = scope;
         }
+    }
+
+    public Attributes lookUpSymbolCurrentScope(String symbol){
+        //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
+        //Returns the symbol if it is found or returns null if the symbol is not found
+        if(!this.currentScope.getSymbols().isEmpty() && this.currentScope.getSymbols().containsKey(symbol)){
+            return this.currentScope.getSymbols().get(symbol);
+        } else if (!this.currentScope.getParams().isEmpty() && this.currentScope.getParams().containsKey(symbol)) {
+            return this.currentScope.getParams().get(symbol);
+        }
+        System.out.println("Symbol: " + symbol + " not found");
+        return null;
     }
 
     public Attributes lookUpSymbol(String symbol){
