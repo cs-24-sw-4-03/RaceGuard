@@ -63,10 +63,16 @@ public class ParLang {
 
         System.out.println("Scoping");
         SymbolTable symbolTable = new SymbolTable();
+
         FuncVisitor funcVisitor = new FuncVisitor(symbolTable);
         funcVisitor.visit(ast);
+
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
+
+        MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
+        methodCallVisitor.visit(ast);
+
     }
 
 }
