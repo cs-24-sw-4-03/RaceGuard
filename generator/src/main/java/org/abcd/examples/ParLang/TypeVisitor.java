@@ -3,8 +3,10 @@ package org.abcd.examples.ParLang;
 import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.*;
+import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class TypeVisitor implements NodeVisitor {
@@ -80,6 +82,10 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodCallNode node) {
+        if (symbolTable.lookUpSymbol(node.getMethodName()) == null){
+            throw new MethodCallException("Method: " + node.getMethodName() + " not found");
+        }
+        symbolTable.enterScope(node.getMethodName());
         this.visitChildren(node);
     }
 
@@ -91,6 +97,40 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArgumentsNode node) {
         this.visitChildren(node);
+        Map<String, Attributes> params = symbolTable.getCurrentScope().getParams();
+        AstNode parent = node.getParent();
+        int numOfChildren = node.getChildren().size();
+        if (parent instanceof MethodCallNode){
+            MethodCallNode methodCallNode = (MethodCallNode) parent;
+            String methodName = methodCallNode.getMethodName();
+            checkArgTypes(node, params, methodName);
+        }
+        else if (parent instanceof SpawnActorNode) {
+            SpawnActorNode spawnActorNode = (SpawnActorNode) parent;
+            String actorName = spawnActorNode.getType();
+            checkArgTypes(node, params, actorName);
+        }
+        else if (parent instanceof SendMsgNode){
+            SendMsgNode sendMsgNode = (SendMsgNode) parent;
+            String msgName = sendMsgNode.getMsgName();
+            checkArgTypes(node, params, msgName);
+        }
+        else {
+            throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
+        }
+    }
+    private void checkArgTypes(ArgumentsNode node, Map<String, Attributes> params, String msgName){
+        int size = node.getChildren().size();
+        if (params.size() != size){
+            throw new ArgumentsException("Number of arguments does not match the number of parameters in spawn actor: " + msgName);
+        }
+        for (int i = 0; i < size; i++) {
+            String argType = node.getChildren().get(i).getType();
+            String paramType = params.get(i).getVariableType();
+            if (!argType.equals(paramType)){
+                throw new ArgumentsException("Argument type does not match parameter type in send message: " + msgName);
+            }
+        }
     }
 
     @Override
