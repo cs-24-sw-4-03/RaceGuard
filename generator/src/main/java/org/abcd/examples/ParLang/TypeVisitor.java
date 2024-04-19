@@ -1,8 +1,12 @@
 package org.abcd.examples.ParLang;
 
+import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.BoolNodeException;
 import org.abcd.examples.ParLang.Exceptions.CompareTypeMatchingException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
+
+import java.util.Objects;
 
 public class TypeVisitor implements NodeVisitor {
     SymbolTable symbolTable;
@@ -173,11 +177,19 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(NegatedBoolNode node) {
         this.visitChildren(node);
+        if (node.getChildren().get(0).getType().equals("bool")){
+            node.setType("bool");
+        } else {
+            throw new BoolNodeException("NegatedBoolNode does not have type bool");
+        }
     }
 
     @Override
     public void visit(BoolNode node) {
-        this.visitChildren(node);
+        if(((BoolNode) node).getValue() == null){
+            throw new BoolNodeException("BoolNode does not have type bool");
+        }
+        node.setType("bool");
     }
 
     @Override
@@ -185,9 +197,9 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         ArithExpNode leftChild = ((ArithExpNode) node.getChildren().get(0));
         ArithExpNode rightChild = ((ArithExpNode) node.getChildren().get(1));
-        if (leftChild.getType() == rightChild.getType() &&
-                leftChild.getType() == "Int" || leftChild.getType() == "Double"){
-            node.setType("Bool");
+        if (Objects.equals(leftChild.getType(), rightChild.getType()) &&
+                Objects.equals(leftChild.getType(), "Int") || Objects.equals(leftChild.getType(), "Double")){
+            node.setType("bool");
         } else {
             throw new CompareTypeMatchingException("Type mismatch in comparison expression");
         }
