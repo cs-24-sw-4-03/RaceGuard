@@ -80,6 +80,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
+        node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
+        if (node.getType() == null) {
+            throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
+        }
     }
 
     @Override
@@ -153,6 +157,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         this.visitChildren(node);
+        String childType = node.getChildren().get(1).getType();
+        if (node.getType().equals(childType)) {
+            throw new MethodDclNodeException("Return does not match returnType of method");
+        }
     }
 
     @Override
