@@ -148,7 +148,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(CompareExpNode node) {
-
+       visitChild(node.getChildren().get(0));
+       stringBuilder.append(node.getOperator());
+       visitChild(node.getChildren().get(1));
     }
 
     @Override
@@ -276,7 +278,16 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelectionNode node) {
+        stringBuilder.append("if( ");
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(")");
+        visitChild(node.getChildren().get(1));
 
+        if(node.getChildren().size() > 2){
+            stringBuilder.append("else");
+            visitChild(node.getChildren().get(1));
+        }
+        stringBuilder.append("\n");
     }
 
     @Override
@@ -301,7 +312,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(StringNode node) {
-
+    stringBuilder.append(node.getValue());
     }
 
     @Override
