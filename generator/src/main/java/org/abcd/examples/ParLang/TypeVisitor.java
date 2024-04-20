@@ -80,8 +80,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             String returnType = node.getChildren().get(0).getType();
             if (returnType == null) {
                 throw new ReturnNodeException("Type is not defined for return statement");
@@ -116,8 +116,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(LocalMethodBodyNode node) {
+        this.visitChildren(node);
         try{
-            this.visitChildren(node);
             node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
             if (node.getType() == null) {
                 throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
@@ -133,8 +133,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArgumentsNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             Map<String, Attributes> params = symbolTable.getCurrentScope().getParams();
             AstNode parent = node.getParent();
             int numOfChildren = node.getChildren().size();
@@ -177,14 +177,14 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(DclNode node) {
-        try{
         this.visitChildren(node);
-        String identifierType = node.getChildren().get(0).getType();
-        String initType = node.getChildren().get(1).getType();
-        if (!identifierType.equals(initType)) {
-            throw new varDclNodeExeption("Type mismatch in declaration DclNode");
-        }
-        node.setType(identifierType);
+        try{
+            String identifierType = node.getChildren().get(0).getType();
+            String initType = node.getChildren().get(1).getType();
+            if (!identifierType.equals(initType)) {
+                throw new varDclNodeExeption("Type mismatch in declaration DclNode");
+            }
+            node.setType(identifierType);
         }
         catch (varDclNodeExeption e) {
             exceptions.add(e);
@@ -196,8 +196,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(AssignNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             String identifierType = node.getChildren().get(0).getType();
             String assignType = node.getChildren().get(1).getType();
             if (!identifierType.equals(assignType)) {
@@ -215,8 +215,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitializationNode node) {
+        System.out.println("DO WE ENTER INITIALIZATION NODE");
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             String childType = node.getChildren().get(0).getType();
             if (childType == null) {
                 throw new InitializationNodeException("Type is not defined for initialization node");
@@ -233,8 +234,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
+        this.visitChildren(node);
         try{
-            this.visitChildren(node);
             String listType = node.getChildren().get(0).getType();
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(listType)) {
@@ -253,8 +254,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
+        System.out.println("DO WE ENTER VAR DCL NODE");
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             String identifierType = node.getChildren().get(0).getType();
             String initType = node.getChildren().get(1).getType();
             if (!identifierType.equals(initType)) {
@@ -292,8 +294,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             String childType = node.getChildren().get(1).getType();
             if (node.getType().equals(childType)) {
                 throw new MethodDclNodeException("Return does not match returnType of method");
@@ -324,6 +326,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
+        System.out.println("DO WE ENTER INTEGER NODE");
         try {
             if (((IntegerNode) node).getValue() == null) {
                 throw new IntegerNodeException("IntegerNode value is null");
@@ -372,8 +375,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals("bool")) {
                     throw new BoolExpException("all BoolAndExpNode children does not have type bool");
@@ -391,8 +394,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolExpNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals("bool")) {
                     throw new BoolExpException("all BoolExpNode children does not have type bool");
@@ -410,8 +413,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArithExpNode node) {
+        System.out.println("DO WE ENTER ARITH EXP");
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
             String leftType = node.getChildren().get(0).getType();
             String rightType = node.getChildren().get(1).getType();
@@ -444,8 +448,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(NegatedBoolNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             if (node.getChildren().get(0).getType().equals("bool")) {
                 node.setType("bool");
             } else {
@@ -478,8 +482,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(CompareExpNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             ArithExpNode leftChild = ((ArithExpNode) node.getChildren().get(0));
             ArithExpNode rightChild = ((ArithExpNode) node.getChildren().get(1));
             if (Objects.equals(leftChild.getType(), rightChild.getType()) &&
@@ -539,8 +543,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
+        this.visitChildren(node);
         try {
-            this.visitChildren(node);
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals("string")) {
                     throw new PrintException("Print statement only accepts string arguments");
