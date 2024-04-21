@@ -1,0 +1,36 @@
+main(int z){
+int c = 7;
+}
+
+Actor Test{
+	State{
+	    int y;
+	    int[] stateArray;
+	}
+	Knows{
+	    Test testActor;
+	}
+
+	Spawn(int x){
+		State.y = x;
+	}
+
+	local TestLocal(): void{
+	    int[] intArray = {2, 3, 5};
+	    int testArray = intArray[2];
+
+	    Knows.testActor = Spawn Test(5);
+
+	    State.stateArray[0] = Spawn Test(6);
+
+        testArray = intArray[1];
+		for(int y = 0; y<x ; y = y+1){
+
+		}
+		Test <- TestOn();
+
+	}
+
+	on TestOn(){
+	}
+}

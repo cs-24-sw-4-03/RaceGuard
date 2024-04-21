@@ -85,7 +85,7 @@ public class SymbolTable {
     }
 
     public Attributes lookUpSymbolCurrentScope(String symbol){
-        //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
+        //Checks if the symbol exists in the currentScope
         //Returns the symbol if it is found or returns null if the symbol is not found
         if(!this.currentScope.getSymbols().isEmpty() && this.currentScope.getSymbols().containsKey(symbol)){
             return this.currentScope.getSymbols().get(symbol);
@@ -157,6 +157,14 @@ public class SymbolTable {
     public void insertStateSymbol(String symbol, Attributes attributes){this.currentScope.addStateSymbols(symbol, attributes);}
 
     public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
+
+    public void insertLocalMethod(String symbol){
+        this.currentScope.addDeclaredLocalMethod(symbol);
+    }
+
+    public ArrayList<String> getDeclaredLocalMethods(){
+        return currentScope.getDeclaredLocalMethods();
+    }
 
 
 }

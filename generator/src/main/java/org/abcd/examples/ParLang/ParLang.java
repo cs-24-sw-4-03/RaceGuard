@@ -62,11 +62,15 @@ public class ParLang {
         funcVisitor.visit(ast);
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
+
+        MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
+        methodCallVisitor.visit(ast);
         
         System.out.println("Type Checking");
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);
         astPrintVisitor.visit(0, ast,"");
+
     }
 
 }
