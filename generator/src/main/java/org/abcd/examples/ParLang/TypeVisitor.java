@@ -31,11 +31,13 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
         if (node.getId() == null){
             throw new ScriptDclException("Type is not defined for script declaration node");
         }
         node.setType(node.getId());
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -76,7 +78,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ParametersNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -273,7 +277,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -293,6 +299,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
         try {
             String childType = node.getChildren().get(1).getType();
@@ -306,6 +313,7 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new MethodDclNodeException(e.getMessage() + " in MethodDclNode"));
         }
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -317,7 +325,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -507,12 +517,16 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(WhileNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
     public void visit(ForNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -522,7 +536,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelectionNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
