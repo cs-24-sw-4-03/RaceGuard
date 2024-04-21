@@ -5,6 +5,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
+import org.abcd.examples.ParLang.symbols.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class TypeVisitor implements NodeVisitor {
-    SymbolTable symbolTable;
-    TypeContainer typeContainer;
-    List<RuntimeException> exceptions = new ArrayList<>();
+    private SymbolTable symbolTable;
+    private TypeContainer typeContainer;
+    private List<RuntimeException> exceptions = new ArrayList<>();
 
     public TypeVisitor(SymbolTable symbolTable, TypeContainer typeContainer) {
         this.symbolTable = symbolTable;
@@ -70,11 +71,6 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        System.out.println("THE TYPE IS:::" + node.getType());
-        System.out.println("THE NAME IS:::" + node.getName());
-        System.out.println("WHAT IS CURRENT SCOPE:::" + symbolTable.getCurrentScope().getScopeName());
-        System.out.println("WHAT DOES THIS GIVE:::" + symbolTable.lookUpSymbol(node.getName()));
-        System.out.println("I do not understand anything" + symbolTable.getCurrentScope().getSymbols());
         node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
     }
 
@@ -220,7 +216,6 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitializationNode node) {
-        System.out.println("DO WE ENTER INITIALIZATION NODE");
         this.visitChildren(node);
         try {
             String childType = node.getChildren().get(0).getType();
@@ -259,7 +254,6 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
-        System.out.println("DO WE ENTER VAR DCL NODE");
         this.visitChildren(node);
         try {
             String identifierType = node.getChildren().get(0).getType();
@@ -316,7 +310,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -331,7 +327,6 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        System.out.println("DO WE ENTER INTEGER NODE");
         try {
             if (((IntegerNode) node).getValue() == null) {
                 throw new IntegerNodeException("IntegerNode value is null");
@@ -418,7 +413,6 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArithExpNode node) {
-        System.out.println("DO WE ENTER ARITH EXP");
         this.visitChildren(node);
         try {
             //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
