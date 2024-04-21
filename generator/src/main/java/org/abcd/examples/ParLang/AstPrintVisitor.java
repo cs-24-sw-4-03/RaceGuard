@@ -25,7 +25,7 @@ public class AstPrintVisitor {
             }
 
             switch (className){
-                case "ArithExprNode":
+                case "ArithExpNode":
                     this.print(localIndent, className + " : " + ((ArithExpNode) node).getOpType() + " with type: " + node.getType());
                     break;
                 case "UnaryExpNode":
