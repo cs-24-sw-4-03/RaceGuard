@@ -75,7 +75,7 @@ public class TypeVisitor implements NodeVisitor {
         System.out.println("WHAT IS CURRENT SCOPE:::" + symbolTable.getCurrentScope().getScopeName());
         System.out.println("WHAT DOES THIS GIVE:::" + symbolTable.lookUpSymbol(node.getName()));
         System.out.println("I do not understand anything" + symbolTable.getCurrentScope().getSymbols());
-        node.setType(symbolTable.lookUpSymbol(node.getName()).getVariableType());
+        node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
     }
 
     @Override
