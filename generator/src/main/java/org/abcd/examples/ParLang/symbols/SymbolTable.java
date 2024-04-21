@@ -51,10 +51,10 @@ public class SymbolTable {
     //This method searches for a scope with the given name starting from the given searchScope
     //This method is recursive, and will most often be called with the globalScope as the searchScope
     //It then calls itself with the children of the searchScope as the new searchScope
-    public Scope findScope(String scopeName, Scope searchScope){
+    private Scope findScope(String scopeName, Scope searchScope){
         //Enters if you are searching for the global scope
-        if (this.globalScope.getScopeName().equals(scopeName)){
-            return this.globalScope;
+        if (searchScope.getScopeName().equals(scopeName)){
+            return searchScope;
         }
 
         Scope scope = null;
