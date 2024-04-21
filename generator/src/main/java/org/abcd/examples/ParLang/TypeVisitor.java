@@ -70,6 +70,11 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
+        System.out.println("THE TYPE IS:::" + node.getType());
+        System.out.println("THE NAME IS:::" + node.getName());
+        System.out.println("WHAT IS CURRENT SCOPE:::" + symbolTable.getCurrentScope().getScopeName());
+        System.out.println("WHAT DOES THIS GIVE:::" + symbolTable.lookUpSymbol(node.getName()));
+        System.out.println("I do not understand anything" + symbolTable.getCurrentScope().getSymbols());
         node.setType(symbolTable.lookUpSymbol(node.getName()).getVariableType());
     }
 

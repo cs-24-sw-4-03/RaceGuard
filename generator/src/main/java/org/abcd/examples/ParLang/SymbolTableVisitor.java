@@ -48,6 +48,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             }
         }else{
             if(this.symbolTable.lookUpSymbolCurrentScope(node.getId()) == null){
+                System.out.println("YOOOO THIS ACTUALLY HAPPENS:::" + node.getId() + " " + node.getType());
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertSymbol(node.getId(), attributes);
             }
