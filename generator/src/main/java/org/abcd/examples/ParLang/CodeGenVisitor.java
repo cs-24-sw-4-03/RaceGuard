@@ -131,7 +131,8 @@ public class CodeGenVisitor implements NodeVisitor {
     visitChild(leftChild);
     stringBuilder.append(" = ");
     visitChild(rightChild);
-    stringBuilder.append(";\n");
+    if(!(node.getParent() instanceof ForNode)) //if the parent is not a for node, add a semicolon, else don't
+        {stringBuilder.append(";\n");}
     codeOutput.add(getLine());
 
     }
@@ -162,9 +163,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(DclNode node) {
-        stringBuilder.append(" ");
-        stringBuilder.append(VariableConverter(node.getId()));
-
 
     }
 
@@ -184,17 +182,49 @@ public class CodeGenVisitor implements NodeVisitor {
 
     }
 
+    //for loop construction, can be either of the following:
+    //for (VarDclNode;CompareExpNode; AssignNode) {BodyNode}
+    //for (Empty;CompareExpNode; AssignNode) {BodyNode}
+    //for (Empty;CompareExpNode;Empty) {BodyNode}
     @Override
     public void visit(ForNode node) {
+        stringBuilder.append("for(");
+        //check if the second child is a compare expression and the third child is an assign node
+        if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
+            visitChild(node.getChildren().get(0));
+            visitChild(node.getChildren().get(1));
+            stringBuilder.append(";");
+            visitChild(node.getChildren().get(2));
+            stringBuilder.append(")");
+            visitChild(node.getChildren().get(3));
+        } else { //check if the first child is a compare expression
+            if (node.getChildren().get(0) instanceof CompareExpNode) {
+                stringBuilder.append(";");
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append(";");
+                if(!(node.getChildren().get(1) instanceof AssignNode)){ //check if the second child is not an assign node
+                    stringBuilder.append(")");
+                    visitChild(node.getChildren().get(1));
+                }else{ //check if the second child is an assign node
+                    visitChild(node.getChildren().get(1));
+                    stringBuilder.append(")");
+                    visitChild(node.getChildren().get(2));
+                }
 
+            }
+        }
+        codeOutput.add(getLine());
     }
 
     @Override
     public void visit(IdentifierNode node) {
-        stringBuilder.append(VariableConverter(node.getType()));
-        stringBuilder.append(" ");
+        if(node.getType()!= null){
+            stringBuilder.append(VariableConverter(node.getType()));
+            stringBuilder.append(" ");
+        }
         stringBuilder.append(node.getName());
     }
+
 
     @Override
     public void visit(InitializationNode node) {
@@ -334,7 +364,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         visitChildren(node);
-        stringBuilder.append(";\n");
+        stringBuilder.append(";");
         codeOutput.add(getLine());
     }
 
