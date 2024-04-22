@@ -4,8 +4,6 @@ import org.abcd.examples.ParLang.AstNodes.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
-
 
 public class CodeGenVisitor implements NodeVisitor {
 
@@ -94,17 +92,12 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(ArrayAccessNode node) {
+
+    }
+
+    @Override
     public void visit(ActorDclNode node) {
-
-    }
-
-    @Override
-    public void visit(ActorIdentifierNode node) {
-
-    }
-
-    @Override
-    public void visit(ActorStateNode node) {
 
     }
 
@@ -114,7 +107,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ArithExprNode node) {
+    public void visit(ArithExpNode node) {
         AstNode leftChild = node.getChildren().get(0);
         AstNode rightChild = node.getChildren().get(1);
 
@@ -151,6 +144,11 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(StateNode node) {
+
+    }
+
+    @Override
     public void visit(BoolNode node) {
         visitChild(node.getChildren().get(0));
     }
@@ -170,11 +168,6 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(DoubleNode node) {
         stringBuilder.append(node.getValue());
-
-    }
-
-    @Override
-    public void visit(ExprNode node) {
 
     }
 
@@ -362,6 +355,11 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(ExpNode node) {
+
+    }
+
+    @Override
     public void visit(StateAccessNode node) {
 
     }
@@ -371,10 +369,6 @@ public class CodeGenVisitor implements NodeVisitor {
     stringBuilder.append(node.getValue());
     }
 
-    @Override
-    public void visit(UnaryExpNode node) {
-
-    }
 
     @Override
     public void visit(VarDclNode node) {
