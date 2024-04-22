@@ -544,17 +544,36 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArrayAccessNode node) {
-        this.visitChildren(node);
+        String id = node.getAccessIdentifier();
+        Attributes attributes = symbolTable.lookUpSymbol(id);
+        if (attributes == null){
+            throw new ArrayAccessException("Array: " + id + " not found");
+        }
+        node.setType(attributes.getVariableType());
     }
 
     @Override
     public void visit(StateAccessNode node) {
-        this.visitChildren(node);
+        if (!hasParent(node, StateNode.class)){
+            throw new StateAccessException("StateAccessNode is not a child of StateNode");
+        }
+        if (node.getChildren().size() > 0){
+            this.visitChildren(node);
+            node.setType(node.getChildren().get(0).getType());
+        }
+        else {
+            String id = node.getAccessIdentifier();
+            Attributes attributes = symbolTable.lookUpStateSymbol(id);
+            if (attributes == null){
+                throw new StateAccessException("State: " + id + " not found");
+            }
+            node.setType(attributes.getVariableType());
+        }
     }
 
     @Override
     public void visit(KnowsAccessNode node) {
-        this.visitChildren(node);
+
     }
 
     @Override
@@ -573,5 +592,16 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new PrintException(e.getMessage() + " in PrintCallNode"));
         }
+    }
+
+    private boolean hasParent(AstNode node, Class<?> parentClass) {
+        AstNode parent = node.getParent();
+        while (parent != null) {
+            if (parent.getClass() == parentClass) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
     }
 }

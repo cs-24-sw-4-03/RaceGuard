@@ -139,7 +139,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return childVisitor(node, children);
         }catch (DuplicateActorTypeException e){ //if error just return null to continue visiting
             System.out.println(e.getMessage());
-            return null; 
+            return null;
         }catch (Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -161,10 +161,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitActorKnows(ParLangParser.ActorKnowsContext ctx) {
         int numOfChildren=ctx.getChildCount();
+        for (ParseTree c:ctx.children){
+            System.out.println(c.getText());
+        }
         KnowsNode knowsNode= new KnowsNode(ctx.KNOWS().getText());
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
-            for (int i = 2; i < numOfChildren; i+=3){ //skip the commas
+            for (int i = 2; i < numOfChildren && !ctx.getChild(i).getText().equals("}"); i+=3){ //skip the semicolons
                 knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             } //add the known actors as children to the knowsNode
         }
@@ -230,7 +233,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return node; //return the methodNode with parameters and body added as children
     }
-    
+
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children); //visit all children of the body node and add them as children to the bodyNode
@@ -466,7 +469,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         throw new RuntimeException("Unrecognized BoolTerm"); // If the boolean term is not recognized
     }
-  
+
     @Override
     public AstNode visitNegatedBool(ParLangParser.NegatedBoolContext ctx) {
         NegatedBoolNode boolNode = new NegatedBoolNode();
