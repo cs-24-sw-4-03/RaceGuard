@@ -318,6 +318,7 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(VarDclNode node) {
         this.visitChildren(node);
         try {
+            System.out.println(node.getChildren().get(0).getType() + " " + node.getChildren().get(1).getType());
             String identifierType = node.getChildren().get(0).getType();
             String initType = node.getChildren().get(1).getType();
             if (!identifierType.equals(initType)) {
