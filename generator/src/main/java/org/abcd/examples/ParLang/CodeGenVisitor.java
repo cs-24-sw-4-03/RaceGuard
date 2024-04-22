@@ -152,7 +152,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolNode node) {
-
+        visitChild(node.getChildren().get(0));
     }
 
     @Override
@@ -298,7 +298,8 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(NegatedBoolNode node) {
-
+        stringBuilder.append("!");
+        visitChild(node.getChildren().get(0));
     }
 
     @Override
@@ -308,7 +309,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
-
+        stringBuilder.append("System.out.println(");
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(");\n");
+        codeOutput.add(getLine());
     }
 
     @Override
@@ -326,6 +330,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     }
 
+    //DOES NOT WORK
     @Override
     public void visit(SelectionNode node) {
         stringBuilder.append("if(");
