@@ -303,7 +303,7 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         try {
             String childType = node.getChildren().get(1).getType();
-            if (node.getType().equals(childType)) {
+            if (!node.getType().equals(childType)) {
                 throw new MethodDclNodeException("Return does not match returnType of method");
             }
         }
