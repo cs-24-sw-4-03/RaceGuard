@@ -12,8 +12,6 @@ import java.util.List;
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     //Holds all recognized Types, Is extended when actors or Scripts are declared. see visitActor.
     private TypeContainer typeContainer;
-            "int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script"));
-
 
     public AstVisitor(TypeContainer typeContainer) {
         super();
