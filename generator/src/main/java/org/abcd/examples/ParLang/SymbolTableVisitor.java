@@ -95,11 +95,12 @@ public class SymbolTableVisitor implements NodeVisitor {
         if(Objects.equals(node.getMethodType(), "local")){
             this.symbolTable.insertLocalMethod(node.getId());
         }
-        this.symbolTable.addScope(node.getId());
-        //Visits the children of the node to add the symbols to the symbol table
-        this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
-        this.symbolTable.leaveScope();
+        if(this.symbolTable.addScope(node.getId())){
+            //Visits the children of the node to add the symbols to the symbol table
+            this.visitChildren(node);
+            //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
+            this.symbolTable.leaveScope();
+        }
     }
 
 

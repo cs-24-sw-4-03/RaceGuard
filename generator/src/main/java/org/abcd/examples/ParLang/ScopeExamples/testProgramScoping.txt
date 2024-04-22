@@ -8,7 +8,7 @@ Actor Test{
 	    int[] stateArray;
 	}
 	Knows{
-	    //Test testActor;
+	    Test testActor;
 	}
 
 	Spawn(int x){
@@ -31,9 +31,9 @@ Actor Test{
 
 	}
 
-	local testLocal(): void{
+	//local testLocal(): void{
 
-	}
+	//}
 
 	on TestOn(){
 	    testLocal();

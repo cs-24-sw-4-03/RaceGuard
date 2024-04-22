@@ -27,14 +27,16 @@ public class SymbolTable {
     //Creates a new scope and sets the currentScope as its parent if there is no scope with the same name
     //It then pushes the currentScope onto the stack and sets the new scope as the currentScope
     //This is done as the currentScope is not located on the stack
-    public void addScope(String scopeName){
+    public boolean addScope(String scopeName){
         if(lookUpScope(scopeName) == null){
             Scope scope = new Scope(scopeName);
             scope.setParent(this.currentScope);
             this.currentScope.children.add(scope);
             this.scopeStack.push(this.currentScope);
             this.currentScope = scope;
+            return true;
         }
+        return false;
     }
 
     //Pops the top scope from the stack and sets it as the currentScope
