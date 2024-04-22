@@ -221,7 +221,9 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnActorNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
