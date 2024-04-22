@@ -148,10 +148,18 @@ public class SymbolTableVisitor implements NodeVisitor {
     //TODO: Set up error handling if symbol not found for normal symbols, State symbols and Knows symbols
     @Override
     public void visit(IdentifierNode node) {
-        if(this.symbolTable.lookUpSymbol(node.getName()) != null){
-            System.out.println("Found symbol: " + node.getName());
-        }else{
-            System.out.println("Not found symbol: " + node.getName());
+        if(node.getParent().getParent() instanceof StateNode){
+            if(this.symbolTable.lookUpStateSymbol(node.getName()) != null){
+                System.out.println("Found State symbol: " + node.getName());
+            }else{
+                System.out.println("Not found State symbol: " + node.getName());
+            }
+        }else if (!(node.getParent() instanceof MethodCallNode)){
+            if(this.symbolTable.lookUpSymbol(node.getName()) != null){
+                System.out.println("Found symbol: " + node.getName());
+            }else{
+                System.out.println("Not found symbol: " + node.getName());
+            }
         }
     }
 
@@ -197,7 +205,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Sig til Adomas at han nok mangler den her
     //TODO: Måske lave denne om så den bruger script navnet
     @Override
     public void visit(ScriptMethodNode node) {
@@ -215,7 +222,9 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnActorNode node) {
+        this.symbolTable.addScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
