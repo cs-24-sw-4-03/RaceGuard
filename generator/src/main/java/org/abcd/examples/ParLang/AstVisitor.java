@@ -11,9 +11,12 @@ import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     //Holds all recognized Types, Is extended when actors or Scripts are declared. see visitActor.
-    List<String> typeContainer = new ArrayList<String>(Arrays.asList(
-            "int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script"));
+    private TypeContainer typeContainer;
 
+    public AstVisitor(TypeContainer typeContainer) {
+        super();
+        this.typeContainer = typeContainer;
+    }
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         //Init is the root of the AST
         InitNode initNode=new InitNode();
@@ -82,11 +85,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         try {
             String scriptName = ctx.identifier().getText();
             ScriptDclNode node = new ScriptDclNode(scriptName);
-            if (typeContainer.contains(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
+            if (typeContainer.hasType(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
                 throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
             } else {//extend the typeContainer list with new types
-                typeContainer.add(scriptName);
-                typeContainer.add(scriptName + "[]");
+                typeContainer.addType(scriptName);
+                typeContainer.addType(scriptName + "[]");
             }
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
             children.remove(1);//remove identifier from list of children
@@ -123,12 +126,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         try {
             String actorName = ctx.identifier().getText(); //get the name of the actorType
-            if (typeContainer.contains(actorName)) {
+            if (typeContainer.hasType(actorName)) {
                 //if another actor is declared with the same name we have conflicting types.
                 throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
             } else {//extend the typeContainer list with new types
-                typeContainer.add(actorName); //add the actorType to the typeContainer
-                typeContainer.add(actorName + "[]"); //add the array holding actorType to the typeContainer
+                typeContainer.addType(actorName); //add the actorType to the typeContainer
+                typeContainer.addType(actorName + "[]"); //add the array holding actorType to the typeContainer
             }
             ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
@@ -152,7 +155,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActorState(ParLangParser.ActorStateContext ctx) {
-        ActorStateNode node= new ActorStateNode(ctx.STATE().getText());
+        StateNode node= new StateNode(ctx.STATE().getText());
         //visit all children of the actorState node and add them as children to the actorStateNode
         return childVisitor(node,ctx.children);
     }
@@ -162,8 +165,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         KnowsNode knowsNode= new KnowsNode(ctx.KNOWS().getText());
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
-            for (int i = 2; i < numOfChildren; i+=3){ //skip the commas
-                knowsNode.addChild(new ActorIdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
+
+            for (int i = 2; i < numOfChildren-1; i+=3){ //skip the commas
+                knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             } //add the known actors as children to the knowsNode
         }
         return knowsNode; //return the knowsNode with all known actors added as children
@@ -189,11 +193,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
-        //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER]
+        //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER | ARRAY_ACCESS]
         //Need to know: Identifier of what we want to access and the type of the value the identifier points to
-        String accessIdentifier = ctx.IDENTIFIER().getText();
         String accessType = "EMPTY"; //Until type-checker is implemented
-        return new StateAccessNode(accessType,accessIdentifier);//return a StateAccessNode with the accessIdentifier and accessType
+        if (ctx.IDENTIFIER() != null) { //If the access is a simple identifier
+            return new StateAccessNode(accessType, ctx.IDENTIFIER().getText()); //return a StateAccessNode with the accessType and accessIdentifier
+        } //If the access is an array access
+        AstNode child = visit(ctx.getChild(2)); //visit the array access
+        StateAccessNode node = new StateAccessNode(accessType, ((ArrayAccessNode)child).getAccessIdentifier());
+        node.addChild(child); //add the array access as a child
+        return node; //return the StateAccessNode with the array access added as a child
     }
 
     @Override public AstNode visitKnowsAccess(ParLangParser.KnowsAccessContext ctx){
@@ -314,7 +323,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int termIndex=(operatorIndex-1)/2; //index of first term in a list of just the terms (not including operators).
         int nextOperator=operatorIndex+2; //index of next operator in the list of children
 
-        ArithExprNode.OpType operator=getArithmeticBinaryOperator(child.getText()); //get the operatorType
+        ArithExpNode.OpType operator=getArithmeticBinaryOperator(child.getText()); //get the operatorType
         AstNode leftChild= visit(parent.term(termIndex)); //visit the left child (term)
         AstNode rightChild; //initialize the right child
 
@@ -324,7 +333,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }else { //If there are no more operators
             rightChild=visit(parent.term(termIndex+1)); //visit the right child (term)
         }
-        return new ArithExprNode(operator,leftChild,rightChild); //return a new ArithExprNode with operator, leftChild, and rightChild
+        return new ArithExpNode(operator,leftChild,rightChild); //return a new ArithExprNode with operator, leftChild, and rightChild
     }
 
     @Override public AstNode visitTerm(ParLangParser.TermContext ctx) {
@@ -341,7 +350,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         int factorIndex=(operatorIndex-1)/2; //index of first factor in a list of just the factors
         int nextOperator=operatorIndex+2; //index of next operator in the list of children
 
-        ArithExprNode.OpType operator=getArithmeticBinaryOperator(child.getText()); //get the operatorType
+        ArithExpNode.OpType operator=getArithmeticBinaryOperator(child.getText()); //get the operatorType
         AstNode leftChild=visit(parent.factor(factorIndex)); //add left child (factor)
         AstNode rightChild; //initialize right child
 
@@ -350,7 +359,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }else { //If there are no more operators
             rightChild=visit(parent.factor(factorIndex+1)); //add right child (factor)
         }
-        return new ArithExprNode(operator,leftChild,rightChild); //return a new ArithExprNode with operator, leftChild, and rightChild
+        return new ArithExpNode(operator,leftChild,rightChild); //return a new ArithExprNode with operator, leftChild, and rightChild
     }
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
@@ -378,28 +387,28 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
     }
 
-    private static ArithExprNode.OpType getArithmeticBinaryOperator(String operator) {
+    private static ArithExpNode.OpType getArithmeticBinaryOperator(String operator) {
         try {
             switch (operator) { //return the operatorType based on the operator
                 case "+":
-                    return ArithExprNode.OpType.PLUS;
+                    return ArithExpNode.OpType.PLUS;
                 case "-":
-                    return ArithExprNode.OpType.MINUS;
+                    return ArithExpNode.OpType.MINUS;
                 case "*":
-                    return ArithExprNode.OpType.MULTIPLY;
+                    return ArithExpNode.OpType.MULTIPLY;
                 case "/":
-                    return ArithExprNode.OpType.DIVIDE;
+                    return ArithExpNode.OpType.DIVIDE;
                 case "%":
-                    return ArithExprNode.OpType.MODULO;
+                    return ArithExpNode.OpType.MODULO;
                 default: //If the operator is not recognized
                     throw new UnsupportedOperationException("Unsupported operator: " + operator);
             }
         } catch (UnsupportedOperationException e) { //if exception return unknown to continue visiting
             System.out.println(e.getMessage());
-            return ArithExprNode.OpType.UNKNOWN;
+            return ArithExpNode.OpType.UNKNOWN;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ArithExprNode.OpType.UNKNOWN;
+            return ArithExpNode.OpType.UNKNOWN;
         }
     }
 
@@ -425,11 +434,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (childCount == 1) { // If there is only one child
             return visit(ctx.getChild(0)); // Visit the child
         }
-        BoolExprNode boolExprNode = new BoolExprNode();
+        BoolExpNode boolExpNode = new BoolExpNode();
         for (int i = 0; i < childCount; i += 2) { // Visit all children skipping the operators
-            boolExprNode.addChild(visit(ctx.getChild(i))); // Add the child as a child to the boolExprNode
+            boolExpNode.addChild(visit(ctx.getChild(i))); // Add the child as a child to the boolExprNode
         }
-        return boolExprNode; // Return the boolExprNode
+        return boolExpNode; // Return the boolExprNode
     }
 
     @Override public AstNode visitBoolAndExp(ParLangParser.BoolAndExpContext ctx) {
@@ -495,9 +504,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
         //An array access
         String accessIdentifier = ctx.identifier().getText();
-        String accessType = "EMPTY";
-        //This is always an Integer, coded to try out tree traversal :)
-        return new ArrayAccessNode(accessType, accessIdentifier);
+        return new ArrayAccessNode("", accessIdentifier);
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();

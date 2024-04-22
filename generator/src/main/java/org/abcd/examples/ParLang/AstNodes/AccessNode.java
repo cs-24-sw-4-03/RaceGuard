@@ -2,15 +2,13 @@ package org.abcd.examples.ParLang.AstNodes;
 import org.abcd.examples.ParLang.NodeVisitor;
 
 public abstract class AccessNode extends AstNode{
-    private String accessType;
     private String accessIdentifier;
     public AccessNode(String accessType, String accessValue){
-        this.accessType = accessType;
+        setType(accessType); //Type property is inherited from AstNode
         this.accessIdentifier = accessValue;
-
     }
-    public String getAccessType() {
-        return accessType;
+    public AccessNode(String accessType) {
+        setType(accessType);
     }
 
     public String getAccessIdentifier() {
