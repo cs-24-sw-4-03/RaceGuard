@@ -16,10 +16,10 @@ public class MethodCallVisitor implements NodeVisitor {
     public void visit(MethodCallNode node) {
         ArrayList<String> legalMethods = this.symbolTable.getDeclaredLocalMethods();
         if (legalMethods.contains(node.getMethodName())) {
-            System.out.println("Local method found");
+            System.out.println("Local method id " + node.getMethodName() + " found");
         }
         else {
-            System.out.println("Local method not found");
+            System.out.println("Local method id " + node.getMethodName() + " not found");
         }
     }
 

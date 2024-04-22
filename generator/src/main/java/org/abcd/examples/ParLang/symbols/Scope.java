@@ -66,7 +66,11 @@ public class Scope {
     }
 
     public void addDeclaredLocalMethod(String id) {
-        this.declaredLocalMethods.add(id);
+        if(!this.declaredLocalMethods.contains(id)){
+            this.declaredLocalMethods.add(id);
+        }else{
+            System.out.println("Duplicate method id: " + id);
+        }
     }
 
     public ArrayList<String> getDeclaredLocalMethods() {

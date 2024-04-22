@@ -31,6 +31,10 @@ Actor Test{
 
 	}
 
+	local testLocal(): void{
+
+	}
+
 	on TestOn(){
 	    testLocal();
 	}
