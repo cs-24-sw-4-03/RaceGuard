@@ -1,8 +1,4 @@
-Script number{
-    local squared(double num): double;
-}
-
-Actor numActor follows number{
+Actor numActor{
     State{
         double number;
     }

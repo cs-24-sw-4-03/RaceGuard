@@ -123,6 +123,7 @@ public class SymbolTable {
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
             if(!scope.getStateSymbols().isEmpty() && scope.getStateSymbols().containsKey(symbol)){
+                System.out.println("Symbol: " + symbol + " found");
                 return scope.getStateSymbols().get(symbol);
             }
 

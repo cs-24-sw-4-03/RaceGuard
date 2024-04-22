@@ -76,6 +76,8 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             if (symbolTable.lookUpSymbol(node.getMsgName()) == null) {
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
+            }else {
+                System.out.println("Method: " + node.getMsgName() + " found");
             }
             symbolTable.enterScope(node.getMsgName());
             this.visitChildren(node);
@@ -103,13 +105,14 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
+        System.out.println("Symbol: " + node.getName());
         /*try {*/
             if (hasParent(node, StateNode.class)) {
                 node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
             } else if (hasParent(node, KnowsNode.class)) {
                 node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
             } else {
-                node.setType(this.symbolTable.lookUpSymbolCurrentScope(node.getName()).getVariableType());
+                node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
             }
         /*}
         catch (Exception e) {
@@ -168,6 +171,8 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             if (symbolTable.lookUpSymbol(node.getMethodName()) == null) {
                 throw new MethodCallException("Method: " + node.getMethodName() + " not found");
+            } else{
+                System.out.println("Method: " + node.getMethodName() + " found");;
             }
             symbolTable.enterScope(node.getMethodName());
             this.visitChildren(node);
@@ -645,9 +650,11 @@ public class TypeVisitor implements NodeVisitor {
             Attributes attributes;
             if (hasParent(node, StateAccessNode.class)){
                 attributes = symbolTable.lookUpStateSymbol(id);
+                System.out.println("Symbol: " + node.getAccessIdentifier());
             }
             else{
                 attributes = symbolTable.lookUpSymbol(id);
+                System.out.println("Symbol: " + node.getAccessIdentifier());
             }
             if (attributes == null){
                 throw new ArrayAccessException("Array: " + id + " not found");
@@ -668,15 +675,18 @@ public class TypeVisitor implements NodeVisitor {
             if (!hasParent(node, ActorDclNode.class)){
                 throw new StateAccessException("StateAccessNode is not a child of ActorDclNode");
             }
-            if (node.getChildren().size() > 0){
+            if (!node.getChildren().isEmpty()){
                 this.visitChildren(node);
                 node.setType(node.getChildren().get(0).getType());
             }
             else {
                 String id = node.getAccessIdentifier();
+                System.out.println("StateAccess: Symbol: " + id);
                 Attributes attributes = symbolTable.lookUpStateSymbol(id);
                 if (attributes == null) {
                     throw new StateAccessException("State: " + id + " not found");
+                }else{
+                    System.out.println("Symbol: " + node.getAccessIdentifier());
                 }
                 node.setType(attributes.getVariableType());
             }
