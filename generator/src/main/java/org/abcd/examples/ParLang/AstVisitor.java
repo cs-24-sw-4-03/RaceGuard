@@ -200,8 +200,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (ctx.IDENTIFIER() != null) { //If the access is a simple identifier
             return new StateAccessNode(accessType, ctx.IDENTIFIER().getText()); //return a StateAccessNode with the accessType and accessIdentifier
         } //If the access is an array access
-        StateAccessNode node = new StateAccessNode(accessType);
-        node.addChild(visit(ctx.getChild(2))); //visit the array access and add it as a child to the node
+
+        AstNode child = visit(ctx.getChild(2)); //visit the array access
+        StateAccessNode node = new StateAccessNode(accessType, ((ArrayAccessNode)child).getAccessIdentifier());
+        node.addChild(child); //add the array access as a child
         return node;
     }
 
