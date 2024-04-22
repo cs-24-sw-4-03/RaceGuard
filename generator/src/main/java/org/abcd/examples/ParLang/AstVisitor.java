@@ -11,9 +11,12 @@ import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     //Holds all recognized Types, Is extended when actors or Scripts are declared. see visitActor.
-    List<String> typeContainer = new ArrayList<String>(Arrays.asList(
-            "int", "int[]", "double",  "double[]", "string", "string[]","bool", "bool[]", "void", "Actor", "Script"));
+    private TypeContainer typeContainer;
 
+    public AstVisitor(TypeContainer typeContainer) {
+        super();
+        this.typeContainer = typeContainer;
+    }
     @Override public AstNode visitInit(ParLangParser.InitContext ctx) {
         //Init is the root of the AST
         InitNode initNode=new InitNode();
@@ -81,11 +84,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         try {
             String scriptName = ctx.identifier().getText();
             ScriptDclNode node = new ScriptDclNode(scriptName);
-            if (typeContainer.contains(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
+            if (typeContainer.hasType(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
                 throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
             } else {//extend the typeContainer list with new types
-                typeContainer.add(scriptName);
-                typeContainer.add(scriptName + "[]");
+                typeContainer.addType(scriptName);
+                typeContainer.addType(scriptName + "[]");
             }
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
             children.remove(1);//remove identifier from list of children
@@ -122,12 +125,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
         try {
             String actorName = ctx.identifier().getText(); //get the name of the actorType
-            if (typeContainer.contains(actorName)) {
+            if (typeContainer.hasType(actorName)) {
                 //if another actor is declared with the same name we have conflicting types.
                 throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
             } else {//extend the typeContainer list with new types
-                typeContainer.add(actorName); //add the actorType to the typeContainer
-                typeContainer.add(actorName + "[]"); //add the array holding actorType to the typeContainer
+                typeContainer.addType(actorName); //add the actorType to the typeContainer
+                typeContainer.addType(actorName + "[]"); //add the array holding actorType to the typeContainer
             }
             ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
@@ -161,7 +164,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         KnowsNode knowsNode= new KnowsNode(ctx.KNOWS().getText());
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
-            for (int i = 2; i < numOfChildren; i+=3){ //skip the commas
+
+            for (int i = 2; i < numOfChildren-1; i+=3){ //skip the commas
                 knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             } //add the known actors as children to the knowsNode
         }
@@ -194,9 +198,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (ctx.IDENTIFIER() != null) { //If the access is a simple identifier
             return new StateAccessNode(accessType, ctx.IDENTIFIER().getText()); //return a StateAccessNode with the accessType and accessIdentifier
         } //If the access is an array access
-        StateAccessNode node = new StateAccessNode(accessType);
-        node.addChild(visit(ctx.getChild(2))); //visit the array access and add it as a child to the node
-        return node;
+        AstNode child = visit(ctx.getChild(2)); //visit the array access
+        StateAccessNode node = new StateAccessNode(accessType, ((ArrayAccessNode)child).getAccessIdentifier());
+        node.addChild(child); //add the array access as a child
+        return node; //return the StateAccessNode with the array access added as a child
     }
 
     @Override public AstNode visitKnowsAccess(ParLangParser.KnowsAccessContext ctx){
@@ -498,10 +503,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
         //An array access
         String accessIdentifier = ctx.identifier().getText();
-        System.out.println("ArrayAccess: "+accessIdentifier);
-        String accessType = "EMPTY";
-        //This is always an Integer, coded to try out tree traversal :)
-        return new ArrayAccessNode(accessType, accessIdentifier);
+        return new ArrayAccessNode("", accessIdentifier);
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
