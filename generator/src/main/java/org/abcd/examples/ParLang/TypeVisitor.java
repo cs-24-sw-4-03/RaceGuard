@@ -512,6 +512,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IterationNode node) {
+        //abstract class
         this.visitChildren(node);
     }
 
