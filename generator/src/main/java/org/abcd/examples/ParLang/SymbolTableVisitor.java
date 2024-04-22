@@ -4,12 +4,16 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import java.util.Objects;
+
 /*TODO:
     * 3. Create a new Visitor that checks that all calls to methods are legal.
     * This includes that on methods are called as messages and that local methods are called from the Actor they are in
     * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
     * 5. Find out when it makes sense to check for duplicate method names in an Actor
     * 6. Error handling
+    * 8. Implement handling of arrayAccessNode
+    * 9. Make sure arrays declared in StateNodes are handled
  */
 
 
@@ -89,16 +93,14 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
-        if(this.symbolTable.lookUpSymbol(node.getId()) == null){
-            Attributes attributes = new Attributes(node.getType(), "method");
-            this.symbolTable.insertSymbol(node.getId(), attributes);
-
-            this.symbolTable.addScope(node.getNodeHash());
-            //Visits the children of the node to add the symbols to the symbol table
-            this.visitChildren(node);
-            //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
-            this.symbolTable.leaveScope();
+        if(Objects.equals(node.getMethodType(), "local")){
+            this.symbolTable.insertLocalMethod(node.getId());
         }
+        this.symbolTable.addScope(node.getId());
+        //Visits the children of the node to add the symbols to the symbol table
+        this.visitChildren(node);
+        //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
+        this.symbolTable.leaveScope();
     }
 
 
@@ -165,6 +167,16 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    //TODO: Implement this and find out how we declare an array
+    @Override
+    public void visit(ArrayAccessNode node) {
+        if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) != null){
+            System.out.println("Found symbol: " + node.getAccessIdentifier());
+        }else{
+            System.out.println("Not found symbol: " + node.getAccessIdentifier());
+        }
+    }
+
     @Override
     public void visit(KnowsAccessNode node) {
         if(this.symbolTable.lookUpKnowsSymbol(node.getAccessIdentifier()) != null){
@@ -211,6 +223,10 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
+        this.visitChildren(node);
+    }
+    @Override
+    public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
     }
 
@@ -285,11 +301,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolAndExpNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(BoolExpNode node) {
         this.visitChildren(node);
     }
@@ -316,11 +327,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(IterationNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ArrayAccessNode node) {
         this.visitChildren(node);
     }
 

@@ -497,9 +497,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
         //An array access
         String accessIdentifier = ctx.identifier().getText();
-        String accessType = "EMPTY";
-        //This is always an Integer, coded to try out tree traversal :)
-        return new ArrayAccessNode(accessType, accessIdentifier);
+        return new ArrayAccessNode("", accessIdentifier);
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();

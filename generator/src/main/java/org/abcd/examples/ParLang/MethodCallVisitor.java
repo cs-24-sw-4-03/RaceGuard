@@ -3,58 +3,97 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-import java.util.Objects;
+import java.util.ArrayList;
 
-//TODO: Find out how to check whether methods are called from the correct Actor
-public class FuncVisitor implements NodeVisitor {
+public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
-    public FuncVisitor(SymbolTable symbolTable) {
+    public MethodCallVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
 
     @Override
-    public void visitChildren(AstNode node) {
+    public void visit(MethodCallNode node) {
+        ArrayList<String> legalMethods = this.symbolTable.getDeclaredLocalMethods();
+        if (legalMethods.contains(node.getMethodName())) {
+            System.out.println("Local method found");
+        }
+        else {
+            System.out.println("Local method not found");
+        }
+    }
+
+    //TODO: Implement
+    @Override
+    public void visit(SendMsgNode node) {
+        this.visitChildren(node);
+    }
+
+
+    @Override
+    public void visitChildren(AstNode node){
         for(AstNode child : node.getChildren()){
             child.accept(this);
         }
     }
 
-    //TODO: Find a way to identify a specific Script, Actor, Method or ScriptMethod
     @Override
-    public void visit(ScriptMethodNode node) {
-        this.symbolTable.declaredOnMethods.add(node.getId());
+    public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
     }
 
     @Override
     public void visit(ScriptDclNode node) {
-        this.symbolTable.declaredScripts.add(node.getId());
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ScriptMethodNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(InitNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(BodyNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(SelectionNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(SpawnActorNode node) {
         this.visitChildren(node);
     }
 
     @Override
     public void visit(ActorDclNode node) {
-        this.symbolTable.declaredActors.add(node.getId());
-        this.visitChildren(node);
-    }
-
-    //TODO:  Find out if it is a problem that Dcl uses Id and Call uses Name
-    @Override
-    public void visit(MethodDclNode node){
-        if (Objects.equals(node.getMethodType(), "on")){
-            symbolTable.declaredOnMethods.add(node.getId());
-        }
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(MethodCallNode node){
+    public void visit(StateNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(SendMsgNode node) {
+    public void visit(FollowsNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ParametersNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
     }
 
@@ -74,12 +113,7 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(InitNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(BodyNode node) {
+    public void visit(VarDclNode node) {
         this.visitChildren(node);
     }
 
@@ -89,17 +123,27 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ParametersNode node) {
+    public void visit(AssignNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(ReturnStatementNode node) {
+    public void visit(InitializationNode node) {
         this.visitChildren(node);
     }
 
     @Override
-    public void visit(SpawnActorNode node) {
+    public void visit(ListNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(KnowsNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(MethodDclNode node) {
         this.visitChildren(node);
     }
 
@@ -130,11 +174,6 @@ public class FuncVisitor implements NodeVisitor {
 
     @Override
     public void visit(StringNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
     }
 
@@ -184,11 +223,6 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SelectionNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(ArrayAccessNode node) {
         this.visitChildren(node);
     }
@@ -205,41 +239,6 @@ public class FuncVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(AssignNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(InitializationNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ListNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(VarDclNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(StateNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(FollowsNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(KnowsNode node) {
         this.visitChildren(node);
     }
 

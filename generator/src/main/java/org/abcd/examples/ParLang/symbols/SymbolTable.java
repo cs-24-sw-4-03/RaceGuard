@@ -51,10 +51,10 @@ public class SymbolTable {
     //This method searches for a scope with the given name starting from the given searchScope
     //This method is recursive, and will most often be called with the globalScope as the searchScope
     //It then calls itself with the children of the searchScope as the new searchScope
-    public Scope findScope(String scopeName, Scope searchScope){
+    private Scope findScope(String scopeName, Scope searchScope){
         //Enters if you are searching for the global scope
-        if (this.globalScope.getScopeName().equals(scopeName)){
-            return this.globalScope;
+        if (searchScope.getScopeName().equals(scopeName)){
+            return searchScope;
         }
 
         Scope scope = null;
@@ -85,7 +85,7 @@ public class SymbolTable {
     }
 
     public Attributes lookUpSymbolCurrentScope(String symbol){
-        //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
+        //Checks if the symbol exists in the currentScope
         //Returns the symbol if it is found or returns null if the symbol is not found
         if(!this.currentScope.getSymbols().isEmpty() && this.currentScope.getSymbols().containsKey(symbol)){
             return this.currentScope.getSymbols().get(symbol);
@@ -157,6 +157,14 @@ public class SymbolTable {
     public void insertStateSymbol(String symbol, Attributes attributes){this.currentScope.addStateSymbols(symbol, attributes);}
 
     public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
+
+    public void insertLocalMethod(String symbol){
+        this.currentScope.addDeclaredLocalMethod(symbol);
+    }
+
+    public ArrayList<String> getDeclaredLocalMethods(){
+        return currentScope.getDeclaredLocalMethods();
+    }
 
 
 }
