@@ -163,8 +163,7 @@ public class SymbolTable {
     }
 
     public ArrayList<String> getDeclaredLocalMethods(){
-        return currentScope.getDeclaredLocalMethods();
+        return this.currentScope.getDeclaredLocalMethods();
     }
-
 
 }

@@ -28,7 +28,7 @@ actor : ACTOR_TYPE identifier follow? CURLY_OPEN actorState actorKnows spawn act
 // state of an actor
 actorState : STATE CURLY_OPEN (declaration SEMICOLON)* CURLY_CLOSE;
 // defines which actors this actor knows
-actorKnows : KNOWS CURLY_OPEN (identifier identifier (COMMA identifier identifier)*)? CURLY_CLOSE;
+actorKnows : KNOWS CURLY_OPEN (identifier identifier SEMICOLON)* CURLY_CLOSE;
 // defines how to create an instance of this actor type
 spawn : SPAWN parameters body;
 // methods of this actor
@@ -40,7 +40,7 @@ localMethod: LOCAL_METHOD identifier parameters COLON allTypes localMethodBody;
 actorAccess : stateAccess
     | knowsAccess
     ;
-stateAccess: STATE DOT IDENTIFIER;
+stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
@@ -120,6 +120,7 @@ statement : declaration SEMICOLON
     | controlStructure
     | methodCall SEMICOLON
     | printCall
+    | returnStatement
     ;
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
@@ -129,7 +130,7 @@ forStatement : sendMsg
 
 // body is a block of code
 body : CURLY_OPEN statement*  CURLY_CLOSE;
-localMethodBody: CURLY_OPEN statement* returnStatement CURLY_CLOSE;
+localMethodBody: CURLY_OPEN statement* returnStatement? CURLY_CLOSE;
 
 
 // defines the parameters of a function
