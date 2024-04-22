@@ -193,9 +193,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
         //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER]
         //Need to know: Identifier of what we want to access and the type of the value the identifier points to
-        String accessIdentifier = ctx.IDENTIFIER().getText();
         String accessType = "EMPTY"; //Until type-checker is implemented
-        return new StateAccessNode(accessType,accessIdentifier);//return a StateAccessNode with the accessIdentifier and accessType
+        if (ctx.IDENTIFIER() != null) { //If the access is a simple identifier
+            return new StateAccessNode(accessType, ctx.IDENTIFIER().getText()); //return a StateAccessNode with the accessType and accessIdentifier
+        } //If the access is an array access
+        StateAccessNode node = new StateAccessNode(accessType);
+        node.addChild(visit(ctx.getChild(2))); //visit the array access and add it as a child to the node
+        return node;
     }
 
     @Override public AstNode visitKnowsAccess(ParLangParser.KnowsAccessContext ctx){
