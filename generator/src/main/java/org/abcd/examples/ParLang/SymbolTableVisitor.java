@@ -12,8 +12,6 @@ import java.util.Objects;
     * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
     * 5. Find out when it makes sense to check for duplicate method names in an Actor
     * 6. Error handling
-    * 8. Implement handling of arrayAccessNode
-    * 9. Make sure arrays declared in StateNodes are handled
  */
 
 
@@ -96,11 +94,12 @@ public class SymbolTableVisitor implements NodeVisitor {
         if(Objects.equals(node.getMethodType(), "local")){
             this.symbolTable.insertLocalMethod(node.getId());
         }
-        this.symbolTable.addScope(node.getId());
-        //Visits the children of the node to add the symbols to the symbol table
-        this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
-        this.symbolTable.leaveScope();
+        if(this.symbolTable.addScope(node.getId())){
+            //Visits the children of the node to add the symbols to the symbol table
+            this.visitChildren(node);
+            //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
+            this.symbolTable.leaveScope();
+        }
     }
 
 
@@ -167,7 +166,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    //TODO: Implement this and find out how we declare an array
     @Override
     public void visit(ArrayAccessNode node) {
         if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) != null){
@@ -197,6 +195,15 @@ public class SymbolTableVisitor implements NodeVisitor {
                 this.symbolTable.insertKnowsSymbol(idChildNode.getName(), attributes);
             }
         }
+    }
+
+    //TODO: Sig til Adomas at han nok mangler den her
+    //TODO: Måske lave denne om så den bruger script navnet
+    @Override
+    public void visit(ScriptMethodNode node) {
+        this.symbolTable.addScope(node.getId());
+        this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
 
@@ -327,11 +334,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(IterationNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ScriptMethodNode node) {
         this.visitChildren(node);
     }
 

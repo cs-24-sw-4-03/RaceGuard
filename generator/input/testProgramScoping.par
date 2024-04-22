@@ -8,14 +8,14 @@ Actor Test{
 	    int[] stateArray;
 	}
 	Knows{
-	    //Test testActor;
+	    Test testActor;
 	}
 
 	Spawn(int x){
 		State.y = x;
 	}
 
-	local TestLocal(): void{
+	local testLocal(): void{
 	    int[] intArray = {2, 3, 5};
 	    int testArray = intArray[2];
 
@@ -31,6 +31,23 @@ Actor Test{
 
 	}
 
+	//local testLocal(): void{
+
+	//}
+
 	on TestOn(){
+	    testLocal();
 	}
+}
+
+Actor Test2{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+    local testOfTest2(): int{
+        testLocal();
+        return 2;
+    }
 }
