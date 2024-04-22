@@ -15,7 +15,7 @@ Actor Test{
 		State.y = x;
 	}
 
-	local TestLocal(): void{
+	local testLocal(): void{
 	    int[] intArray = {2, 3, 5};
 	    int testArray = intArray[2];
 
@@ -32,5 +32,7 @@ Actor Test{
 	}
 
 	on TestOn(){
+	    testLocal();
+	}
 	}
 }

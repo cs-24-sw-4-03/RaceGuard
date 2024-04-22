@@ -39,12 +39,16 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
     public void visit(ScriptMethodNode node) {
+        this.symbolTable.enterScope(node.getId());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -59,7 +63,9 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelectionNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -69,7 +75,9 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -139,17 +147,23 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
+        this.symbolTable.enterScope(node.getId());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
     public void visit(MainDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
     public void visit(SpawnDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -204,12 +218,16 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(WhileNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override
     public void visit(ForNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         this.visitChildren(node);
+        this.symbolTable.leaveScope();
     }
 
     @Override

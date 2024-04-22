@@ -198,6 +198,15 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
+    //TODO: Sig til Adomas at han nok mangler den her
+    //TODO: Måske lave denne om så den bruger script navnet
+    @Override
+    public void visit(ScriptMethodNode node) {
+        this.symbolTable.addScope(node.getId());
+        this.visitChildren(node);
+        this.symbolTable.leaveScope();
+    }
+
 
 
     @Override
@@ -322,11 +331,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(IterationNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(ScriptMethodNode node) {
         this.visitChildren(node);
     }
 
