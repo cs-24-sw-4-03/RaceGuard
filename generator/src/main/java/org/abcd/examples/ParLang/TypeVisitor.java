@@ -73,7 +73,15 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+        if (hasParent(node, StateNode.class)){
+            node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
+        }
+        else if(hasParent(node, KnowsNode.class)){
+            node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
+        }
+        else {
+            node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+        }
     }
 
     @Override
@@ -289,7 +297,21 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-        this.visitChildren(node);
+        try {
+            this.visitChildren(node);
+            for (AstNode child : node.getChildren()) {
+                if (child.getType() == null) {
+                    throw new FollowsNodeException("FollowsNode children does not have type defined");
+                }
+            }
+            node.setType("follows");
+        }
+        catch (FollowsNodeException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new FollowsNodeException(e.getMessage() + " in FollowsNode"));
+        }
     }
 
     @Override
@@ -545,7 +567,13 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         String id = node.getAccessIdentifier();
-        Attributes attributes = symbolTable.lookUpSymbol(id);
+        Attributes attributes;
+        if (hasParent(node, StateAccessNode.class)){
+            attributes = symbolTable.lookUpStateSymbol(id);
+        }
+        else{
+            attributes = symbolTable.lookUpSymbol(id);
+        }
         if (attributes == null){
             throw new ArrayAccessException("Array: " + id + " not found");
         }
@@ -554,8 +582,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateAccessNode node) {
-        if (!hasParent(node, StateNode.class)){
-            throw new StateAccessException("StateAccessNode is not a child of StateNode");
+        if (!hasParent(node, ActorDclNode.class)){
+            throw new StateAccessException("StateAccessNode is not a child of ActorDclNode");
         }
         if (node.getChildren().size() > 0){
             this.visitChildren(node);
