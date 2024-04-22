@@ -131,9 +131,10 @@ public class CodeGenVisitor implements NodeVisitor {
     visitChild(leftChild);
     stringBuilder.append(" = ");
     visitChild(rightChild);
-    if(!(node.getParent() instanceof ForNode)) //if the parent is not a for node, add a semicolon, else don't
-        {stringBuilder.append(";\n");}
-    codeOutput.add(getLine());
+    if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
+        stringBuilder.append(";\n");
+        codeOutput.add(getLine());
+        }
 
     }
 
@@ -193,17 +194,17 @@ public class CodeGenVisitor implements NodeVisitor {
         //check if the second child is a compare expression and the third child is an assign node
         if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
             visitChild(node.getChildren().get(0));
-            stringBuilder.append(";");
+            stringBuilder.append("; ");
             visitChild(node.getChildren().get(1));
-            stringBuilder.append(";");
+            stringBuilder.append("; ");
             visitChild(node.getChildren().get(2));
             stringBuilder.append(")");
             visitChild(node.getChildren().get(3));
         } else { //check if the first child is a compare expression
             if (node.getChildren().get(0) instanceof CompareExpNode) {
-                stringBuilder.append(";");
+                stringBuilder.append("; ");
                 visitChild(node.getChildren().get(0));
-                stringBuilder.append(";");
+                stringBuilder.append(" ;");
                 if(!(node.getChildren().get(1) instanceof AssignNode)){ //check if the second child is not an assign node
                     stringBuilder.append(")");
                     visitChild(node.getChildren().get(1));
@@ -216,9 +217,9 @@ public class CodeGenVisitor implements NodeVisitor {
             //check if the second child is a compare, then it knows that first is a var dcl and third is the body node
             if(node.getChildren().get(1) instanceof CompareExpNode){
                 visitChild(node.getChildren().get(0));
-                stringBuilder.append(";");
+                stringBuilder.append("; ");
                 visitChild(node.getChildren().get(1));
-                stringBuilder.append(";)");
+                stringBuilder.append(" ;)");
                 visitChild(node.getChildren().get(2));
             }
         }
@@ -373,9 +374,10 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         visitChildren(node);
-        if(!(node.getParent() instanceof ForNode)) //if the parent is not a for node, add a semicolon, else don't
-            {stringBuilder.append(";\n");}
-        codeOutput.add(getLine());
+        if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
+                stringBuilder.append(";\n");
+                codeOutput.add(getLine());
+            }
     }
 
     @Override
