@@ -63,11 +63,13 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitNode node) {
+        //does not need types
         this.visitChildren(node);
     }
 
     @Override
     public void visit(BodyNode node) {
+        //does not need types
         this.visitChildren(node);
     }
 
@@ -554,6 +556,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(AccessNode node) {
+        //abstract class
         this.visitChildren(node);
     }
 
@@ -601,7 +604,15 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsAccessNode node) {
-
+        if (!hasParent(node, ActorDclNode.class)){
+            throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode");
+        }
+        this.visitChildren(node);
+        for (AstNode child : node.getChildren()) {
+            if (!TypeContainer.hasType(child.getType())) {
+                throw new KnowsAccessException("KnowsAccessNode children does not have known type");
+            }
+        }
     }
 
     @Override
