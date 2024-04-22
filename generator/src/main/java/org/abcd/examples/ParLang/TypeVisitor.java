@@ -112,6 +112,7 @@ public class TypeVisitor implements NodeVisitor {
             } else if (hasParent(node, KnowsNode.class)) {
                 node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
             } else {
+                System.out.println("Normal Symbol: " + node.getName());
                 node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
             }
         /*}
