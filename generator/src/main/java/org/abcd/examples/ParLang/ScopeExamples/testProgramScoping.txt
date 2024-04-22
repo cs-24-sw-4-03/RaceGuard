@@ -8,7 +8,7 @@ Actor Test{
 	    int[] stateArray;
 	}
 	Knows{
-	    Test testActor;
+	    //Test testActor;
 	}
 
 	Spawn(int x){
@@ -27,7 +27,7 @@ Actor Test{
 		for(int y = 0; y<x ; y = y+1){
 
 		}
-		Test <- TestOn();
+		testActor <- TestOn();
 
 	}
 

@@ -70,6 +70,14 @@ public class Scope {
     }
 
     public ArrayList<String> getDeclaredLocalMethods() {
-        return this.declaredLocalMethods;
+        if(!this.declaredLocalMethods.isEmpty()){
+            return this.declaredLocalMethods;
+        }else{
+            if(this.parent != null){
+                return this.parent.getDeclaredLocalMethods();
+            }else{
+                return new ArrayList<>();
+            }
+        }
     }
 }
