@@ -40,7 +40,7 @@ localMethod: LOCAL_METHOD identifier parameters COLON allTypes localMethodBody;
 actorAccess : stateAccess
     | knowsAccess
     ;
-stateAccess: STATE DOT IDENTIFIER;
+stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
