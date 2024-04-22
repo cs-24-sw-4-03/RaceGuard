@@ -125,7 +125,14 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(AssignNode node) {
+    AstNode leftChild = node.getChildren().get(0);
+    AstNode rightChild = node.getChildren().get(1);
 
+    visitChild(leftChild);
+    stringBuilder.append(" = ");
+    visitChild(rightChild);
+    stringBuilder.append(";\n");
+    codeOutput.add(getLine());
 
     }
 
@@ -155,6 +162,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(DclNode node) {
+        stringBuilder.append(" ");
+        stringBuilder.append(VariableConverter(node.getId()));
+
 
     }
 
@@ -278,7 +288,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelectionNode node) {
-        stringBuilder.append("if( ");
+        stringBuilder.append("if(");
         visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
@@ -288,6 +298,7 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChild(node.getChildren().get(1));
         }
         stringBuilder.append("\n");
+        codeOutput.add(getLine());
     }
 
     @Override
@@ -329,6 +340,11 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(WhileNode node) {
-
+        stringBuilder.append("while(");
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(")");
+        visitChild(node.getChildren().get(1));
+        stringBuilder.append("\n");
+        codeOutput.add(getLine());
     }
 }
