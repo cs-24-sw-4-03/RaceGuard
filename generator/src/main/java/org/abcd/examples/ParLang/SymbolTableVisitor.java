@@ -12,8 +12,6 @@ import java.util.Objects;
     * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
     * 5. Find out when it makes sense to check for duplicate method names in an Actor
     * 6. Error handling
-    * 8. Implement handling of arrayAccessNode
-    * 9. Make sure arrays declared in StateNodes are handled
  */
 
 public class SymbolTableVisitor implements NodeVisitor {
@@ -167,7 +165,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    //TODO: Implement this and find out how we declare an array
     @Override
     public void visit(ArrayAccessNode node) {
         if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) != null){
