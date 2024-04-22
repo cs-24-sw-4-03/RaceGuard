@@ -65,7 +65,7 @@ declaration: allTypes identifier (initialization)?; //array type is included in 
 initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp | arrayAccess);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess) ;
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess | methodCall | boolExp);
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
