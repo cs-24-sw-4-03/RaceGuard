@@ -31,34 +31,58 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        if (node.getId() == null){
-            throw new ScriptDclException("Type is not defined for script declaration node");
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            if (node.getId() == null) {
+                throw new ScriptDclException("Type is not defined for script declaration node");
+            }
+            node.setType(node.getId());
+            this.symbolTable.leaveScope();
         }
-        node.setType(node.getId());
-        this.symbolTable.leaveScope();
+        catch (ScriptDclException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new ScriptDclException(e.getMessage() + " in ScriptDclNode"));
+        }
     }
 
     @Override
     public void visit(ScriptMethodNode node) {
         this.visitChildren(node);
-        if (node.getType() == null){
-            throw new ScriptMethodException("Type is not defined for script method node");
+        try {
+            if (node.getType() == null) {
+                throw new ScriptMethodException("Type is not defined for script method node");
+            }
+            if (node.getMethodType() == null) {
+                throw new ScriptMethodException("(on/local) Method type is not defined for script method node");
+            }
         }
-        if (node.getMethodType() == null){
-            throw new ScriptMethodException("(on/local) Method type is not defined for script method node");
+        catch (ScriptMethodException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new ScriptMethodException(e.getMessage() + " in ScriptMethodNode"));
         }
     }
 
     @Override
     public void visit(SendMsgNode node) {
-        if (symbolTable.lookUpSymbol(node.getMsgName()) == null){
-            throw new MethodCallException("Method: " + node.getMsgName() + " not found");
+        try {
+            if (symbolTable.lookUpSymbol(node.getMsgName()) == null) {
+                throw new MethodCallException("Method: " + node.getMsgName() + " not found");
+            }
+            symbolTable.enterScope(node.getMsgName());
+            this.visitChildren(node);
+            symbolTable.leaveScope();
         }
-        symbolTable.enterScope(node.getMsgName());
-        this.visitChildren(node);
-        symbolTable.leaveScope();
+        catch (MethodCallException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new MethodCallException(e.getMessage() + " in SendMsgNode"));
+        }
     }
 
     @Override
@@ -75,22 +99,30 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        if (hasParent(node, StateNode.class)){
-            node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
+        try {
+            if (hasParent(node, StateNode.class)) {
+                node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
+            } else if (hasParent(node, KnowsNode.class)) {
+                node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
+            } else {
+                node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+            }
         }
-        else if(hasParent(node, KnowsNode.class)){
-            node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
-        }
-        else {
-            node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
         }
     }
 
     @Override
     public void visit(ParametersNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in ParametersNode"));
+        }
     }
 
     @Override
@@ -113,20 +145,36 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnActorNode node) {
-        this.visitChildren(node);
-        if (node.getType() == null){
-            throw new SpawnActorException("Type is not defined for spawn actor node");
+        try {
+            this.visitChildren(node);
+            if (node.getType() == null) {
+                throw new SpawnActorException("Type is not defined for spawn actor node");
+            }
+        }
+        catch (SpawnActorException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new SpawnActorException(e.getMessage() + " in SpawnActorNode"));
         }
     }
 
     @Override
     public void visit(MethodCallNode node) {
-        if (symbolTable.lookUpSymbol(node.getMethodName()) == null){
-            throw new MethodCallException("Method: " + node.getMethodName() + " not found");
+        try {
+            if (symbolTable.lookUpSymbol(node.getMethodName()) == null) {
+                throw new MethodCallException("Method: " + node.getMethodName() + " not found");
+            }
+            symbolTable.enterScope(node.getMethodName());
+            this.visitChildren(node);
+            symbolTable.leaveScope();
         }
-        symbolTable.enterScope(node.getMethodName());
-        this.visitChildren(node);
-        symbolTable.leaveScope();
+        catch (MethodCallException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new MethodCallException(e.getMessage() + " in MethodCallNode"));
+        }
     }
 
     @Override
@@ -287,13 +335,19 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in ActorDclNode"));
+        }
     }
 
     @Override
     public void visit(StateNode node) {
+        //does not need types
         this.visitChildren(node);
     }
 
@@ -318,18 +372,20 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsNode node) {
+        //does not need types
         this.visitChildren(node);
     }
 
     @Override
     public void visit(MethodDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
         try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
             String childType = node.getChildren().get(1).getType();
             if (!node.getType().equals(childType)) {
                 throw new MethodDclNodeException("Return does not match returnType of method");
             }
+            this.symbolTable.leaveScope();
         }
         catch (MethodDclNodeException e) {
             exceptions.add(e);
@@ -337,32 +393,42 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new MethodDclNodeException(e.getMessage() + " in MethodDclNode"));
         }
-        this.symbolTable.leaveScope();
     }
 
     @Override
     public void visit(MainDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in MainDclNode"));
+        }
     }
 
     @Override
     public void visit(SpawnDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in SpawnDclNode"));
+        }
     }
 
     @Override
     public void visit(ExpNode node) {
+        //abstract class
         this.visitChildren(node);
     }
 
     @Override
     public void visit(IntegerNode node) {
         try {
-            if (((IntegerNode) node).getValue() == null) {
+            if (node.getValue() == null) {
                 throw new IntegerNodeException("IntegerNode value is null");
             }
             node.setType("int");
@@ -378,7 +444,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(DoubleNode node) {
         try {
-            if (((DoubleNode) node).getValue() == null) {
+            if (node.getValue() == null) {
                 throw new DoubleNodeException("DoubleNode value is null");
             }
             node.setType("double");
@@ -394,7 +460,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(StringNode node) {
         try {
-            if (((StringNode) node).getValue() == null) {
+            if (node.getValue() == null) {
                 throw new StringNodeException("StringNode value is null");
             }
             node.setType("string");
@@ -542,16 +608,26 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(WhileNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in WhileNode"));
+        }
     }
 
     @Override
     public void visit(ForNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in ForNode"));
+        }
     }
 
     @Override
@@ -562,56 +638,85 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelectionNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        try {
+            this.symbolTable.enterScope(node.getNodeHash());
+            this.visitChildren(node);
+            this.symbolTable.leaveScope();
+        }
+        catch (Exception e) {
+            exceptions.add(new RuntimeException(e.getMessage() + " in SelectionNode"));
+        }
     }
 
     @Override
     public void visit(ArrayAccessNode node) {
-        String id = node.getAccessIdentifier();
-        Attributes attributes;
-        if (hasParent(node, StateAccessNode.class)){
-            attributes = symbolTable.lookUpStateSymbol(id);
+        try{
+            String id = node.getAccessIdentifier();
+            Attributes attributes;
+            if (hasParent(node, StateAccessNode.class)){
+                attributes = symbolTable.lookUpStateSymbol(id);
+            }
+            else{
+                attributes = symbolTable.lookUpSymbol(id);
+            }
+            if (attributes == null){
+                throw new ArrayAccessException("Array: " + id + " not found");
+            }
+            node.setType(attributes.getVariableType());
         }
-        else{
-            attributes = symbolTable.lookUpSymbol(id);
+        catch (ArrayAccessException e) {
+            exceptions.add(e);
         }
-        if (attributes == null){
-            throw new ArrayAccessException("Array: " + id + " not found");
+        catch (Exception e) {
+            exceptions.add(new ArrayAccessException(e.getMessage() + " in ArrayAccessNode"));
         }
-        node.setType(attributes.getVariableType());
     }
 
     @Override
     public void visit(StateAccessNode node) {
-        if (!hasParent(node, ActorDclNode.class)){
-            throw new StateAccessException("StateAccessNode is not a child of ActorDclNode");
-        }
-        if (node.getChildren().size() > 0){
-            this.visitChildren(node);
-            node.setType(node.getChildren().get(0).getType());
-        }
-        else {
-            String id = node.getAccessIdentifier();
-            Attributes attributes = symbolTable.lookUpStateSymbol(id);
-            if (attributes == null){
-                throw new StateAccessException("State: " + id + " not found");
+        try{
+            if (!hasParent(node, ActorDclNode.class)){
+                throw new StateAccessException("StateAccessNode is not a child of ActorDclNode");
             }
-            node.setType(attributes.getVariableType());
+            if (node.getChildren().size() > 0){
+                this.visitChildren(node);
+                node.setType(node.getChildren().get(0).getType());
+            }
+            else {
+                String id = node.getAccessIdentifier();
+                Attributes attributes = symbolTable.lookUpStateSymbol(id);
+                if (attributes == null) {
+                    throw new StateAccessException("State: " + id + " not found");
+                }
+                node.setType(attributes.getVariableType());
+            }
+        }
+        catch (StateAccessException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new StateAccessException(e.getMessage() + " in StateAccessNode"));
         }
     }
 
     @Override
     public void visit(KnowsAccessNode node) {
-        if (!hasParent(node, ActorDclNode.class)){
-            throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode");
-        }
-        this.visitChildren(node);
-        for (AstNode child : node.getChildren()) {
-            if (!TypeContainer.hasType(child.getType())) {
-                throw new KnowsAccessException("KnowsAccessNode children does not have known type");
+        try {
+            if (!hasParent(node, ActorDclNode.class)) {
+                throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode");
             }
+            this.visitChildren(node);
+            for (AstNode child : node.getChildren()) {
+                if (!TypeContainer.hasType(child.getType())) {
+                    throw new KnowsAccessException("KnowsAccessNode children does not have known type");
+                }
+            }
+        }
+        catch (KnowsAccessException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new KnowsAccessException(e.getMessage() + " in KnowsAccessNode"));
         }
     }
 
