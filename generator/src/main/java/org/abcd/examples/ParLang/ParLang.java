@@ -13,54 +13,41 @@ import org.abcd.examples.ParLang.AstNodes.InitNode;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.misc.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.abcd.examples.ParLang.AstNodes.AstNode;
-
 
 public class ParLang {
     /***
      *
-     * @param args running main with "parents" as args[0] tells AstPrintVisitor to print AstNodes with information about parent fields.
+     * @param args - the file path to the source code. Default is '/input/'
      * @throws Exception
      */
+    private static final String DEFAULT_INPUT_PATH = System.getProperty("user.dir") + "/input/";
+
     public static void main(String[] args) throws Exception {
-        // create a CharStream that reads from standard input
-        ANTLRInputStream input = new ANTLRInputStream(System.in);
+        if (args.length != 1) {
+            throw new IllegalArgumentException("Expected one argument with file path.");
+        }
+        Path source = Paths.get(DEFAULT_INPUT_PATH, args[0]);
+        validateSource(source);
 
-        // create a lexer that feeds off of input CharStream
-        ParLangLexer lexer = new ParLangLexer(input);
-
-        // create a buffer of tokens pulled from the lexer
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-        // create a parser that feeds off the tokens buffer
-        ParLangParser parser = new ParLangParser(tokens);
-
-        ParseTree tree = parser.init(); // begin parsing at init
+        CharStream input = CharStreams.fromPath(source); // Load the input file
+        ParLangLexer lexer = new ParLangLexer(input); // Create a lexer that feeds off of input CharStream
+        CommonTokenStream tokens = new CommonTokenStream(lexer);  // Create a buffer of tokens pulled from the lexer
+        ParLangParser parser = new ParLangParser(tokens);   // Create a parser that feeds off the tokens buffer
+        ParseTree tree = parser.init(); // Begin parsing at init node
 
         TypeContainer typeContainer = new TypeContainer();
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
-
         InitNode ast=(InitNode) tree.accept(visitor);
 
-        //print AST
-        System.out.println("AST:");
-        AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
-        String printOption="";
-        if(args.length>0){
-            printOption=args[0];
-        }
-        astPrintVisitor.visit(0, ast, printOption); //if printOption is "parents" then tree is printed with info about parent node of each AstNode.
-
-        //print CST
-        System.out.println("CST:");
-        System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+        printAST(ast, args);
+        printCST(tree, parser);
 
         System.out.println("Scoping");
         SymbolTable symbolTable = new SymbolTable();
@@ -73,9 +60,46 @@ public class ParLang {
 
         MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
         methodCallVisitor.visit(ast);
+       //generateCode(ast);
 
     }
+    private static void validateSource(Path source) throws IOException {
+        if (!Files.exists(source)) {
+            throw new IOException("File source not found at path: " + source);
+        }
+        String extension = getFileExtension(source);
+        if (!"par".equals(extension)) {
+            throw new IOException("Wrong file extension, expected .par");
+        }
+    }
 
+    /**
+     * Get the file extension of a path
+     * @param path
+     * @return the file extension or an empty string if no extension
+     */
+    private static String getFileExtension(Path path) {
+        String fileName = path.getFileName().toString();
+        int lastDot = fileName.lastIndexOf(".");
+        return lastDot > 0 ? fileName.substring(lastDot + 1) : "";
+    }
+
+    private static void printAST(AstNode ast, String[] args) {
+        System.out.println("AST:");
+        AstPrintVisitor astPrintVisitor = new AstPrintVisitor();
+        String printOption = args.length > 0 ? args[0] : "";
+        astPrintVisitor.visit(0, ast, printOption); // Optionally print parent node info
+    }
+
+    private static void printCST(ParseTree tree, ParLangParser parser) {
+        System.out.println("CST:");
+        System.out.println(tree.toStringTree(parser)); // Print LISP-style tree
+    }
+/*
+    private static void generateCode(AstNode ast) throws IOException {
+        CodeGenVisitor codeGenVisitor = new CodeGenVisitor();
+        codeGenVisitor.visit(ast);
+        codeGenVisitor.generate();
+    }
+*/
 }
-
-
