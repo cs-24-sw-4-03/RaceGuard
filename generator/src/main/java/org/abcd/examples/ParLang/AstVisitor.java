@@ -162,7 +162,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
             for (int i = 2; i < numOfChildren - 1; i+=3){ //skip the commas
-                System.out.println(i);
                 knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             } //add the known actors as children to the knowsNode
         }
