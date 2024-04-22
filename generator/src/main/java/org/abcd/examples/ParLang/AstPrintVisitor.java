@@ -45,11 +45,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers() + " with type: " + node.getType());
                     break;
                 case "IdentifierNode":
-                    if(((IdentifierNode)node).getType()!=null){
-                        this.print(localIndent, className + " type: " + ((IdentifierNode)node).getType().toString() + " id: " + ((IdentifierNode)node).getName() + " with type: " + node.getType());
-                    }else{
-                        this.print(localIndent, className + ": " + ((IdentifierNode)node).getName() + " with type: " + node.getType());
-                    }
+                    this.print(localIndent, className + " type: " + ((IdentifierNode)node).getType() + " id: " + ((IdentifierNode)node).getName());
                     break;
                 case "SpawnActorNode":
                     this.print(localIndent, className + " : " + ((SpawnActorNode)node).getType() + " with type: " + node.getType());
@@ -65,7 +61,7 @@ public class AstPrintVisitor {
                     break;
                 case "ScriptMethodNode":
                     if (((ScriptMethodNode)node).getMethodType().equals("on")) {
-                        this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId() + " with type: " + node.getType());
+                        this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId());
                     }else{
                         this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId() + " return type: " + ((ScriptMethodNode) node).getType());
                     }

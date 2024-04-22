@@ -68,10 +68,10 @@ public class FuncVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    @Override
+   /* @Override
     public void visit(DclNode node) {
         this.visitChildren(node);
-    }
+    }*/
 
     @Override
     public void visit(InitNode node) {

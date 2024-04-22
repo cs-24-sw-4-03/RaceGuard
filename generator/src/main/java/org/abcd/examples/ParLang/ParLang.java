@@ -70,6 +70,9 @@ public class ParLang {
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);
         astPrintVisitor.visit(0, ast,"");
+        for (Exception e : typeVisitor.getExceptions()) {
+            System.out.println(e.getMessage());
+        }
 
     }
 

@@ -17,6 +17,10 @@ public class TypeVisitor implements NodeVisitor {
     private TypeContainer typeContainer;
     private List<RuntimeException> exceptions = new ArrayList<>();
 
+    public List<RuntimeException> getExceptions() {
+        return exceptions;
+    }
+
     public TypeVisitor(SymbolTable symbolTable, TypeContainer typeContainer) {
         this.symbolTable = symbolTable;
         this.typeContainer = typeContainer;
@@ -105,7 +109,7 @@ public class TypeVisitor implements NodeVisitor {
             } else if (hasParent(node, KnowsNode.class)) {
                 node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
             } else {
-                node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+                node.setType(this.symbolTable.lookUpSymbolCurrentScope(node.getName()).getVariableType());
             }
         }
         catch (Exception e) {
@@ -238,7 +242,7 @@ public class TypeVisitor implements NodeVisitor {
         }
     }
 
-    @Override
+    /*@Override
     public void visit(DclNode node) {
         this.visitChildren(node);
         try{
@@ -255,7 +259,7 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new varDclNodeExeption(e.getMessage() + " in DclNode"));
         }
-    }
+    }*/
 
     @Override
     public void visit(AssignNode node) {
