@@ -266,10 +266,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
         VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText()); //ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
+        dclNode.addChild(idNode); //add identifier as child
         ParLangParser.InitializationContext init=ctx.initialization(); //get the initialization value
         if(init!=null){//variable is initialized
-            IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
-            dclNode.addChild(idNode); //add identifier as child
             InitializationNode initializationNode=new InitializationNode();
             initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization value (value can also be a list).
             dclNode.addChild(initializationNode); //add initializationNode as child
