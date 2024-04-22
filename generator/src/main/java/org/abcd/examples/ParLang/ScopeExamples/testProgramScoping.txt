@@ -34,5 +34,16 @@ Actor Test{
 	on TestOn(){
 	    testLocal();
 	}
-	}
+}
+
+Actor Test2{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+    local testOfTest2(): int{
+        testLocal();
+        return 2;
+    }
 }
