@@ -111,11 +111,6 @@ public class MethodCallVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(DclNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(VarDclNode node) {
         this.visitChildren(node);
     }
