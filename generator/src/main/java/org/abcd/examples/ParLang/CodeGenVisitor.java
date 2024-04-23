@@ -16,7 +16,7 @@ public class CodeGenVisitor implements NodeVisitor {
     StringBuilder stringBuilder = new StringBuilder();
     ArrayList<String> codeOutput = new ArrayList<>();
 
-    int localIndent = 0; //indent for file generated
+    int localIndent = 0; //indent for file generated 
 
     public void generate() throws IOException {
         codeOutput.add(getLine());
@@ -98,8 +98,29 @@ public class CodeGenVisitor implements NodeVisitor {
     //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
     @Override
     public void visit(ActorDclNode node) {
+
+        //Create new file named after the actor using dirPath
+        String filePath = dirPath + "/" + node.getId() + ".java";
+        File newActorFile = new File(filePath);
+
+        //Create a new string builder for the actor
+        StringBuilder actorStringBuilder = new StringBuilder();
+        if(!newActorFile.exists()){
+            newActorFile.mkdirs();
+            System.out.println("File created: " + newActorFile.getName());
+        }
+
+
         localIndent = 0;
-        stringBuilder.append("public class ")
+
+        //imports necceary for most akka actor classes
+        actorStringBuilder   
+        .append("import akka.actor.typed.ActorRef;")
+        .append("import akka.actor.typed.Behavior;")
+        .append("import akka.actor.typed.javadsl.*;")
+        .append("import akka.actor.typed.ActorSystem;");
+
+        actorStringBuilder.append("public class ")
                 .append(node.getId())
                 .append(" extends AbstractBehavior<") // Extending AbstractBehavior to manage state and behavior
                 .append("");
