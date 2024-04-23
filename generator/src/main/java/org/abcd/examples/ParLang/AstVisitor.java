@@ -364,7 +364,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
         if (ctx.getChild(0).getText().equals("(")) {
-            return visit(ctx.arithExp());//If first child is a parentheses, treat the node as arithmetic expression
+            ExpNode node = (ExpNode) visit(ctx.arithExp()); //visit the child
+            node.setIsParenthesized(true); //set the node as parenthesized
+            return node;//If first child is a parentheses, treat the node as arithmetic expression
         }
         return visit(ctx.getChild(0)); //visit the child
     }

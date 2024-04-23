@@ -111,9 +111,19 @@ public class CodeGenVisitor implements NodeVisitor {
         AstNode leftChild = node.getChildren().get(0);
         AstNode rightChild = node.getChildren().get(1);
 
-        visitChild(leftChild);
-        stringBuilder.append(" " + node.getOpType().getValue() + " ");
-        visitChild(rightChild);
+        if(node.getIsParenthesized()){
+            stringBuilder.append("(");
+            visitChild(leftChild);
+            stringBuilder.append(" " + node.getOpType().getValue() + " ");
+            visitChild(rightChild);
+            stringBuilder.append(")");
+        }
+        else{
+            visitChild(leftChild);
+            stringBuilder.append(" " + node.getOpType().getValue() + " ");
+            visitChild(rightChild);
+        }
+
     }
 
     @Override
@@ -160,10 +170,6 @@ public class CodeGenVisitor implements NodeVisitor {
        visitChild(node.getChildren().get(1));
     }
 
-    @Override
-    public void visit(DclNode node) {
-
-    }
 
     @Override
     public void visit(DoubleNode node) {
