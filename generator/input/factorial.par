@@ -1,0 +1,52 @@
+Script Factorial{
+	on multiply(int x);
+}
+
+main(){
+    Spawn FactorialMain(5);
+    //After this code is run 120 should be stored in result
+}
+
+Actor FactorialMain follows Factorial{
+	State{int result;}
+    Knows{}
+
+    Spawn(int requestedFactorial) {
+        State.result = 0;
+        FactorialManager manager = Spawn FactorialManager();
+        manager <- calcFactorial(self, requestedFactorial);
+    }
+
+    on multiply(int result){
+	    State.result = result;
+    }
+}
+
+Actor FactorialManager{
+	State{}
+    Knows{}
+    Spawn(){}
+
+    on calcFactorial( Factorial replyTo, int number) {
+	    if(x != 0) {
+	    FactorialHelper helper = Spawn FactorialHelper(replyTo, number);
+		self <- calcFactorial(helper, x-1);
+        }else{
+            replyTo <- multiply(1);
+        }
+   }
+}
+
+Actor FactorialHelper follows Factorial{
+	State {int currentValue;}
+    Knows {Factorial replyTo;}
+
+	Spawn(Factorial replyTo, int currentValue) {
+		State.currentValue = currentValue;
+		Knows.replyTo = replyTo;
+    }
+
+    on multiply(int x){
+        Knows.replyTo <- multiply(x * State.currentValue);
+    }
+}
