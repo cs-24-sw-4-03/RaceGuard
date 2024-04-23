@@ -7,10 +7,7 @@ import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.abcd.examples.ParLang.symbols.Scope;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class TypeVisitor implements NodeVisitor {
     private SymbolTable symbolTable;
@@ -105,8 +102,9 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        System.out.println("Symbol: " + node.getName());
-        /*try {*/
+        if(!(node.getParent() instanceof MethodCallNode)){
+            System.out.println("Symbol: " + node.getName());
+            /*try {*/
             if (hasParent(node, StateNode.class)) {
                 node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
             } else if (hasParent(node, KnowsNode.class)) {
@@ -119,14 +117,13 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
         }*/
+        }
     }
 
     @Override
     public void visit(ParametersNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
-            this.symbolTable.leaveScope();
         /*}
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in ParametersNode"));
@@ -170,7 +167,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node) {
         /*try {*/
-            if (symbolTable.lookUpSymbol(node.getMethodName()) == null) {
+            if (!symbolTable.getDeclaredLocalMethods().contains(node.getMethodName())) {
                 throw new MethodCallException("Method: " + node.getMethodName() + " not found");
             } else{
                 System.out.println("Method: " + node.getMethodName() + " found");;
@@ -208,7 +205,7 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ArgumentsNode node) {
         this.visitChildren(node);
         /*try {*/
-            Map<String, Attributes> params = symbolTable.getCurrentScope().getParams();
+            LinkedHashMap<String, Attributes> params = symbolTable.getCurrentScope().getParams();
             AstNode parent = node.getParent();
             int numOfChildren = node.getChildren().size();
             if (parent instanceof MethodCallNode) {
@@ -234,14 +231,20 @@ public class TypeVisitor implements NodeVisitor {
             exceptions.add(new ArgumentsException(e.getMessage() + " in ArgumentsNode"));
         }*/
     }
-    private void checkArgTypes(ArgumentsNode node, Map<String, Attributes> params, String msgName){
+    private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
         if (params.size() != size){
             throw new ArgumentsException("Number of arguments does not match the number of parameters in spawn actor: " + msgName);
         }
         for (int i = 0; i < size; i++) {
+            System.out.println("Getting argTypes");
             String argType = node.getChildren().get(i).getType();
-            String paramType = params.get(i).getVariableType();
+            System.out.println("argType: " + argType);
+            Map.Entry<String, Attributes> entry = params.entrySet().iterator().next();
+            System.out.println("Key: " + entry.getKey() + " Type: " + params.get(entry.getKey()).getVariableType());
+            String paramType = params.get(entry.getKey()).getVariableType();
+            System.out.println("paramType: " + paramType);
+
             if (!argType.equals(paramType)){
                 throw new ArgumentsException("Argument type does not match parameter type in send message: " + msgName);
             }
@@ -375,7 +378,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
+            this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             String childType = node.getChildren().get(1).getType();
             if (!node.getType().equals(childType)) {
