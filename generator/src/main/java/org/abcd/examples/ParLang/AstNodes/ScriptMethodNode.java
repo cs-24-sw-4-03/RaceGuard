@@ -1,5 +1,7 @@
 package org.abcd.examples.ParLang.AstNodes;
 
+import org.abcd.examples.ParLang.NodeVisitor;
+
 public class ScriptMethodNode extends DclNode{
     private final String methodType;
 
@@ -10,4 +12,8 @@ public class ScriptMethodNode extends DclNode{
     }
 
     public String getMethodType(){return  methodType;}
+
+    public void accept(NodeVisitor visitor) {
+        visitor.visit(this);
+    }
 }

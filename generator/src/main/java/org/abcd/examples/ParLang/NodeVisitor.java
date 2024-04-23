@@ -24,7 +24,6 @@ public interface NodeVisitor {
     void visit(LocalMethodBodyNode node);
     void visit(ArgumentsNode node);
 
-    void visit(DclNode node);
     void visit(VarDclNode node);
 
     void visit(IdentifierNode node);
