@@ -16,7 +16,7 @@ public class CodeGenVisitor implements NodeVisitor {
     StringBuilder stringBuilder = new StringBuilder();
     ArrayList<String> codeOutput = new ArrayList<>();
 
-    int localIndent = 0; //indent for akka file generated
+    int localIndent = 0; //indent for file generated
 
     public void generate() throws IOException {
         codeOutput.add(getLine());
@@ -98,6 +98,11 @@ public class CodeGenVisitor implements NodeVisitor {
     //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
     @Override
     public void visit(ActorDclNode node) {
+        localIndent = 0;
+        stringBuilder.append("public class ")
+                .append(node.getId())
+                .append(" extends AbstractBehavior<") // Extending AbstractBehavior to manage state and behavior
+                .append("");
 
     }
 
@@ -158,11 +163,6 @@ public class CodeGenVisitor implements NodeVisitor {
        visitChild(node.getChildren().get(0));
        stringBuilder.append(node.getOperator());
        visitChild(node.getChildren().get(1));
-    }
-
-    @Override
-    public void visit(DclNode node) {
-
     }
 
     @Override
@@ -274,8 +274,15 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
+        localIndent = 0;
+        stringBuilder.append("public class Main {\n");
+        codeOutput.add(getLine());
+        localIndent++;
         stringBuilder.append("public static void main(String[] args)");
         this.visitChildren(node);
+        localIndent--;
+        stringBuilder.append("\n}");
+        codeOutput.add(getLine());
     }
 
 
