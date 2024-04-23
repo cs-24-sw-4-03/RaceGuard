@@ -58,7 +58,7 @@ forLoop : FOR PARAN_OPEN (declaration |assignment)? SEMICOLON boolExp SEMICOLON 
 whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 
 //if statements must contain an if part
-selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
+selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE_IF PARAN_OPEN(boolExp)PARAN_CLOSE body)* (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes

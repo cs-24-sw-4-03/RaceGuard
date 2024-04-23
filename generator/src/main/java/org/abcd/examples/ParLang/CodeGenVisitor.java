@@ -48,7 +48,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.setLength(0); // Resets string builder
         int indent = localIndent;
 
-        if (line.endsWith("}\n")){
+        if (line.endsWith("}\n") || line.endsWith("}")){
             indent--;
         }
         line = line.indent(indent * 4);
@@ -338,12 +338,20 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
 
-        if(node.getChildren().size() > 2){
+        for(int counter = 2; counter < node.getChildren().size(); counter+=2){
+            if(node.getChildren().size() > 2 && counter < node.getChildren().size()-1){
+                stringBuilder.append("else if(");
+                visitChild(node.getChildren().get(counter));
+                stringBuilder.append(")");
+                visitChild(node.getChildren().get(counter+1));
+            }}
+        //check if there is an else statement
+        if(node.getChildren().size()-2 > 0){
             stringBuilder.append("else");
-            visitChild(node.getChildren().get(1));
+            visitChild(node.getChildren().get(node.getChildren().size()-1));
         }
-        stringBuilder.append("\n");
         codeOutput.add(getLine());
+
     }
 
     @Override
