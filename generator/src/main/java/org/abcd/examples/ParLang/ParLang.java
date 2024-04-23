@@ -45,7 +45,7 @@ public class ParLang {
 
         printAST(ast, args);
         printCST(tree, parser);
-       //generateCode(ast);
+        generateCode(ast);
 
     }
     private static void validateSource(Path source) throws IOException {
@@ -80,11 +80,11 @@ public class ParLang {
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // Print LISP-style tree
     }
-/*
+
     private static void generateCode(AstNode ast) throws IOException {
         CodeGenVisitor codeGenVisitor = new CodeGenVisitor();
         codeGenVisitor.visit(ast);
         codeGenVisitor.generate();
     }
-*/
+
 }

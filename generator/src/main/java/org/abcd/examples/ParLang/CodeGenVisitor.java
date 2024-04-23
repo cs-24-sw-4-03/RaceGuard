@@ -95,7 +95,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ArrayAccessNode node) {
 
     }
-
+    //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
     @Override
     public void visit(ActorDclNode node) {
 
