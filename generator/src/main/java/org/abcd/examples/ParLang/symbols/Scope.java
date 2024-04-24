@@ -11,7 +11,7 @@ public class Scope {
     private final LinkedHashMap<String, Attributes> params = new LinkedHashMap<>();
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
-    private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
+    private final HashMap<String, Attributes> declaredLocalMethods = new HashMap<>();
 
 
     //Nested scopes within the current scope
@@ -65,22 +65,22 @@ public class Scope {
         return this.knowsSymbols;
     }
 
-    public void addDeclaredLocalMethod(String id) {
-        if(!this.declaredLocalMethods.contains(id)){
-            this.declaredLocalMethods.add(id);
+    public void addDeclaredLocalMethod(String id, Attributes attributes) {
+        if(!this.declaredLocalMethods.containsKey(id)){
+            this.declaredLocalMethods.put(id, attributes);
         }else{
             System.out.println("Duplicate method id: " + id);
         }
     }
 
-    public ArrayList<String> getDeclaredLocalMethods() {
+    public HashMap<String, Attributes> getDeclaredLocalMethods() {
         if(!this.declaredLocalMethods.isEmpty()){
             return this.declaredLocalMethods;
         }else{
             if(this.parent != null){
                 return this.parent.getDeclaredLocalMethods();
             }else{
-                return new ArrayList<>();
+                return new HashMap<>();
             }
         }
     }

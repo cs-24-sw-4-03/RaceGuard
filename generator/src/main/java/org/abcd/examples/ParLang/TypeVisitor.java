@@ -1,11 +1,9 @@
 package org.abcd.examples.ParLang;
 
-import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
-import org.abcd.examples.ParLang.symbols.Scope;
 
 import java.util.*;
 
@@ -167,10 +165,11 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node) {
         /*try {*/
-            if (!symbolTable.getDeclaredLocalMethods().contains(node.getMethodName())) {
+            if (!symbolTable.getDeclaredLocalMethods().containsKey(node.getMethodName())) {
                 throw new MethodCallException("Method: " + node.getMethodName() + " not found");
             } else{
-                System.out.println("Method: " + node.getMethodName() + " found");;
+                System.out.println("Method: " + node.getMethodName() + " found");
+                node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
             }
             symbolTable.enterScope(node.getMethodName());
             this.visitChildren(node);
@@ -381,7 +380,7 @@ public class TypeVisitor implements NodeVisitor {
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             String childType = node.getChildren().get(1).getType();
-            if (!node.getType().equals(childType)) {
+            if (!node.getType().equals(childType) && node.getMethodType().equals("local")) {
                 throw new MethodDclNodeException("Return does not match returnType of method");
             }
             this.symbolTable.leaveScope();
