@@ -534,9 +534,9 @@ public class TypeVisitor implements NodeVisitor {
         if (leftType.equals("int") && rightType.equals("int"))
         {
             return "int";
-        }
-        if (leftType.equals("int") && rightType.equals("double") ||
-            leftType.equals("double") && rightType.equals("int")){
+        } else if ( leftType.equals("int") && rightType.equals("double") ||
+                    leftType.equals("double") && rightType.equals("int") ||
+                    leftType.equals("double") && rightType.equals("double")){
             return "double";
         }
         //All other cases returns null(Also where left or right type == null)
