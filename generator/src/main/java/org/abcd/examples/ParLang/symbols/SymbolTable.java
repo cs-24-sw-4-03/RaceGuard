@@ -1,5 +1,9 @@
 package org.abcd.examples.ParLang.symbols;
 
+import org.abcd.examples.ParLang.AstNodes.ActorDclNode;
+import org.abcd.examples.ParLang.AstNodes.AstNode;
+import org.abcd.examples.ParLang.AstNodes.InitNode;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
@@ -168,6 +172,17 @@ public class SymbolTable {
 
     public HashMap<String, Attributes> getDeclaredLocalMethods(){
         return this.currentScope.getDeclaredLocalMethods();
+    }
+
+    public String findActorParent(AstNode node) {
+        AstNode parent = node.getParent();
+        while (!(parent instanceof InitNode)) {
+            if (parent instanceof ActorDclNode) {
+                return ((ActorDclNode) parent).getId();
+            }
+            parent = parent.getParent();
+        }
+        return null;
     }
 
 }
