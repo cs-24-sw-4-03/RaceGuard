@@ -1,16 +1,11 @@
 package org.abcd.examples.ParLang;
 
-import com.sun.source.tree.LiteralTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
-import org.abcd.examples.ParLang.symbols.Scope;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class TypeVisitor implements NodeVisitor {
     private SymbolTable symbolTable;
@@ -76,6 +71,8 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             if (symbolTable.lookUpSymbol(node.getMsgName()) == null) {
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
+            }else {
+                System.out.println("Method: " + node.getMsgName() + " found");
             }
             symbolTable.enterScope(node.getMsgName());
             this.visitChildren(node);
@@ -103,26 +100,28 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        /*try {*/
+        if(!(node.getParent() instanceof MethodCallNode)){
+            System.out.println("Symbol: " + node.getName());
+            /*try {*/
             if (hasParent(node, StateNode.class)) {
                 node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
             } else if (hasParent(node, KnowsNode.class)) {
                 node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
             } else {
-                node.setType(this.symbolTable.lookUpSymbolCurrentScope(node.getName()).getVariableType());
+                System.out.println("Normal Symbol: " + node.getName());
+                node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
             }
         /*}
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
         }*/
+        }
     }
 
     @Override
     public void visit(ParametersNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
-            this.symbolTable.leaveScope();
         /*}
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in ParametersNode"));
@@ -166,8 +165,11 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node) {
         /*try {*/
-            if (symbolTable.lookUpSymbol(node.getMethodName()) == null) {
+            if (!symbolTable.getDeclaredLocalMethods().containsKey(node.getMethodName())) {
                 throw new MethodCallException("Method: " + node.getMethodName() + " not found");
+            } else{
+                System.out.println("Method: " + node.getMethodName() + " found");
+                node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
             }
             symbolTable.enterScope(node.getMethodName());
             this.visitChildren(node);
@@ -202,7 +204,7 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ArgumentsNode node) {
         this.visitChildren(node);
         /*try {*/
-            Map<String, Attributes> params = symbolTable.getCurrentScope().getParams();
+            LinkedHashMap<String, Attributes> params = symbolTable.getCurrentScope().getParams();
             AstNode parent = node.getParent();
             int numOfChildren = node.getChildren().size();
             if (parent instanceof MethodCallNode) {
@@ -228,14 +230,20 @@ public class TypeVisitor implements NodeVisitor {
             exceptions.add(new ArgumentsException(e.getMessage() + " in ArgumentsNode"));
         }*/
     }
-    private void checkArgTypes(ArgumentsNode node, Map<String, Attributes> params, String msgName){
+    private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
         if (params.size() != size){
             throw new ArgumentsException("Number of arguments does not match the number of parameters in spawn actor: " + msgName);
         }
         for (int i = 0; i < size; i++) {
+            System.out.println("Getting argTypes");
             String argType = node.getChildren().get(i).getType();
-            String paramType = params.get(i).getVariableType();
+            System.out.println("argType: " + argType);
+            Map.Entry<String, Attributes> entry = params.entrySet().iterator().next();
+            System.out.println("Key: " + entry.getKey() + " Type: " + params.get(entry.getKey()).getVariableType());
+            String paramType = params.get(entry.getKey()).getVariableType();
+            System.out.println("paramType: " + paramType);
+
             if (!argType.equals(paramType)){
                 throw new ArgumentsException("Argument type does not match parameter type in send message: " + msgName);
             }
@@ -369,10 +377,10 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
+            this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             String childType = node.getChildren().get(1).getType();
-            if (!node.getType().equals(childType)) {
+            if (!node.getType().equals(childType) && node.getMethodType().equals("local")) {
                 throw new MethodDclNodeException("Return does not match returnType of method");
             }
             this.symbolTable.leaveScope();
@@ -526,9 +534,9 @@ public class TypeVisitor implements NodeVisitor {
         if (leftType.equals("int") && rightType.equals("int"))
         {
             return "int";
-        }
-        if (leftType.equals("int") && rightType.equals("double") ||
-            leftType.equals("double") && rightType.equals("int")){
+        } else if ( leftType.equals("int") && rightType.equals("double") ||
+                    leftType.equals("double") && rightType.equals("int") ||
+                    leftType.equals("double") && rightType.equals("double")){
             return "double";
         }
         //All other cases returns null(Also where left or right type == null)
@@ -645,9 +653,11 @@ public class TypeVisitor implements NodeVisitor {
             Attributes attributes;
             if (hasParent(node, StateAccessNode.class)){
                 attributes = symbolTable.lookUpStateSymbol(id);
+                System.out.println("Symbol: " + node.getAccessIdentifier());
             }
             else{
                 attributes = symbolTable.lookUpSymbol(id);
+                System.out.println("Symbol: " + node.getAccessIdentifier());
             }
             if (attributes == null){
                 throw new ArrayAccessException("Array: " + id + " not found");
@@ -668,15 +678,18 @@ public class TypeVisitor implements NodeVisitor {
             if (!hasParent(node, ActorDclNode.class)){
                 throw new StateAccessException("StateAccessNode is not a child of ActorDclNode");
             }
-            if (node.getChildren().size() > 0){
+            if (!node.getChildren().isEmpty()){
                 this.visitChildren(node);
                 node.setType(node.getChildren().get(0).getType());
             }
             else {
                 String id = node.getAccessIdentifier();
+                System.out.println("StateAccess: Symbol: " + id);
                 Attributes attributes = symbolTable.lookUpStateSymbol(id);
                 if (attributes == null) {
                     throw new StateAccessException("State: " + id + " not found");
+                }else{
+                    System.out.println("Symbol: " + node.getAccessIdentifier());
                 }
                 node.setType(attributes.getVariableType());
             }

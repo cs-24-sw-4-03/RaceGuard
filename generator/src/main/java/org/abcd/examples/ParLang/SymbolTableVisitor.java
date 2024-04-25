@@ -92,7 +92,8 @@ public class SymbolTableVisitor implements NodeVisitor {
     //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
         if(Objects.equals(node.getMethodType(), "local")){
-            this.symbolTable.insertLocalMethod(node.getId());
+            Attributes attributes = new Attributes(node.getType(), "local");
+            this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }
         if(this.symbolTable.addScope(node.getId())){
             //Visits the children of the node to add the symbols to the symbol table

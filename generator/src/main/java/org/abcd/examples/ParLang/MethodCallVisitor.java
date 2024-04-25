@@ -1,9 +1,9 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
-
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
@@ -14,8 +14,8 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodCallNode node) {
-        ArrayList<String> legalMethods = this.symbolTable.getDeclaredLocalMethods();
-        if (legalMethods.contains(node.getMethodName())) {
+        HashMap<String, Attributes> legalMethods = this.symbolTable.getDeclaredLocalMethods();
+        if (legalMethods.containsKey(node.getMethodName())) {
             System.out.println("Local method id " + node.getMethodName() + " found");
         }
         else {
@@ -114,11 +114,6 @@ public class MethodCallVisitor implements NodeVisitor {
     public void visit(ArgumentsNode node) {
         this.visitChildren(node);
     }
-
-    /*@Override
-    public void visit(DclNode node) {
-        this.visitChildren(node);
-    }*/
 
     @Override
     public void visit(VarDclNode node) {

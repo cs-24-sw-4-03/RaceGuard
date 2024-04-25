@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang.symbols;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 
 public class SymbolTable {
@@ -123,6 +124,7 @@ public class SymbolTable {
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
             if(!scope.getStateSymbols().isEmpty() && scope.getStateSymbols().containsKey(symbol)){
+                System.out.println("Symbol: " + symbol + " found");
                 return scope.getStateSymbols().get(symbol);
             }
 
@@ -160,11 +162,11 @@ public class SymbolTable {
 
     public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
 
-    public void insertLocalMethod(String symbol){
-        this.currentScope.addDeclaredLocalMethod(symbol);
+    public void insertLocalMethod(String symbol, Attributes attributes){
+        this.currentScope.addDeclaredLocalMethod(symbol, attributes);
     }
 
-    public ArrayList<String> getDeclaredLocalMethods(){
+    public HashMap<String, Attributes> getDeclaredLocalMethods(){
         return this.currentScope.getDeclaredLocalMethods();
     }
 
