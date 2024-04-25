@@ -16,7 +16,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
     private String getLine() {
         String line = stringBuilder.toString();
-        System.out.println("LINE: " + line);
         stringBuilder.setLength(0); // Resets string builder
         int indent = localIndent;
 
@@ -167,8 +166,6 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(StateNode node) {
         stringBuilder.append("private ");
-        System.out.println("StateNode: " + node.getId());
-        System.out.println(node.getChildren());
         visitChildren(node);
         codeOutput.add(getLine());
 
@@ -415,7 +412,6 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         visitChildren(node);
-        System.out.println("vardcl: " + node.getChildren());;
         if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
                 stringBuilder.append(";\n");
                 codeOutput.add(getLine());
