@@ -91,9 +91,10 @@ public class SymbolTableVisitor implements NodeVisitor {
     //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
         if(Objects.equals(node.getMethodType(), "local")){
+            System.out.println("Inserting Local Method: " + node.getId());
             this.symbolTable.insertLocalMethod(node.getId());
         }
-        if(this.symbolTable.addScope(node.getId())){
+        if(this.symbolTable.addScope(node.getId() + findActorParent(node))){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
@@ -119,6 +120,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
+        System.out.println("\nActor: " + node.getId());
         this.symbolTable.addScope(node.getNodeHash());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
@@ -213,11 +215,23 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
 
-
+    //TODO: Implement?
     @Override
     public void visit(SendMsgNode node) {
         this.visitChildren(node);
     }
+
+    private String findActorParent(AstNode node) {
+        AstNode parent = node.getParent();
+        while (!(parent instanceof InitNode)) {
+            if (parent instanceof ActorDclNode) {
+                return ((ActorDclNode) parent).getId();
+            }
+            parent = parent.getParent();
+        }
+        return null;
+    }
+
 
     @Override
     public void visit(SpawnActorNode node) {

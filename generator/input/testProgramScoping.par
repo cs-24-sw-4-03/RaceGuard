@@ -31,12 +31,8 @@ Actor Test{
 
 	}
 
-	local testLocal(): void{
-
-	}
-
 	on TestOn(){
-	    testLocal(int z = 77);
+	    testLocal(77);
 	}
 }
 
@@ -49,5 +45,9 @@ Actor Test2{
     local testOfTest2(): int{
         testLocal();
         return 2;
+    }
+
+    local testLocal(): void{
+        int x = 2;
     }
 }
