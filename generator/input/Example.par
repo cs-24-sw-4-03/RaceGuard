@@ -1,26 +1,3 @@
 main(){
-    bool a = true;
-    bool b = false;
-    a = !a;
-    if(a == true){
-        print("1");
-        if(b == false){
-            print("2");
-        }
-        else if(a == true && b == false){
-            print("3");
-        }
-    }
-    else{
-
-    }
-    if(!(a == true || b == false)){
-        print("a");
-        }
-        else if(a == true && b == false){
-            print("c");
-        }
-        else{
-            print("d");
-        }
+  int[] a;
 }

@@ -2,7 +2,7 @@ package org.abcd.examples.ParLang.AstNodes;
 
 import org.abcd.examples.ParLang.NodeVisitor;
 
-public class CompareExpNode extends AstNode {
+public class CompareExpNode extends BoolExpNode {
     private final String operator;
 
     public CompareExpNode(String operator, AstNode leftOperand, AstNode rightOperand) {

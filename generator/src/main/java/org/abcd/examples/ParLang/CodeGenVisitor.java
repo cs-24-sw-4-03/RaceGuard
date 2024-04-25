@@ -165,42 +165,70 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolAndExpNode node) {
-        if(node.getIsParenthesized()){
-            stringBuilder.append("(");
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(" && ");
-            visitChild(node.getChildren().get(1));
-            stringBuilder.append(")");
-        }
-        else{
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(" && ");
-            visitChild(node.getChildren().get(1));
+        for(int i = 0; i < node.getChildren().size(); i ++){
+            if(node.getIsParenthesized()) {
+                if (i == 0) {
+                    stringBuilder.append("(");
+                    visitChild(node.getChildren().get(i));
+                } else {
+                    stringBuilder.append(" && ");
+                    visitChild(node.getChildren().get(i));
+                    if(node.getChildren().size()-1 == node.getChildren().indexOf(node.getChildren().get(i))){
+                        stringBuilder.append(")");
+                    }
+                }
+            }
+            else {
+                if (i == 0) {
+                    visitChild(node.getChildren().get(i));
+                } else {
+                    stringBuilder.append(" && ");
+                    visitChild(node.getChildren().get(i));
+                }
+            }
         }
 
     }
 
     @Override
     public void visit(BoolExpNode node) {
-      if(node.getIsParenthesized()){
-            stringBuilder.append("(");
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(" || ");
-            visitChild(node.getChildren().get(1));
-            stringBuilder.append(")");
-        }
-      else{
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(" || ");
-            visitChild(node.getChildren().get(1));
+        for(int i = 0; i < node.getChildren().size(); i ++){
+            if(node.getIsParenthesized()) {
+                if (i == 0) {
+                    stringBuilder.append("(");
+                    visitChild(node.getChildren().get(i));
+                } else {
+                    stringBuilder.append(" || ");
+                    visitChild(node.getChildren().get(i));
+                    if(node.getChildren().size()-1 == node.getChildren().indexOf(node.getChildren().get(i))){
+                        stringBuilder.append(")");
+                    }
+                }
+            }
+            else {
+                if (i == 0) {
+                    visitChild(node.getChildren().get(i));
+                } else {
+                    stringBuilder.append(" || ");
+                    visitChild(node.getChildren().get(i));
+                }
+            }
         }
 
     }
     @Override
     public void visit(CompareExpNode node) {
+        if(node.getIsParenthesized()){
+            stringBuilder.append("(");
+        }
+
        visitChild(node.getChildren().get(0));
        stringBuilder.append(node.getOperator());
        visitChild(node.getChildren().get(1));
+
+       if(node.getIsParenthesized()){
+              stringBuilder.append(")");
+         }
     }
 
 
