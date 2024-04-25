@@ -94,7 +94,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             Attributes attributes = new Attributes(node.getType(), "local");
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }
-        if(this.symbolTable.addScope(node.getId() + findActorParent(node))){
+        if(this.symbolTable.addScope(node.getId() + symbolTable.findActorParent(node))){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
@@ -220,18 +220,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(SendMsgNode node) {
         this.visitChildren(node);
     }
-
-    private String findActorParent(AstNode node) {
-        AstNode parent = node.getParent();
-        while (!(parent instanceof InitNode)) {
-            if (parent instanceof ActorDclNode) {
-                return ((ActorDclNode) parent).getId();
-            }
-            parent = parent.getParent();
-        }
-        return null;
-    }
-
 
     @Override
     public void visit(SpawnActorNode node) {
