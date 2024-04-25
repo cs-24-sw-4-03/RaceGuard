@@ -24,7 +24,6 @@ public interface NodeVisitor {
     void visit(LocalMethodBodyNode node);
     void visit(ArgumentsNode node);
 
-    //void visit(DclNode node);
     void visit(VarDclNode node);
 
     void visit(IdentifierNode node);
@@ -44,6 +43,7 @@ public interface NodeVisitor {
 
     void visit(ExpNode node);
     void visit(IntegerNode node);
+    //void visit(BoolNode node);
     void visit(DoubleNode node);
     void visit(StringNode node);
     void visit(BoolAndExpNode node);
