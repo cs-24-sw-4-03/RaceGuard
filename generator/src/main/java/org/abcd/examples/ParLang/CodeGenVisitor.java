@@ -7,41 +7,14 @@ import java.util.ArrayList;
 
 public class CodeGenVisitor implements NodeVisitor {
 
+    private String dirPath = System.getProperty("user.dir") + "/output";
 
-    String filePath = System.getProperty("user.dir") + "/output/Main.java";
+    StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
+    ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
 
-    String dirPath = System.getProperty("user.dir") + "/output";
+    int localIndent = 0; // indent for file generated. 4 spaces per indent
 
-
-    StringBuilder stringBuilder = new StringBuilder();
-    ArrayList<String> codeOutput = new ArrayList<>();
-
-    int localIndent = 0; //indent for akka file generated
-
-    public void generate() throws IOException {
-        codeOutput.add(getLine());
-
-        for (String line : codeOutput) {
-            stringBuilder.append(line);
-        }
-
-        File dir = new File(dirPath);
-
-        if(!dir.exists()){
-            dir.mkdirs();
-        }
-
-
-        File file = new File(filePath);
-        System.out.println(file);
-
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
-
-        fileOutputStream.write(stringBuilder.toString().getBytes());
-
-    }
-
-    private String getLine(){
+    private String getLine() {
         String line = stringBuilder.toString();
         stringBuilder.setLength(0); // Resets string builder
         int indent = localIndent;
@@ -53,9 +26,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
         return line;
     }
+
     public void visit(AstNode node) {
         for (AstNode childNode : node.getChildren()) {
-            System.out.println(childNode.getChildren());
             childNode.accept(this);
         }
     }
@@ -83,21 +56,68 @@ public class CodeGenVisitor implements NodeVisitor {
         for (AstNode childNode : node.getChildren()) {
             childNode.accept(this);
         }
-
     }
 
     @Override
     public void visit(AccessNode node) {
-
     }
 
     @Override
     public void visit(ArrayAccessNode node) {
 
     }
+    private void resetStringBuilder(StringBuilder sb) {
+        sb.setLength(0);
+    }
+    private void resetCodeOutput(ArrayList<String> codeOutput) {
+        codeOutput.clear();
+    }
+    
+    private void writeToFile(String fileName, ArrayList<String> codeOutput) { 
+        try {
+            File file = new File(dirPath + "/" + fileName + ".java");
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                for (String line : codeOutput) {
+                    fos.write(line.getBytes());
+                }
+                System.out.println("New file was created: " + file.getName());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
+    //1. Reset StringBuilder and CodeOutput
+    //2. Create new File dependent on the node.getId()
+    //3. visit children
+    //4. Write the file
     @Override
     public void visit(ActorDclNode node) {
+        resetStringBuilder(stringBuilder);
+        resetCodeOutput(codeOutput);
+        localIndent = 0;
+
+        //imports necessary for most akka actor classes
+        stringBuilder
+        .append("import akka.actor.typed.ActorRef; \n")
+        .append("import akka.actor.typed.Behavior; \n")
+        .append("import akka.actor.typed.javadsl.*; \n")
+        .append("import akka.actor.typed.ActorSystem; \n");
+
+        stringBuilder.append("public class ")
+            .append(node.getId())
+            .append(" extends AbstractBehavior<") // Extending AbstractBehavior to manage state and behavior
+            .append(" {\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        visitChildren(node);
+
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLine());
+
+        writeToFile(node.getId(), codeOutput);
 
     }
 
@@ -142,9 +162,12 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("}\n");
         codeOutput.add(getLine());
     }
-
+    //In FactorialHelper this is: private final int currentValue;
     @Override
     public void visit(StateNode node) {
+        stringBuilder.append("private ");
+        visitChildren(node);
+        codeOutput.add(getLine());
 
     }
 
@@ -158,11 +181,6 @@ public class CodeGenVisitor implements NodeVisitor {
        visitChild(node.getChildren().get(0));
        stringBuilder.append(node.getOperator());
        visitChild(node.getChildren().get(1));
-    }
-
-    @Override
-    public void visit(DclNode node) {
-
     }
 
     @Override
@@ -226,6 +244,9 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(" ");
         }
         stringBuilder.append(node.getName());
+        codeOutput.add(getLine());
+        
+        
     }
 
 
@@ -274,8 +295,18 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
+        resetStringBuilder(stringBuilder);
+        resetCodeOutput(codeOutput);
+        localIndent = 0;
+        stringBuilder.append("public class Main {\n");
+        codeOutput.add(getLine());
+        localIndent++;
         stringBuilder.append("public static void main(String[] args)");
         this.visitChildren(node);
+        localIndent--;
+        stringBuilder.append("\n}");
+        codeOutput.add(getLine());
+        writeToFile(node.getId(), codeOutput);
     }
 
 
