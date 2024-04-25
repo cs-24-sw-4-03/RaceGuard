@@ -29,7 +29,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         //visit all children of a node and add them to the node
         for(ParseTree c:children){
             if(c instanceof TerminalNode){
-                continue; //if child is a temrinal node
+                continue; //skip if child is a terminal node
             }
 
             node.addChild(visit(c)); //visit the child and add it to the node
@@ -387,10 +387,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitValue(ParLangParser.ValueContext ctx){
-        if(ctx.SELF()!=null){
-            return new SelfNode();
-        }else{
-            return visitChildren(ctx);
+        if(ctx.SELF()!=null){//If ValueContext has the terminal node SELF as a chile
+            return new SelfNode(); //return a SelfNode
+        }else{//else child is a non-terminal
+            return visitChildren(ctx);// visit the non-terminal child
         }
     }
 
