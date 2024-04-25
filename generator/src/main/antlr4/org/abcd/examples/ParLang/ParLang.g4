@@ -247,7 +247,6 @@ ELSE_IF : 'else-if';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
-
 MAIN : 'main';
 RETURN : 'return';
 PRINT : 'print';

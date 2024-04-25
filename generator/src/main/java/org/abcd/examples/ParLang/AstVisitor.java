@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 import  org.abcd.examples.ParLang.Exceptions.*;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +28,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     private AstNode childVisitor(AstNode node, List<ParseTree> children){
         //visit all children of a node and add them to the node
         for(ParseTree c:children){
-            if(c.getPayload() instanceof CommonToken){
-                continue; //if child is a CommonToken, e.g. "{", then skip.
+            if(c instanceof TerminalNode){
+                continue; //if child is a temrinal node
             }
+
             node.addChild(visit(c)); //visit the child and add it to the node
         }
         return node; //return the node with all children added
@@ -381,6 +383,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return new DoubleNode(Double.parseDouble(ctx.getText())); //parse the number as a double
         }else { //If the number is an integer
             return new IntegerNode(Integer.parseInt(ctx.getText())); //parse the number as an integer
+        }
+    }
+
+    @Override public AstNode visitValue(ParLangParser.ValueContext ctx){
+        if(ctx.SELF()!=null){
+            return new SelfNode();
+        }else{
+            return visitChildren(ctx);
         }
     }
 
