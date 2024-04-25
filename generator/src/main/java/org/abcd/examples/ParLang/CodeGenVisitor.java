@@ -75,6 +75,11 @@ public class CodeGenVisitor implements NodeVisitor {
     
     private void writeToFile(String fileName, ArrayList<String> codeOutput) { 
         try {
+            File dir = new File(dirPath);
+            if(!dir.exists()){
+                dir.mkdirs();
+            }
+
             File file = new File(dirPath + "/" + fileName + ".java");
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 for (String line : codeOutput) {
