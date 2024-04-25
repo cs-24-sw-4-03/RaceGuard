@@ -88,7 +88,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
             } else {//extend the typeContainer list with new types
                 typeContainer.addType(scriptName);
-                typeContainer.addType(scriptName + "[]");
             }
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
             children.remove(1);//remove identifier from list of children
@@ -130,7 +129,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
             } else {//extend the typeContainer list with new types
                 typeContainer.addType(actorName); //add the actorType to the typeContainer
-                typeContainer.addType(actorName + "[]"); //add the array holding actorType to the typeContainer
             }
             ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);

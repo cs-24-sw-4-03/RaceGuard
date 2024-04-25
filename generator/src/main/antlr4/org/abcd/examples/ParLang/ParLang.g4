@@ -121,6 +121,7 @@ statement : declaration SEMICOLON
     | methodCall SEMICOLON
     | printCall
     | returnStatement
+    | spawnActor SEMICOLON
     ;
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
@@ -176,7 +177,7 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | identifier | arithExp | boolExp | actorAccess | arrayAccess)
+value : (primitive | identifier | arithExp | boolExp | actorAccess | arrayAccess | SELF)
     ;
 
 number : INT
