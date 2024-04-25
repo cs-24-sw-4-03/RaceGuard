@@ -1,3 +1,16 @@
-main() {
-    int y = 2;
+main(){}
+
+Actor FactorialMain {
+    State{int result;}
+    Knows{}
+
+    Spawn(int requestedFactorial) {
+        State.result = 0;
+        FactorialManager manager = Spawn FactorialManager();
+        manager <- calcFactorial(self,requestedFactorial);
+    }
+
+    on multiply(int result){
+        State.result = result;
+    }
 }
