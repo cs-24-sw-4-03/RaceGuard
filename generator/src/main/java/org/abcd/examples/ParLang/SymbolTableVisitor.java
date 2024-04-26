@@ -88,8 +88,8 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    //Creates the scope for the method node and leaves it after visiting the children
     public void visit(MethodDclNode node){
+        //Checks if the method is a local or on method, and inserts it into the correct list
         if(Objects.equals(node.getMethodType(), "local")){
             System.out.println("Inserting Local Method: " + node.getId());
             this.symbolTable.insertLocalMethod(node.getId());
@@ -97,6 +97,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Inserting On Method: " + node.getId());
             this.symbolTable.insertOnMethod(node.getId());
         }
+        //Creates a new scope, as long as there is not already a method in the actor that is named the same
         if(this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node))){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
@@ -152,12 +153,14 @@ public class SymbolTableVisitor implements NodeVisitor {
     //TODO: Set up error handling if symbol not found for normal symbols, State symbols and Knows symbols
     @Override
     public void visit(IdentifierNode node) {
+        //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
         if(node.getParent().getParent() instanceof StateNode){
             if(this.symbolTable.lookUpStateSymbol(node.getName()) != null){
                 System.out.println("Found State symbol: " + node.getName());
             }else{
                 System.out.println("Not found State symbol: " + node.getName());
             }
+        //Ensures that we do not search for IndentifierNodes for method calls
         }else if (!(node.getParent() instanceof MethodCallNode)){
             if(this.symbolTable.lookUpSymbol(node.getName()) != null){
                 System.out.println("Found symbol: " + node.getName());
@@ -200,6 +203,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsNode node) {
+        //Adds every child to the Knows symbol list, given there are no duplicates
         for(AstNode child: node.getChildren()){
             IdentifierNode idChildNode = (IdentifierNode)child;
             if (this.symbolTable.lookUpKnowsSymbol(idChildNode.getName()) == null) {
@@ -211,6 +215,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
+        //Checks if the method is a local or on method and adds it to the appropriate list
         if(Objects.equals(node.getMethodType(), "local")){
             System.out.println("Inserting Local Method: " + node.getId());
             this.symbolTable.insertLocalMethod(node.getId());
@@ -218,6 +223,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Inserting On Method: " + node.getId());
             this.symbolTable.insertOnMethod(node.getId());
         }
+        //Creates a scope as long as there is not another method with the same name
         if(this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node))){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
@@ -227,7 +233,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
 
-    //TODO: Implement?
     @Override
     public void visit(SendMsgNode node) {
         this.visitChildren(node);

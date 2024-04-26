@@ -5,7 +5,6 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
 
-//TODO: Find out how to check whether methods are called from the correct Actor
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -20,7 +19,6 @@ public class FuncVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Find a way to identify a specific Script, Actor, Method or ScriptMethod
     @Override
     public void visit(ScriptMethodNode node) {
         this.symbolTable.declaredOnMethods.add(node.getId());
