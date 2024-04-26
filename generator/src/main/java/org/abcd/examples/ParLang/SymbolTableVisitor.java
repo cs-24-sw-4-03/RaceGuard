@@ -209,10 +209,9 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Måske lave denne om så den bruger script navnet
     @Override
     public void visit(ScriptMethodNode node) {
-        this.symbolTable.addScope(node.getId());
+        this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node));
         this.visitChildren(node);
         this.symbolTable.leaveScope();
     }
