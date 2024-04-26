@@ -172,6 +172,14 @@ public class SymbolTable {
         return this.currentScope.getDeclaredLocalMethods();
     }
 
+    public void insertOnMethod(String symbol){
+        this.currentScope.addDeclaredOnMethod(symbol);
+    }
+
+    public ArrayList<String> getDeclaredOnMethods(){
+        return this.currentScope.getDeclaredOnMethods();
+    }
+
     public String findActorParent(AstNode node) {
         AstNode parent = node.getParent();
         while (!(parent instanceof InitNode)) {

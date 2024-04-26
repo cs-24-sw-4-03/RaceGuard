@@ -93,6 +93,9 @@ public class SymbolTableVisitor implements NodeVisitor {
         if(Objects.equals(node.getMethodType(), "local")){
             System.out.println("Inserting Local Method: " + node.getId());
             this.symbolTable.insertLocalMethod(node.getId());
+        }else if(Objects.equals(node.getMethodType(), "on")){
+            System.out.println("Inserting On Method: " + node.getId());
+            this.symbolTable.insertOnMethod(node.getId());
         }
         if(this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node))){
             //Visits the children of the node to add the symbols to the symbol table

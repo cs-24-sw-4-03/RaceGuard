@@ -14,8 +14,8 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodCallNode node) {
-        ArrayList<String> legalMethods = this.symbolTable.getDeclaredLocalMethods();
-        if (legalMethods.contains(node.getMethodName())) {
+        ArrayList<String> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
+        if (legalLocalMethods.contains(node.getMethodName())) {
             System.out.println("Local method id " + node.getMethodName() + " found");
         }
         else {
@@ -24,10 +24,19 @@ public class MethodCallVisitor implements NodeVisitor {
     }
 
     //TODO: Implement
+    //TODO: Make it check for the method in the Actor/Script
     @Override
     public void visit(SendMsgNode node) {
-        System.out.println(node.getReceiver());
+        System.out.println(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
         this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+
+        ArrayList<String> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+        if (legalOnMethods.contains(node.getMsgName())) {
+            System.out.println("On method id " + node.getMsgName() + " found");
+        }
+        else {
+            System.out.println("On method id " + node.getMsgName() + " not found");
+        }
 
         this.symbolTable.leaveScope();
         this.visitChildren(node);

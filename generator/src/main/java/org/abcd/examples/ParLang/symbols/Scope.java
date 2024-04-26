@@ -12,6 +12,8 @@ public class Scope {
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
     private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
+    private final ArrayList<String> declaredOnMethods = new ArrayList<>();
+
 
 
     //Nested scopes within the current scope
@@ -84,4 +86,25 @@ public class Scope {
             }
         }
     }
+
+    public void addDeclaredOnMethod(String id) {
+        if(!this.declaredOnMethods.contains(id)){
+            this.declaredOnMethods.add(id);
+        }else{
+            System.out.println("Duplicate method id: " + id);
+        }
+    }
+
+    public ArrayList<String> getDeclaredOnMethods() {
+        if(!this.declaredOnMethods.isEmpty()){
+            return this.declaredOnMethods;
+        }else{
+            if(this.parent != null){
+                return this.parent.getDeclaredOnMethods();
+            }else{
+                return new ArrayList<>();
+            }
+        }
+    }
+
 }
