@@ -173,7 +173,7 @@ public class TypeVisitor implements NodeVisitor {
                 System.out.println("Method: " + node.getMethodName() + " found");
                 node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
             }
-            symbolTable.enterScope(node.getMethodName());
+            symbolTable.enterScope(node.getMethodName() + symbolTable.findActorParent(node));
             this.visitChildren(node);
             symbolTable.leaveScope();
         /*}
@@ -388,7 +388,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getId());
+            this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
             String childType = node.getChildren().get(1).getType();
             if (!node.getType().equals(childType) && node.getMethodType().equals("local")) {
