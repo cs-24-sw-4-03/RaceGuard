@@ -3,7 +3,9 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
+import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
+
 
 import java.util.*;
 
@@ -31,7 +33,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
+            this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             if (node.getId() == null) {
                 throw new ScriptDclException("Type is not defined for script declaration node");
@@ -69,7 +71,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         /*try {*/
-            if (symbolTable.lookUpSymbol(node.getMsgName()) == null) {
+            if (symbolTable.lookUpScope(node.getMsgName()) == null) {
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
             }else {
                 System.out.println("Method: " + node.getMsgName() + " found");
@@ -204,18 +206,27 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ArgumentsNode node) {
         this.visitChildren(node);
         /*try {*/
-            LinkedHashMap<String, Attributes> params = symbolTable.getCurrentScope().getParams();
+            LinkedHashMap<String, Attributes> params;
             AstNode parent = node.getParent();
             int numOfChildren = node.getChildren().size();
             if (parent instanceof MethodCallNode) {
+                params = symbolTable.getCurrentScope().getParams();
                 MethodCallNode methodCallNode = (MethodCallNode) parent;
                 String methodName = methodCallNode.getMethodName();
                 checkArgTypes(node, params, methodName);
             } else if (parent instanceof SpawnActorNode) {
+                //We can call SpawnActor from any scope, hence we have to find the Actor scope where the Spawn we are calling is declared
+                Scope ActorScope = symbolTable.lookUpScope(parent.getType());
+                //Within the Actor Scope we enter the spawn scope to get the parameters associated with Spawn
+                Scope SpawnScope = ActorScope.children.get(0);
+                params = SpawnScope.getParams();
                 SpawnActorNode spawnActorNode = (SpawnActorNode) parent;
                 String actorName = spawnActorNode.getType();
                 checkArgTypes(node, params, actorName);
             } else if (parent instanceof SendMsgNode) {
+                //TODO Lookup correct scope for onMethod calls
+                Scope ActorScope = symbolTable.lookUpScope(parent.getType());
+                params = ActorScope.getParams();
                 SendMsgNode sendMsgNode = (SendMsgNode) parent;
                 String msgName = sendMsgNode.getMsgName();
                 checkArgTypes(node, params, msgName);
@@ -334,7 +345,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ActorDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
+            this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
         /*}
