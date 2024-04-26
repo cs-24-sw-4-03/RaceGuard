@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang.symbols;
 import org.abcd.examples.ParLang.AstNodes.ActorDclNode;
 import org.abcd.examples.ParLang.AstNodes.AstNode;
 import org.abcd.examples.ParLang.AstNodes.InitNode;
+import org.abcd.examples.ParLang.AstNodes.ScriptDclNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,7 +151,7 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
-        System.out.println("State symbol: " + symbol + " not found");
+        System.out.println("Knows symbol: " + symbol + " not found");
         return null;
     }
 
@@ -174,15 +175,25 @@ public class SymbolTable {
         return this.currentScope.getDeclaredLocalMethods();
     }
 
+    public void insertOnMethod(String symbol){
+        this.currentScope.addDeclaredOnMethod(symbol);
+    }
+
+    public ArrayList<String> getDeclaredOnMethods(){
+        return this.currentScope.getDeclaredOnMethods();
+    }
+
     public String findActorParent(AstNode node) {
         AstNode parent = node.getParent();
         while (!(parent instanceof InitNode)) {
             if (parent instanceof ActorDclNode) {
                 return ((ActorDclNode) parent).getId();
+            }else if(parent instanceof ScriptDclNode){
+                return ((ScriptDclNode) parent).getId();
             }
+
             parent = parent.getParent();
         }
         return null;
     }
-
 }
