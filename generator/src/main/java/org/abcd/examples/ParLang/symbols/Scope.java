@@ -71,7 +71,7 @@ public class Scope {
         if(!this.declaredLocalMethods.contains(id)){
             this.declaredLocalMethods.add(id);
         }else{
-            System.out.println("Duplicate method id: " + id);
+            System.out.println("Duplicate local method id: " + id);
         }
     }
 
@@ -91,7 +91,7 @@ public class Scope {
         if(!this.declaredOnMethods.contains(id)){
             this.declaredOnMethods.add(id);
         }else{
-            System.out.println("Duplicate method id: " + id);
+            System.out.println("Duplicate on method id: " + id);
         }
     }
 
