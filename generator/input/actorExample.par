@@ -1,0 +1,20 @@
+main(){
+print("Hej");}
+Actor FactorialMain follows Factorial {
+	State{int result;}
+    Knows{}
+
+    Spawn(int requestedFactorial) {
+       State.result = 0;
+    }
+
+    on multiply(int result){}
+    }
+Actor Factorial follows Factorial {
+   	State{int result;}
+    Knows{}
+
+    Spawn(int requestedFactorial) {
+       State.result = 0;
+    }
+}

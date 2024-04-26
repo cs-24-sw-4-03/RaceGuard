@@ -30,9 +30,6 @@ public interface NodeVisitor {
     void visit(AssignNode node);
     void visit(InitializationNode node);
 
-
-
-
     void visit(ListNode node);
     //void visit(ArrayDclNode node);
 
