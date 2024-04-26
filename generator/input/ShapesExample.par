@@ -1,11 +1,11 @@
 //Script Shape{
-//	on getArea();
+//on getArea();
 //}
 
 //Script ShapeManager{
-//	on calcArea();
-//	on areaResult(double result);
-//	on printArea();
+//on calcArea();
+//on areaResult(double result);
+//on printArea();
 //}
 
 Actor House follows Shape, ShapeManager{
@@ -13,7 +13,7 @@ Actor House follows Shape, ShapeManager{
 	int resultsRecieved;
 	double area;
 }
-	Knows{Shape Square, Shape Triangle}
+	Knows{Shape Square; Shape Triangle;}
 	Spawn(double houseWidth, double houseHeight){
 		State.resultsRecieved = 0;
 		State.areaResult = 0;
@@ -77,7 +77,7 @@ Actor CircleManager follows Shape, ShapeManager{
 	State{
 	double area;
 }
-	Knows{Shape Circle}
+	Knows{Shape Circle;}
 	Spawn(double radius){
 		State.area = 0;
 	Knows.Circle = Spawn Circle(State.radius);
@@ -115,7 +115,7 @@ Actor ShapesManager follows Shape, ShapeManager{
 		int resultsRecieved;
 	double fullArea;
 }
-	Knows{Shape shape1, Shape shape2, Shape shape3}
+	Knows{Shape shape1; Shape shape2; Shape shape3;}
 	Spawn(Shape shape1, Shape shape2, Shape shape3){
 		Knows.shape1 = shape1;
 		Knows.shape2 = shape2;
