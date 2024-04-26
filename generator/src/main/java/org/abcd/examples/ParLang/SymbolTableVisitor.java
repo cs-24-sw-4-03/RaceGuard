@@ -30,7 +30,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
-        this.symbolTable.addScope(node.getNodeHash());
+        this.symbolTable.addScope(node.getId());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
         //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node
@@ -121,7 +121,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(ActorDclNode node) {
         System.out.println("\nActor: " + node.getId());
-        this.symbolTable.addScope(node.getNodeHash());
+        this.symbolTable.addScope(node.getId());
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
         //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the Actor node

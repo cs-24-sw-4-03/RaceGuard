@@ -9,8 +9,11 @@ Actor NumActor{
         State.number = x;
     }
     on getSquared(){
+        NumActor getSquaredActor = Spawn NumActor(2.2);
         double result;
         result = squared(State.number);
+
+        getSquaredActor <- getSquared();
     }
 
     local squared(double num): double{
