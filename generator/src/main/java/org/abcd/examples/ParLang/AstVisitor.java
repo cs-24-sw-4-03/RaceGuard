@@ -161,9 +161,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitActorKnows(ParLangParser.ActorKnowsContext ctx) {
         int numOfChildren=ctx.getChildCount();
-        for (ParseTree c:ctx.children){
-            System.out.println(c.getText());
-        }
         KnowsNode knowsNode= new KnowsNode(ctx.KNOWS().getText());
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
