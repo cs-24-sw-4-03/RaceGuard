@@ -1,6 +1,9 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.DuplicateScopeException;
+import org.abcd.examples.ParLang.Exceptions.DuplicateSymbolException;
+import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
@@ -50,11 +53,15 @@ public class SymbolTableVisitor implements NodeVisitor {
             if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
+            }else{
+                exceptions.add(new DuplicateSymbolException("State symbol " + node.getId() + " already exists in Actor: " + this.symbolTable.findActorParent(node)));
             }
         }else{
             if(this.symbolTable.lookUpSymbolCurrentScope(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertSymbol(node.getId(), attributes);
+            }else{
+                exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope"));
             }
         }
         this.visitChildren(node);
@@ -108,6 +115,8 @@ public class SymbolTableVisitor implements NodeVisitor {
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
             this.symbolTable.leaveScope();
+        } else {
+            exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId()));
         }
     }
 
@@ -155,6 +164,8 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
+    //TODO: EXCEPTION HANDLING RESTART HERE!'
+
     //TODO: Set up error handling if symbol not found for normal symbols, State symbols and Knows symbols
     @Override
     public void visit(IdentifierNode node) {
@@ -164,6 +175,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 System.out.println("Found State symbol: " + node.getName());
             }else{
                 System.out.println("Not found State symbol: " + node.getName());
+                exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found"));
             }
         //Ensures that we do not search for IdentifierNodes for method calls
         }else if (!(node.getParent() instanceof MethodCallNode)){
@@ -171,6 +183,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 System.out.println("Found symbol: " + node.getName());
             }else{
                 System.out.println("Not found symbol: " + node.getName());
+                exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
             }
         }
     }
