@@ -11,6 +11,8 @@ public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
     private List<RuntimeException> exceptions = new ArrayList<>();
 
+    public List<RuntimeException> getExceptions() {return this.exceptions;}
+
     public FuncVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }

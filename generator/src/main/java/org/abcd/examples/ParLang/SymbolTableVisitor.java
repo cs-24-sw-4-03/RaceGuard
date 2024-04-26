@@ -20,6 +20,8 @@ public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
     private List<RuntimeException> exceptions = new ArrayList<>();
 
+    public List<RuntimeException> getExceptions() {return this.exceptions;}
+
     public SymbolTableVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
