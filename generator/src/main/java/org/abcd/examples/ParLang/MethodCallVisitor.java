@@ -29,7 +29,7 @@ public class MethodCallVisitor implements NodeVisitor {
     public void visit(SendMsgNode node) {
         //First we enter the scope of the Actor we send the message to
         if(node.getReceiver().equals("self")){ //You can also send messages to yourself
-            this.symbolTable.enterScope(this.symbolTable.getCurrentScope().getScopeName());
+            this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
         }else{ //In other cases it should be another onMethod in an actor
             this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
         }
