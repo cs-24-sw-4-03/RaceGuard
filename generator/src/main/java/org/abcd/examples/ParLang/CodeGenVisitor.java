@@ -399,9 +399,9 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChild(node.getChildren().get(1));
 
         //check if there is an else statement
-        if(node.getChildren().size()-2 > 0){
+        if(node.getChildren().size() > 2){
             stringBuilder.append("else ");
-            visitChild(node.getChildren().get(node.getChildren().size()-1));
+            visitChild(node.getChildren().get(2));
         }
     }
 
