@@ -1,10 +1,11 @@
+
 Script HelloWorld {
-    on greet();
+    on greet(String name);
 }
 
 main() {
     GreeterMain gm = Spawn GreeterMain();
-    gm <- greet();
+    gm <- greet("World");
 }
 
 Actor GreeterMain follows HelloWorld {
@@ -12,10 +13,11 @@ Actor GreeterMain follows HelloWorld {
     Knows {}
 
     Spawn() {
-        print("Hello, ");
+        print("HelloWorld actor started");
+
     }
 
-    on greet() {
-        print("World!");
+    on greet(String name) {
+        print("Hello " + name + "!");
     }
 }
