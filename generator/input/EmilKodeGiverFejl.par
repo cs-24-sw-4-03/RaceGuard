@@ -1,12 +1,10 @@
-Script number{
-    local squared(double num): double;
-}
-
-Actor numActor follows number{
+Actor NumActor{
     State{
         double number;
     }
-    Knows{}
+    Knows{
+    NumActor testActor;
+    }
     Spawn(double x){
         State.number = x;
     }

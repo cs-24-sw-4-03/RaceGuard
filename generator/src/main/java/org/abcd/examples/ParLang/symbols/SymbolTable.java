@@ -144,7 +144,7 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
-        System.out.println("State symbol: " + symbol + " not found");
+        System.out.println("Knows symbol: " + symbol + " not found");
         return null;
     }
 

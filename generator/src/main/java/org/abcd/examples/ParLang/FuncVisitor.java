@@ -39,7 +39,6 @@ public class FuncVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    //TODO:  Find out if it is a problem that Dcl uses Id and Call uses Name
     @Override
     public void visit(MethodDclNode node){
         if (Objects.equals(node.getMethodType(), "on")){
