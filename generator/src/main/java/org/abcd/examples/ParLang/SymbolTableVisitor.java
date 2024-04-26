@@ -336,6 +336,11 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(SelfNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
