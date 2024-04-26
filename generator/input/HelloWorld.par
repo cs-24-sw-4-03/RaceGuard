@@ -1,0 +1,21 @@
+Script HelloWorld {
+    on greet();
+}
+
+main() {
+    GreeterMain gm = Spawn GreeterMain();
+    gm <- greet();
+}
+
+Actor GreeterMain follows HelloWorld {
+    State {}
+    Knows {}
+
+    Spawn() {
+        print("Hello, ");
+    }
+
+    on greet() {
+        print("World!");
+    }
+}
