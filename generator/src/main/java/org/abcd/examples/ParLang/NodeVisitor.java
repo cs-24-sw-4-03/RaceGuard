@@ -43,7 +43,6 @@ public interface NodeVisitor {
 
     void visit(ExpNode node);
     void visit(IntegerNode node);
-    //void visit(BoolNode node);
     void visit(DoubleNode node);
     void visit(StringNode node);
     void visit(ArithExpNode node);
@@ -60,7 +59,7 @@ public interface NodeVisitor {
     void visit(StateAccessNode node);
     void visit(KnowsAccessNode node);
 
-    void visit(PrintCallNode printCallNode);
-    void visit(BoolAndExpNode boolAndExpNode);
-    void visit(BoolExpNode boolExpNode);
+    void visit(PrintCallNode node);
+    void visit(BoolAndExpNode node);
+    void visit(BoolExpNode node);
 }
