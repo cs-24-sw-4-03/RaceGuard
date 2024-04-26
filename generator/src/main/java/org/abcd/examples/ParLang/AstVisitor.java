@@ -31,7 +31,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             if(c instanceof TerminalNode){
                 continue; //skip if child is a terminal node
             }
-
+            System.out.println(c.getText());
             node.addChild(visit(c)); //visit the child and add it to the node
         }
         return node; //return the node with all children added
