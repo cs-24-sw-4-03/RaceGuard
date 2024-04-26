@@ -354,4 +354,9 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(PrintCallNode node) {
         this.visitChildren(node);
     }
+
+    @Override
+    public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
+    }
 }

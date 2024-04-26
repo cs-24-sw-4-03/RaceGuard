@@ -250,4 +250,9 @@ public class MethodCallVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    @Override
+    public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
+    }
+
 }
