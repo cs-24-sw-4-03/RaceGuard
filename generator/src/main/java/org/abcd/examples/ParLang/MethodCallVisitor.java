@@ -28,7 +28,11 @@ public class MethodCallVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         //First we enter the scope of the Actor we send the message to
-        this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+        if(node.getReceiver().equals("self")){ //You can also send messages to yourself
+            this.symbolTable.enterScope(this.symbolTable.getCurrentScope().getScopeName());
+        }else{ //In other cases it should be another onMethod in an actor
+            this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+        }
 
         //Then we find the list of messages it can receive
         HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
