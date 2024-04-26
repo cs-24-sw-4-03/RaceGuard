@@ -71,7 +71,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         /*try {*/
-            if (symbolTable.lookUpSymbol(node.getMsgName()) == null) {
+            if (symbolTable.lookUpScope(node.getMsgName()) == null) {
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
             }else {
                 System.out.println("Method: " + node.getMsgName() + " found");
