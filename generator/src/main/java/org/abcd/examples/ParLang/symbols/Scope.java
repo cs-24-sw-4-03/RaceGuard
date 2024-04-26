@@ -87,24 +87,23 @@ public class Scope {
         }
     }
 
-    public void addDeclaredOnMethod(String id) {
-        if(!this.declaredOnMethods.contains(id)){
-            this.declaredOnMethods.add(id);
+    public void addDeclaredOnMethod(String id, Attributes attributes) {
+        if(!this.declaredOnMethods.containsKey(id)){
+            this.declaredOnMethods.put(id, attributes);
         }else{
             System.out.println("Duplicate on method id: " + id);
         }
     }
 
-    public ArrayList<String> getDeclaredOnMethods() {
+    public HashMap<String, Attributes> getDeclaredOnMethods() {
         if(!this.declaredOnMethods.isEmpty()){
             return this.declaredOnMethods;
         }else{
             if(this.parent != null){
                 return this.parent.getDeclaredOnMethods();
             }else{
-                return new ArrayList<>();
+                return new HashMap<>();
             }
         }
     }
-
 }

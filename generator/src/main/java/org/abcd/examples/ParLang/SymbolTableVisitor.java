@@ -220,10 +220,12 @@ public class SymbolTableVisitor implements NodeVisitor {
         //Checks if the method is a local or on method and adds it to the appropriate list
         if(Objects.equals(node.getMethodType(), "local")){
             System.out.println("Inserting Local Method: " + node.getId());
-            this.symbolTable.insertLocalMethod(node.getId());
+            Attributes attributes = new Attributes(node.getType(), "local");
+            this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }else if(Objects.equals(node.getMethodType(), "on")){
             System.out.println("Inserting On Method: " + node.getId());
-            this.symbolTable.insertOnMethod(node.getId());
+            Attributes attributes = new Attributes(node.getType(), "on");
+            this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
         //Creates a scope as long as there is not another method with the same name
         if(this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node))){

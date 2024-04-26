@@ -175,11 +175,11 @@ public class SymbolTable {
         return this.currentScope.getDeclaredLocalMethods();
     }
 
-    public void insertOnMethod(String symbol){
-        this.currentScope.addDeclaredOnMethod(symbol);
+    public void insertOnMethod(String symbol, Attributes attributes){
+        this.currentScope.addDeclaredOnMethod(symbol, attributes);
     }
 
-    public ArrayList<String> getDeclaredOnMethods(){
+    public HashMap<String, Attributes> getDeclaredOnMethods(){
         return this.currentScope.getDeclaredOnMethods();
     }
 

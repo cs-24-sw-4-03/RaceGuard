@@ -31,9 +31,9 @@ public class MethodCallVisitor implements NodeVisitor {
         this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
 
         //Then we find the list of messages it can receive
-        ArrayList<String> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+        HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
         //We then check if the message is part of the list of allowed messages
-        if (legalOnMethods.contains(node.getMsgName())) {
+        if (legalOnMethods.containsKey(node.getMsgName())) {
             System.out.println("On method id " + node.getMsgName() + " found");
         }
         else {
@@ -51,18 +51,18 @@ public class MethodCallVisitor implements NodeVisitor {
         //A FollowsNode can only have 1 child. This child is allways an IdentifierNode
         IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
         //We get the list of on methods from the Actor we are currently within
-        ArrayList<String> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
+        HashMap<String, Attributes> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
 
         //We then enter the scope of the Script the Actor follows
         this.symbolTable.enterScope(script.getName());
         //We find its on methods
-        ArrayList<String> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
+        HashMap<String, Attributes> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
         //Then we leave the scope, such that we do not mess with the scope stack
         this.symbolTable.leaveScope();
 
         //We then check if every entry in the Scripts list also is in the Actors list
-        for (String onMethod : legalOnMethodsScript) {
-            if (legalOnMethodsActor.contains(onMethod)) {
+        for (String onMethod : legalOnMethodsScript.keySet()) {
+            if (legalOnMethodsActor.containsKey(onMethod)) {
                 System.out.println("Actor: " + this.symbolTable.findActorParent(node) + " has on method: " + onMethod + " from Script: " + script.getName());
             } else {
                 System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
