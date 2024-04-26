@@ -58,14 +58,14 @@ forLoop : FOR PARAN_OPEN (declaration |assignment)? SEMICOLON boolExp SEMICOLON 
 whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 
 //if statements must contain an if part
-selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE_IF PARAN_OPEN(boolExp)PARAN_CLOSE body)* (ELSE (selection|body))?;
+selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp | arrayAccess);
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp | arrayAccess );
 
 //assignment used to assign a value to an already defined variable.
-assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess) ;
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess | boolExp) ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -242,7 +242,6 @@ FOLLOWS : 'follows';
 
 //Control structures
 IF : 'if';
-ELSE_IF : 'else-if';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';

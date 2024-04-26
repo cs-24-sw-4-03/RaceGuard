@@ -58,4 +58,6 @@ public interface NodeVisitor {
     void visit(KnowsAccessNode node);
 
     void visit(PrintCallNode printCallNode);
+    void visit(BoolAndExpNode boolAndExpNode);
+    void visit(BoolExpNode boolExpNode);
 }
