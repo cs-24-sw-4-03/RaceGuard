@@ -221,18 +221,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    private String findActorParent(AstNode node) {
-        AstNode parent = node.getParent();
-        while (!(parent instanceof InitNode)) {
-            if (parent instanceof ActorDclNode) {
-                return ((ActorDclNode) parent).getId();
-            }
-            parent = parent.getParent();
-        }
-        return null;
-    }
-
-
     @Override
     public void visit(SpawnActorNode node) {
         this.symbolTable.addScope(node.getNodeHash());
