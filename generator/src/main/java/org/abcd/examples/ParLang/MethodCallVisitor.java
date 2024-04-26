@@ -4,9 +4,11 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    private List<RuntimeException> exceptions = new ArrayList<>();
 
     public MethodCallVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;

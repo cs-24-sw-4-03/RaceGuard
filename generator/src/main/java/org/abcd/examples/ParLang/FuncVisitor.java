@@ -3,10 +3,13 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    private List<RuntimeException> exceptions = new ArrayList<>();
 
     public FuncVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;

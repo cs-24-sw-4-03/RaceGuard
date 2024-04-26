@@ -4,6 +4,8 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /*TODO:
@@ -16,6 +18,7 @@ import java.util.Objects;
 
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    private List<RuntimeException> exceptions = new ArrayList<>();
 
     public SymbolTableVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
