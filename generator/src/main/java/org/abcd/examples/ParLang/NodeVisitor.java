@@ -62,4 +62,5 @@ public interface NodeVisitor {
     void visit(PrintCallNode node);
     void visit(BoolAndExpNode node);
     void visit(BoolExpNode node);
+    void visit(SelfNode node);
 }
