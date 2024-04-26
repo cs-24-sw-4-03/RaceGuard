@@ -1,5 +1,7 @@
 Script TestScript{
     on getSquared(int x);
+
+    on willNotHave();
 }
 
 

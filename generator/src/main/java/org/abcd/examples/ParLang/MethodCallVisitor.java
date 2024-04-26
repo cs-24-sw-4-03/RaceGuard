@@ -42,6 +42,29 @@ public class MethodCallVisitor implements NodeVisitor {
 
 
     @Override
+    public void visit(FollowsNode node) {
+        IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
+        this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
+        ArrayList<String> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
+        this.symbolTable.leaveScope();
+
+        this.symbolTable.enterScope(script.getName());
+        ArrayList<String> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
+        this.symbolTable.leaveScope();
+
+        for (String onMethod : legalOnMethodsScript) {
+            if (legalOnMethodsActor.contains(onMethod)) {
+                System.out.println("Actor: " + this.symbolTable.findActorParent(node) + " has on method: " + onMethod + " from Script: " + script.getName());
+            } else {
+                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
+            }
+        }
+
+
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visitChildren(AstNode node){
         for(AstNode child : node.getChildren()){
             child.accept(this);
@@ -93,11 +116,6 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(FollowsNode node) {
         this.visitChildren(node);
     }
 

@@ -52,11 +52,11 @@ public class ParLang {
         System.out.println("\nScoping");
         SymbolTable symbolTable = new SymbolTable();
 
-        /*
+
         System.out.println("\nFuncVisitor");
         FuncVisitor funcVisitor = new FuncVisitor(symbolTable);
         funcVisitor.visit(ast);
-        */
+
 
         System.out.println("\nSymbolTableVisitor");
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
