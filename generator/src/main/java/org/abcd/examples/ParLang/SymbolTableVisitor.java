@@ -211,9 +211,19 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
-        this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node));
-        this.visitChildren(node);
-        this.symbolTable.leaveScope();
+        if(Objects.equals(node.getMethodType(), "local")){
+            System.out.println("Inserting Local Method: " + node.getId());
+            this.symbolTable.insertLocalMethod(node.getId());
+        }else if(Objects.equals(node.getMethodType(), "on")){
+            System.out.println("Inserting On Method: " + node.getId());
+            this.symbolTable.insertOnMethod(node.getId());
+        }
+        if(this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node))){
+            //Visits the children of the node to add the symbols to the symbol table
+            this.visitChildren(node);
+            //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
+            this.symbolTable.leaveScope();
+        }
     }
 
 

@@ -23,10 +23,9 @@ public class MethodCallVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Implement
-    //TODO: Make it check for the method in the Actor/Script
     @Override
     public void visit(SendMsgNode node) {
+        System.out.println(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
         this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
 
         ArrayList<String> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
