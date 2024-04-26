@@ -353,7 +353,10 @@ public class TypeVisitor implements NodeVisitor {
             exceptions.add(new RuntimeException(e.getMessage() + " in ActorDclNode"));
         }*/
     }
-
+    @Override
+    public void visit(SelfNode node) {
+        this.visitChildren(node);
+    }
     @Override
     public void visit(StateNode node) {
         //does not need types

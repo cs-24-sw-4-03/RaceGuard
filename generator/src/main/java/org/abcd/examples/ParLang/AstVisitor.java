@@ -361,7 +361,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitFactor(ParLangParser.FactorContext ctx) {
         if (ctx.getChild(0).getText().equals("(")) {
-            return visit(ctx.arithExp());//If first child is a parentheses, treat the node as arithmetic expression
+            ExpNode node = (ExpNode) visit(ctx.arithExp()); //visit the child
+            node.setIsParenthesized(true); //set the node as parenthesized
+            return node;//If first child is a parentheses, treat the node as arithmetic expression
         }
         return visit(ctx.getChild(0)); //visit the child
     }
@@ -467,7 +469,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return visit(ctx.compareExp()); // Visit the comparison expression
         }
         if (ctx.PARAN_OPEN() != null) { // Visit the nested expression
-            return visit(ctx.boolExp());
+            AstNode boolExp = visit(ctx.boolExp()); // Visit the boolean expression
+            ((ExpNode)boolExp).setIsParenthesized(true); // Set the boolean expression as parenthesized
+            return boolExp;
         }
         if (ctx.boolLiteral() != null) { // TRUE or FALSE
             return visit(ctx.boolLiteral()); // Visit the boolean literal
@@ -479,9 +483,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     public AstNode visitNegatedBool(ParLangParser.NegatedBoolContext ctx) {
         NegatedBoolNode boolNode = new NegatedBoolNode();
         if (ctx.getChild(1).getText().equals("(")) { // !(boolExp)
-            boolNode.addChild(visit(ctx.getChild(2))); // Visit the boolean expression skipping the parentheses
-        } else { // !(boolTerm)
-            boolNode.addChild(visit(ctx.getChild(1))); // Visit the boolean term
+            AstNode boolExp = visit(ctx.getChild(2)); // Visit the boolean expression
+            ((ExpNode)boolExp).setIsParenthesized(true); // Set the boolean expression as parenthesized
+            boolNode.addChild(boolExp); // Visit the boolean expression skipping the parentheses
+        } else { // !boolTerm
+            boolNode.addChild(visit(ctx.getChild(1))); // Visit the child
         }
         return boolNode; // Return the negated boolean node with the child added
     }

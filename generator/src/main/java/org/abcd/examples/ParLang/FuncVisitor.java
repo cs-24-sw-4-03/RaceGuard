@@ -5,7 +5,6 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.Objects;
 
-//TODO: Find out how to check whether methods are called from the correct Actor
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
 
@@ -20,7 +19,6 @@ public class FuncVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: Find a way to identify a specific Script, Actor, Method or ScriptMethod
     @Override
     public void visit(ScriptMethodNode node) {
         this.symbolTable.declaredOnMethods.add(node.getId());
@@ -39,7 +37,6 @@ public class FuncVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    //TODO:  Find out if it is a problem that Dcl uses Id and Call uses Name
     @Override
     public void visit(MethodDclNode node){
         if (Objects.equals(node.getMethodType(), "on")){
@@ -129,11 +126,6 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolAndExpNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(BoolExpNode node) {
         this.visitChildren(node);
     }
@@ -204,6 +196,11 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(AssignNode node) {
         this.visitChildren(node);
     }
@@ -235,6 +232,11 @@ public class FuncVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
+    public void visit(SelfNode node) {
         this.visitChildren(node);
     }
 
