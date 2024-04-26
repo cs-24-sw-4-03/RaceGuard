@@ -1,6 +1,7 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.LocalMethodCallException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class MethodCallVisitor implements NodeVisitor {
         }
         else {
             System.out.println("Local method id " + node.getMethodName() + " not found");
+            exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found"));
         }
     }
 
