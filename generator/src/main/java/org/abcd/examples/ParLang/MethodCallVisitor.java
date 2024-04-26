@@ -26,6 +26,10 @@ public class MethodCallVisitor implements NodeVisitor {
     //TODO: Implement
     @Override
     public void visit(SendMsgNode node) {
+        System.out.println(node.getReceiver());
+        this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+
+        this.symbolTable.leaveScope();
         this.visitChildren(node);
     }
 
@@ -39,7 +43,7 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
+        this.symbolTable.enterScope(node.getId());
         this.visitChildren(node);
         this.symbolTable.leaveScope();
     }
@@ -75,7 +79,7 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
-        this.symbolTable.enterScope(node.getNodeHash());
+        this.symbolTable.enterScope(node.getId());
         this.visitChildren(node);
         this.symbolTable.leaveScope();
     }
@@ -142,7 +146,7 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
-        this.symbolTable.enterScope(node.getId());
+        this.symbolTable.enterScope(node.getId() + this.symbolTable.findActorParent(node));
         this.visitChildren(node);
         this.symbolTable.leaveScope();
     }

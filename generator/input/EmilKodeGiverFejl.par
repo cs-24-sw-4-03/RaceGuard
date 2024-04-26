@@ -8,12 +8,12 @@ Actor NumActor{
     Spawn(double x){
         State.number = x;
     }
-    on getSquared(){
+    on getSquared(int x){
         NumActor getSquaredActor = Spawn NumActor(2.2);
         double result;
         result = squared(State.number);
 
-        getSquaredActor <- getSquared();
+        getSquaredActor <- getSquared(result);
     }
 
     local squared(double num): double{

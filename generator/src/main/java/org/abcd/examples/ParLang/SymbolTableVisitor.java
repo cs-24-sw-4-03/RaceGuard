@@ -94,7 +94,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Inserting Local Method: " + node.getId());
             this.symbolTable.insertLocalMethod(node.getId());
         }
-        if(this.symbolTable.addScope(node.getId() + findActorParent(node))){
+        if(this.symbolTable.addScope(node.getId() + this.symbolTable.findActorParent(node))){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
