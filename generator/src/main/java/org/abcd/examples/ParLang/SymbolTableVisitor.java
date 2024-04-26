@@ -165,7 +165,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             }else{
                 System.out.println("Not found State symbol: " + node.getName());
             }
-        //Ensures that we do not search for IndentifierNodes for method calls
+        //Ensures that we do not search for IdentifierNodes for method calls
         }else if (!(node.getParent() instanceof MethodCallNode)){
             if(this.symbolTable.lookUpSymbol(node.getName()) != null){
                 System.out.println("Found symbol: " + node.getName());

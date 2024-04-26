@@ -2,6 +2,8 @@ package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.LocalMethodCallException;
+import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
+import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ public class MethodCallVisitor implements NodeVisitor {
         }
         else {
             System.out.println("On method id " + node.getMsgName() + " not found");
+            exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
         }
 
         //We then leave the scope, such that we do not mess with our scope stack
@@ -72,6 +75,7 @@ public class MethodCallVisitor implements NodeVisitor {
                 System.out.println("Actor: " + this.symbolTable.findActorParent(node) + " has on method: " + onMethod + " from Script: " + script.getName());
             } else {
                 System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
+                exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
             }
         }
 
