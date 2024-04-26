@@ -243,7 +243,6 @@ FOLLOWS : 'follows';
 
 //Control structures
 IF : 'if';
-ELSE_IF : 'else-if';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
