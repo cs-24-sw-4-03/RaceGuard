@@ -294,5 +294,10 @@ public class MethodCallVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    @Override
+    public void visit(SelfNode node) {
+        this.visitChildren(node);
+    }
+
 
 }
