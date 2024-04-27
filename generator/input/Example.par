@@ -1,0 +1,6 @@
+main(){
+    int[] a = {1,2,3};
+    double[] D;
+    int b;
+    int c = 2;
+}

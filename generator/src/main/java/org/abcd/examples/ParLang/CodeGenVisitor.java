@@ -156,9 +156,15 @@ public class CodeGenVisitor implements NodeVisitor {
     AstNode leftChild = node.getChildren().get(0);
     AstNode rightChild = node.getChildren().get(1);
 
-    visitChild(leftChild);
-    stringBuilder.append(" = ");
-    visitChild(rightChild);
+    if(!(node.getChildren().get(1) instanceof ListNode)){
+        visitChild(leftChild);
+        stringBuilder.append(" = ");
+        visitChild(rightChild);
+    } else {
+        visitChild(leftChild);
+        visitChild(rightChild);
+    }
+
     if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
         stringBuilder.append(";\n");
         codeOutput.add(getLine());
@@ -315,23 +321,35 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
     }
 
+
     @Override
     public void visit(IdentifierNode node) {
-        if(node.getType()!= null){
+        if(node.getType()!= null && !node.getType().equals(VariableConverter(node.getType()))){
             stringBuilder.append(VariableConverter(node.getType()));
             stringBuilder.append(" ");
+            stringBuilder.append(node.getName());
+
+        } else if (node.getType() != null && node.getType().equals("int[]")) {
+            stringBuilder.append("ArrayList<Integer> ");
+            stringBuilder.append(node.getName());
+            stringBuilder.append(" = new ArrayList<Integer>();\n");
+
+        } else if (node.getType() != null && node.getType().equals("double[]")) {
+            stringBuilder.append("ArrayList<Double> ");
+            stringBuilder.append(node.getName());
+            stringBuilder.append(" = new ArrayList<Double>();\n");
+        } else{
+            stringBuilder.append(node.getName());
         }
-        stringBuilder.append(node.getName());
-        codeOutput.add(getLine());
-        
-        
     }
 
 
     @Override
     public void visit(InitializationNode node) {
-        stringBuilder.append(" = ");
-        this.visitChildren(node);
+        if(!(node.getChildren().get(0) instanceof ListNode)){
+            stringBuilder.append(" = ");
+        }
+        visitChildren(node);
     }
 
     @Override
@@ -363,7 +381,17 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
+        AstNode ListName = node.getParent().getParent().getChildren().get(0);
 
+        stringBuilder.append(".addAll(Arrays.asList(");
+        //visit all children of the list node and add "," between the children
+        for(int i = 0; i < node.getChildren().size(); i++){
+            visitChild(node.getChildren().get(i));
+            if(i != node.getChildren().size()-1){
+                stringBuilder.append(", ");
+            }
+        }
+        stringBuilder.append("));\n");
     }
 
     @Override

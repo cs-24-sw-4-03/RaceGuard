@@ -34,7 +34,7 @@ public class ParLang {
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
         AstNode ast = visitor.visit(tree);
 
-        //printAST(ast, args);
+        printAST(ast, args);
         //printCST(tree, parser);
         generateCode(ast);
 

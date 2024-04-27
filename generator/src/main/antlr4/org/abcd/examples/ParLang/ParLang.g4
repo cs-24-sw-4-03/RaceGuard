@@ -164,6 +164,7 @@ identifier : IDENTIFIER
 // can be any type defined in language
 allTypes : primitiveType
     | primitiveType ARRAY_TYPE
+    | primitiveType ARRAY_TYPE ARRAY_TYPE
     | ACTOR_TYPE
     | VOID_TYPE
     | identifier
