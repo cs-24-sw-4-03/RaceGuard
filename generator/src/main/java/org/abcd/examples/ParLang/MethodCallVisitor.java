@@ -30,24 +30,24 @@ public class MethodCallVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         //First we enter the scope of the Actor we send the message to
-        AstNode receiver = node.getChildren().get(0);
-        String receiverName = node.getMsgName();
+        AstNode receiverNode = node.getChildren().get(0);
+        String scopeName = null;
         String currentActorName = this.symbolTable.findActorParent(node);
         Scope currentActorScope = this.symbolTable.lookUpScope(currentActorName);
-        if(receiver instanceof SelfNode) { //You can send messages to yourself
-            this.symbolTable.enterScope(currentActorScope.getScopeName());
-        }else if(receiver instanceof StateAccessNode){
-            String stateAccesType = currentActorScope.getKnowsSymbols().get(((StateAccessNode) receiver).getAccessIdentifier()).getVariableType();
-            if(this.symbolTable.lookUpScope(stateAccesType) != null) {
-                this.symbolTable.enterScope(stateAccesType);
-            }
-        }else if(receiver instanceof KnowsAccessNode){
-            String knowsAccessType = currentActorScope.getKnowsSymbols().get(((KnowsAccessNode) receiver).getAccessIdentifier()).getVariableType();
-            if(this.symbolTable.lookUpScope(knowsAccessType) != null) {
-                this.symbolTable.enterScope(knowsAccessType);
+
+        if(receiverNode instanceof SelfNode) { //You can send messages to yourself
+            scopeName =  currentActorScope.getScopeName();
+        }else if(receiverNode instanceof StateAccessNode || receiverNode instanceof KnowsAccessNode){
+            String receiverName = node.getReceiver().split("\\.")[1];
+            String accessType = currentActorScope.getKnowsSymbols().get(receiverName).getVariableType();
+            if(this.symbolTable.lookUpScope(accessType) != null) {
+                scopeName = accessType;
             }
         }else { //In other cases it should be another onMethod in an actor
-            this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+            scopeName = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
+        }
+        if(scopeName != null){
+            this.symbolTable.enterScope(scopeName);
         }
 
         //Then we find the list of messages it can receive
