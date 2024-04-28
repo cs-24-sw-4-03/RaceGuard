@@ -2,8 +2,10 @@ package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
+import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import java.util.HashMap;
+import java.util.List;
 
 public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
@@ -28,9 +30,23 @@ public class MethodCallVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         //First we enter the scope of the Actor we send the message to
-        if(node.getReceiver().equals("self")){ //You can also send messages to yourself
-            this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
-        }else{ //In other cases it should be another onMethod in an actor
+        AstNode receiver = node.getChildren().get(0);
+        String receiverName = node.getMsgName();
+        String currentActorName = this.symbolTable.findActorParent(node);
+        Scope currentActorScope = this.symbolTable.lookUpScope(currentActorName);
+        if(receiver instanceof SelfNode) { //You can send messages to yourself
+            this.symbolTable.enterScope(currentActorScope.getScopeName());
+        }else if(receiver instanceof StateAccessNode){
+            String stateAccesType = currentActorScope.getKnowsSymbols().get(((StateAccessNode) receiver).getAccessIdentifier()).getVariableType();
+            if(this.symbolTable.lookUpScope(stateAccesType) != null) {
+                this.symbolTable.enterScope(stateAccesType);
+            }
+        }else if(receiver instanceof KnowsAccessNode){
+            String knowsAccessType = currentActorScope.getKnowsSymbols().get(((KnowsAccessNode) receiver).getAccessIdentifier()).getVariableType();
+            if(this.symbolTable.lookUpScope(knowsAccessType) != null) {
+                this.symbolTable.enterScope(knowsAccessType);
+            }
+        }else { //In other cases it should be another onMethod in an actor
             this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
         }
 
