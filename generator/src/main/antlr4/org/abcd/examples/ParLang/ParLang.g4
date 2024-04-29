@@ -62,10 +62,10 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp | arrayAccess);
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp | arrayAccess |SENDER);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess | methodCall | boolExp) ;
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess | methodCall | boolExp | SENDER);
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -177,7 +177,7 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | identifier | arithExp | boolExp | actorAccess | arrayAccess | SELF)
+value : (primitive | identifier | arithExp | boolExp | actorAccess | arrayAccess | SELF | SENDER)
     ;
 
 number : INT
