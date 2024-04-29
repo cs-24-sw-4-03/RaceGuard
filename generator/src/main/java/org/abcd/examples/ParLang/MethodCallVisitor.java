@@ -51,6 +51,7 @@ public class MethodCallVisitor implements NodeVisitor {
         } else if (node.getReceiver().equals("sender")) {
             //We cannot enter the scope of the sender as we cannot know the actor type of the sender
             //We can therefore not check if it has the method
+            System.out.println("Sender: " + node.getReceiver());
         } else if (node.getReceiver().equals("self")){
             //We check if the Actor itself has the method we call
             this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
