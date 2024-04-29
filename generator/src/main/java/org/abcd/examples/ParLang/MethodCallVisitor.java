@@ -2,8 +2,10 @@ package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Attributes;
+import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import java.util.HashMap;
+import java.util.List;
 
 public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
@@ -28,7 +30,25 @@ public class MethodCallVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         //First we enter the scope of the Actor we send the message to
-        this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+        AstNode receiverNode = node.getChildren().get(0);
+        String scopeName = null;
+        String currentActorName = this.symbolTable.findActorParent(node);
+        Scope currentActorScope = this.symbolTable.lookUpScope(currentActorName);
+
+        if(receiverNode instanceof SelfNode) { //You can send messages to yourself
+            scopeName =  currentActorScope.getScopeName();
+        }else if(receiverNode instanceof StateAccessNode || receiverNode instanceof KnowsAccessNode){
+            String receiverName = node.getReceiver().split("\\.")[1];
+            String accessType = currentActorScope.getKnowsSymbols().get(receiverName).getVariableType();
+            if(this.symbolTable.lookUpScope(accessType) != null) {
+                scopeName = accessType;
+            }
+        }else { //In other cases it should be another onMethod in an actor
+            scopeName = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
+        }
+        if(scopeName != null){
+            this.symbolTable.enterScope(scopeName);
+        }
 
         //Then we find the list of messages it can receive
         HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();

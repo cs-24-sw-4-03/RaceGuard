@@ -59,7 +59,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitSendMsg(ParLangParser.SendMsgContext ctx) {
         //SendMsg has the structure: [IDENTIFIER,SEND_MSG,IDENTIFIER,LPAREN,ARGUMENTS,RPAREN]
-        SendMsgNode sendMsgNode = new SendMsgNode(ctx.getChild(0).getText(), ctx.getChild(2).getText());
+        String receiver = ctx.getChild(0).getText();
+        String msgName = ctx.getChild(2).getText();
+        SendMsgNode sendMsgNode = new SendMsgNode(receiver, msgName);
+        if(receiver.equals("self")){
+            sendMsgNode.addChild(new SelfNode());
+        }else{
+            sendMsgNode.addChild(visit(ctx.identifier(0))); //Add the receiver as a Knows or State child
+        }
         sendMsgNode.addChild(visit(ctx.arguments())); //add arguments as children
         return sendMsgNode;
     }
