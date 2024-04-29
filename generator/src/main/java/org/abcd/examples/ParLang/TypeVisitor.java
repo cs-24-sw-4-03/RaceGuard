@@ -102,7 +102,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        /*try {*/
+        try { //should be tested but i cannot test it
         if(!(node.getParent() instanceof MethodCallNode)) {
             System.out.println("Symbol: " + node.getName());
             if (hasParent(node, StateNode.class)) {
@@ -113,13 +113,14 @@ public class TypeVisitor implements NodeVisitor {
             }
             else {
                 System.out.println("Normal Symbol: " + node.getName());
+                System.out.println(symbolTable.getCurrentScope().getScopeName());
                 node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
             }
         }
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
-        }*/
+        }
     }
 
     @Override
