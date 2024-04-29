@@ -19,7 +19,6 @@ Actor NumActor follows TestScript{
         TestScript getSquaredActor = Spawn NumActor(x);
         double result;
         result = squared(x);
-
         getSquaredActor <- getSquared(result);
     }
     on willNotHave(){}

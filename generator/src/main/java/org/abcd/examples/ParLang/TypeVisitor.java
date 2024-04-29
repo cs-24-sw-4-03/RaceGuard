@@ -23,6 +23,38 @@ public class TypeVisitor implements NodeVisitor {
         this.typeContainer = typeContainer;
     }
 
+    private String typeMatchOrConvert(String type1, String type2){
+        if (type1.equals(type2)){
+            return type1;
+        }
+        if (type1.equals("int") && type2.equals("double")){
+            return "double";
+        }
+        if (type1.equals("double") && type2.equals("int")){
+            return "double";
+        }
+        if (symbolTable.declaredScripts.contains(type1)){
+            symbolTable.enterScope(type1);
+            ArrayList<String> types = symbolTable.getActorsFollowingScript();
+            if (types.contains(type2)){
+                symbolTable.leaveScope();
+                return type1;
+            }
+            symbolTable.leaveScope();
+            return null;
+        }
+        if (symbolTable.declaredScripts.contains(type2)){
+            symbolTable.enterScope(type2);
+            ArrayList<String> types = symbolTable.getActorsFollowingScript();
+            if (types.contains(type2)){
+                symbolTable.leaveScope();
+                return type2;
+            }
+            symbolTable.leaveScope();
+        }
+        return null;
+    }
+
     @Override
     public void visitChildren(AstNode node){
         for (AstNode child : node.getChildren()) {
@@ -71,12 +103,12 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         /*try {*/
-            if (symbolTable.lookUpScope(node.getMsgName()) == null) {
+            if (symbolTable.lookUpScope(node.getMsgName() + symbolTable.findActorParent(node)) == null) {
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
             }else {
                 System.out.println("Method: " + node.getMsgName() + " found");
             }
-            symbolTable.enterScope(node.getMsgName());
+            symbolTable.enterScope(node.getMsgName() + symbolTable.findActorParent(node));
             this.visitChildren(node);
             symbolTable.leaveScope();
        /* }
@@ -103,23 +135,23 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(IdentifierNode node) {
         try { //should be tested but i cannot test it
-        if(!(node.getParent() instanceof MethodCallNode)) {
-            System.out.println("Symbol: " + node.getName());
-            if (hasParent(node, StateNode.class)) {
-                node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
+            if(!(node.getParent() instanceof MethodCallNode)) {
+                System.out.println("Symbol: " + node.getName());
+                if (hasParent(node, StateNode.class)) {
+                    node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
+                }
+                else if (hasParent(node, KnowsNode.class)) {
+                    node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
+                }
+                else if (hasParent(node, FollowsNode.class)) {
+                    node.setType(node.getName());
+                }
+                else {
+                    System.out.println("Normal Symbol: " + node.getName());
+                    System.out.println(symbolTable.getCurrentScope().getScopeName());
+                    node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+                }
             }
-            else if (hasParent(node, KnowsNode.class)) {
-                node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
-            }
-            else if (hasParent(node, FollowsNode.class)) {
-                node.setType(node.getName());
-            }
-            else {
-                System.out.println("Normal Symbol: " + node.getName());
-                System.out.println(symbolTable.getCurrentScope().getScopeName());
-                node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
-            }
-        }
         }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
@@ -333,17 +365,12 @@ public class TypeVisitor implements NodeVisitor {
                 node.setType(idType);
                 return;
             }
-            ArrayList<String> actorsInScript = new ArrayList<>();
-            if (symbolTable.declaredScripts.contains(node.getType())){
-                symbolTable.enterScope(node.getType());
-                actorsInScript = symbolTable.getActorsFollowingScript();
-                symbolTable.leaveScope();
-            }
             String initType = node.getChildren().get(1).getType();
-            if (!idType.equals(initType) && !actorsInScript.contains(initType)) {
+            String typeMatch = typeMatchOrConvert(idType, initType);
+            if (typeMatch == null) {
                 throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
             }
-            node.setType(idType);
+            node.setType(typeMatch);
        /* }
         catch (varDclNodeExeption e) {
             exceptions.add(e);
@@ -410,9 +437,14 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            String childType = node.getChildren().get(1).getType();
-            if (!node.getType().equals(childType) && node.getMethodType().equals("local")) {
+            String childType = node.getChildren().get(0).getType();
+            String nodeType = node.getType();
+            String typeMatch = typeMatchOrConvert(nodeType, childType);
+            if (typeMatch == null ) {
                 throw new MethodDclNodeException("Return does not match returnType of method");
+            }
+            if (!node.getMethodType().equals("local")){
+                throw new MethodCallException("Method type is not local");
             }
             this.symbolTable.leaveScope();
         /*}
@@ -423,6 +455,7 @@ public class TypeVisitor implements NodeVisitor {
             exceptions.add(new MethodDclNodeException(e.getMessage() + " in MethodDclNode"));
         }*/
     }
+
 
     @Override
     public void visit(MainDclNode node) {
