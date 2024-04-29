@@ -14,6 +14,9 @@ import java.util.List;
 
 public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    private List<RuntimeException> exceptions = new ArrayList<>();
+
+    public List<RuntimeException> getExceptions() {return this.exceptions;}
 
     public MethodCallVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;

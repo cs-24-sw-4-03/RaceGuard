@@ -240,4 +240,9 @@ public class FuncVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    @Override
+    public void visit(SenderNode node) {
+        this.visitChildren(node);
+    }
+
 }

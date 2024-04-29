@@ -83,13 +83,15 @@ public class SymbolTable {
         return findScope(scopeName, this.globalScope);
     }
 
-    public void enterScope(String scopeName){
+    public boolean enterScope(String scopeName){
         Scope scope = this.findScope(scopeName, this.globalScope);
 
         if(scope != null){
             this.scopeStack.push(this.currentScope);
             this.currentScope = scope;
+            return true;
         }
+        return false;
     }
 
     public Attributes lookUpSymbolCurrentScope(String symbol){
@@ -159,8 +161,8 @@ public class SymbolTable {
         this.currentScope.addSymbol(symbol, attributes);
     }
 
-    public void insertParams(String param, Attributes attributes){
-        this.currentScope.addParams(param, attributes);
+    public boolean insertParams(String param, Attributes attributes){
+        return this.currentScope.addParams(param, attributes);
     }
 
     public void insertStateSymbol(String symbol, Attributes attributes){this.currentScope.addStateSymbols(symbol, attributes);}
@@ -195,5 +197,12 @@ public class SymbolTable {
             parent = parent.getParent();
         }
         return null;
+    }
+    public ArrayList<String> getActorsFollowingScript() {
+        return this.currentScope.getActorsFollowingScript();
+    }
+
+    public void addActorsFollowingScript(String actorName){
+        this.currentScope.addActorsFollowingScript(actorName);
     }
 }

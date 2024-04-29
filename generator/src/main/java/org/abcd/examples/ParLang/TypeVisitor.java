@@ -357,6 +357,12 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(SelfNode node) {
         this.visitChildren(node);
     }
+
+    @Override
+    public void visit(SenderNode node) {
+        this.visitChildren(node);
+    }
+
     @Override
     public void visit(StateNode node) {
         //does not need types
