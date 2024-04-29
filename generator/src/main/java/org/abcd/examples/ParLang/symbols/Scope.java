@@ -13,6 +13,7 @@ public class Scope {
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
     private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
     private final ArrayList<String> declaredOnMethods = new ArrayList<>();
+    private final ArrayList<String> actorsFollowingScript = new ArrayList<>();
 
 
 
@@ -111,4 +112,13 @@ public class Scope {
         }
     }
 
+    public void addActorsFollowingScript(String actorName) {
+        if(!this.actorsFollowingScript.contains(actorName)){
+            this.actorsFollowingScript.add(actorName);
+        }
+    }
+
+    public ArrayList<String> getActorsFollowingScript() {
+        return this.actorsFollowingScript;
+    }
 }

@@ -3,6 +3,7 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.DuplicateScopeException;
 import org.abcd.examples.ParLang.Exceptions.DuplicateSymbolException;
+import org.abcd.examples.ParLang.Exceptions.ScopeNotFoundException;
 import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
@@ -256,7 +257,13 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-        this.visitChildren(node);
+        IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
+        if(this.symbolTable.enterScope(script.getName())){
+            this.symbolTable.addActorsFollowingScript(this.symbolTable.findActorParent(node));
+            this.symbolTable.leaveScope();
+        }else {
+            exceptions.add(new ScopeNotFoundException("Script: " + script.getName() + " not found"));
+        }
     }
 
     //TODO: IMPLEMENT!
