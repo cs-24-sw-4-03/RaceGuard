@@ -254,6 +254,11 @@ public class SymbolTableVisitor implements NodeVisitor {
         }
     }
 
+    @Override
+    public void visit(FollowsNode node) {
+        this.visitChildren(node);
+    }
+
     //TODO: IMPLEMENT!
     @Override
     public void visit(SendMsgNode node) {
@@ -265,6 +270,12 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.addScope(node.getNodeHash());
         this.visitChildren(node);
         this.symbolTable.leaveScope();
+    }
+
+    //TODO: Find out if this needs any more implementation
+    @Override
+    public void visit(SenderNode node) {
+        this.visitChildren(node);
     }
 
     @Override
@@ -324,11 +335,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(FollowsNode node) {
         this.visitChildren(node);
     }
 

@@ -71,6 +71,12 @@ public class MethodCallVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
+    //TODO: Find out if this needs any more implementation
+    @Override
+    public void visit(SenderNode node) {
+        this.visitChildren(node);
+    }
+
     @Override
     public void visitChildren(AstNode node){
         for(AstNode child : node.getChildren()){
