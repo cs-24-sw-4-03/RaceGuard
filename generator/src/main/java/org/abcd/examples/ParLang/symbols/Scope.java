@@ -8,7 +8,7 @@ public class Scope {
 
     //The symbols in the scope
     private final HashMap<String, Attributes> symbols = new HashMap<>();
-    private final LinkedHashMap<String, Attributes> params = new LinkedHashMap<>();
+    private final Map<String, Attributes> params = new LinkedHashMap<>();
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
     private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
@@ -52,7 +52,7 @@ public class Scope {
         return false;
     }
 
-    public LinkedHashMap<String, Attributes> getParams() {
+    public Map<String, Attributes> getParams() {
         return this.params;
     }
 
