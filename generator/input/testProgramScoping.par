@@ -21,7 +21,7 @@ Actor Test{
 
 	    Knows.testActor = Spawn Test(5);
 
-	    State.stateArray[0] = 27;
+	    State.stateArray[0] = Spawn Test(6);
 
         testArray = intArray[1];
 		for(int y = 0; y<x ; y = y+1){

@@ -44,7 +44,7 @@ stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
-printBody : (STRING | identifier ) (PLUS (STRING | identifier))*;
+printBody : (identifier | STRING) (PLUS (identifier | STRING))*;
 
 //the different control structures in the language
 controlStructure : selection
@@ -62,10 +62,10 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | spawnActor | methodCall | boolExp | arrayAccess | SENDER | identifier);
+initialization:  ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | methodCall | boolExp | arrayAccess);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (arrayAccess | identifier) ASSIGN (arithExp | primitive | list | spawnActor | arrayAccess | methodCall | boolExp | SENDER | identifier);
+assignment: (identifier|arrayAccess|actorAccess) ASSIGN (arithExp | primitive | list | identifier | actorAccess | spawnActor | arrayAccess | methodCall | boolExp) ;
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
@@ -97,7 +97,7 @@ factor : number
     | unaryExp
     ;
 unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
-    | MINUS (number | identifier)
+    | MINUS (number | identifier | stateAccess)
     ; // unary minus operator
 
 // operator to compare two arithmetic expressions
@@ -140,7 +140,7 @@ parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | i
 arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : (SENDER | SELF | identifier) SEND_MSG identifier arguments;
+sendMsg : (identifier | SELF) SEND_MSG identifier arguments;
 
 //way to call a method
 methodCall : identifier arguments;
@@ -177,7 +177,7 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | SENDER | identifier)
+value : (primitive | identifier | arithExp | boolExp | actorAccess | arrayAccess | SELF)
     ;
 
 number : INT
@@ -240,7 +240,6 @@ LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
 FOLLOWS : 'follows';
-SENDER : 'sender';
 
 //Control structures
 IF : 'if';

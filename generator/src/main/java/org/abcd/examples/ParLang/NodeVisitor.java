@@ -63,5 +63,4 @@ public interface NodeVisitor {
     void visit(BoolAndExpNode node);
     void visit(BoolExpNode node);
     void visit(SelfNode node);
-    void visit(SenderNode node);
 }

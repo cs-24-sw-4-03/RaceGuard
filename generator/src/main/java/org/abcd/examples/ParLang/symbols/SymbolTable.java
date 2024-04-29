@@ -21,6 +21,7 @@ public class SymbolTable {
 
 
     public SymbolTable() {
+        System.out.println("Creating SymbolTable");
         this.globalScope = new Scope("global");
         this.currentScope = this.globalScope;
     }
@@ -45,6 +46,7 @@ public class SymbolTable {
     }
 
     //Pops the top scope from the stack and sets it as the currentScope
+    //TODO: C* sets the name of the original currentScope, find out if there is a reason for this
     public void leaveScope(){
         if(!this.scopeStack.empty()){
             this.currentScope = this.scopeStack.pop();
@@ -81,15 +83,13 @@ public class SymbolTable {
         return findScope(scopeName, this.globalScope);
     }
 
-    public boolean enterScope(String scopeName){
+    public void enterScope(String scopeName){
         Scope scope = this.findScope(scopeName, this.globalScope);
 
         if(scope != null){
             this.scopeStack.push(this.currentScope);
             this.currentScope = scope;
-            return true;
         }
-        return false;
     }
 
     public Attributes lookUpSymbolCurrentScope(String symbol){
@@ -100,6 +100,7 @@ public class SymbolTable {
         } else if (!this.currentScope.getParams().isEmpty() && this.currentScope.getParams().containsKey(symbol)) {
             return this.currentScope.getParams().get(symbol);
         }
+        System.out.println("Symbol: " + symbol + " not found");
         return null;
     }
 
@@ -117,6 +118,7 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
+        System.out.println("Symbol: " + symbol + " not found");
         return null;
     }
 
@@ -133,6 +135,7 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
+        System.out.println("State symbol: " + symbol + " not found");
         return null;
     }
 
@@ -148,6 +151,7 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
+        System.out.println("Knows symbol: " + symbol + " not found");
         return null;
     }
 
@@ -155,8 +159,8 @@ public class SymbolTable {
         this.currentScope.addSymbol(symbol, attributes);
     }
 
-    public boolean insertParams(String param, Attributes attributes){
-        return this.currentScope.addParams(param, attributes);
+    public void insertParams(String param, Attributes attributes){
+        this.currentScope.addParams(param, attributes);
     }
 
     public void insertStateSymbol(String symbol, Attributes attributes){this.currentScope.addStateSymbols(symbol, attributes);}
@@ -191,13 +195,5 @@ public class SymbolTable {
             parent = parent.getParent();
         }
         return null;
-    }
-
-    public ArrayList<String> getActorsFollowingScript() {
-        return this.currentScope.getActorsFollowingScript();
-    }
-
-    public void addActorsFollowingScript(String actorName){
-        this.currentScope.addActorsFollowingScript(actorName);
     }
 }

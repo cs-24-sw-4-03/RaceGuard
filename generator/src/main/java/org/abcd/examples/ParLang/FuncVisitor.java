@@ -3,15 +3,10 @@ package org.abcd.examples.ParLang;
 import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class FuncVisitor implements NodeVisitor {
     SymbolTable symbolTable;
-    private List<RuntimeException> exceptions = new ArrayList<>();
-
-    public List<RuntimeException> getExceptions() {return this.exceptions;}
 
     public FuncVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -136,11 +131,6 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SelfNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
@@ -246,7 +236,7 @@ public class FuncVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SenderNode node) {
+    public void visit(SelfNode node) {
         this.visitChildren(node);
     }
 
