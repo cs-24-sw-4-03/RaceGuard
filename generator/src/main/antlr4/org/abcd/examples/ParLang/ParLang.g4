@@ -140,7 +140,7 @@ parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | i
 arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : (identifier | SELF) SEND_MSG identifier arguments;
+sendMsg : (identifier | SELF | SENDER) SEND_MSG identifier arguments;
 
 //way to call a method
 methodCall : identifier arguments;
@@ -240,6 +240,7 @@ LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
 FOLLOWS : 'follows';
+SENDER : 'sender';
 
 //Control structures
 IF : 'if';
