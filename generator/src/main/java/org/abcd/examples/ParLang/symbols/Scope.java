@@ -13,7 +13,7 @@ public class Scope {
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
     private final HashMap<String, Attributes> declaredLocalMethods = new HashMap<>();
     private final HashMap<String, Attributes> declaredOnMethods = new HashMap<>();
-
+    private final ArrayList<String> actorsFollowingScript = new ArrayList<>();
 
 
     //Nested scopes within the current scope
@@ -43,8 +43,12 @@ public class Scope {
         return this.symbols;
     }
 
-    public void addParams(String id, Attributes attributes) {
-        this.params.put(id, attributes);
+    public boolean addParams(String id, Attributes attributes) {
+        if(!this.params.containsKey(id)){
+            this.params.put(id, attributes);
+            return true;
+        }
+        return false;
     }
 
     public LinkedHashMap<String, Attributes> getParams() {
@@ -105,5 +109,15 @@ public class Scope {
                 return new HashMap<>();
             }
         }
+    }
+
+    public void addActorsFollowingScript(String actorName) {
+        if(!this.actorsFollowingScript.contains(actorName)){
+            this.actorsFollowingScript.add(actorName);
+        }
+    }
+
+    public ArrayList<String> getActorsFollowingScript() {
+        return this.actorsFollowingScript;
     }
 }
