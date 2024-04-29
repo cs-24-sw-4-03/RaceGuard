@@ -43,8 +43,12 @@ public class Scope {
         return this.symbols;
     }
 
-    public void addParams(String id, Attributes attributes) {
-        this.params.put(id, attributes);
+    public boolean addParams(String id, Attributes attributes) {
+        if(!this.params.containsKey(id)){
+            this.params.put(id, attributes);
+            return true;
+        }
+        return false;
     }
 
     public Map<String, Attributes> getParams() {

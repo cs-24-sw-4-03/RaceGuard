@@ -24,11 +24,7 @@ public class MethodCallVisitor implements NodeVisitor {
         //First we find all the methods that the actor is allowed to call
         ArrayList<String> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
         //Then we check if the called method is part of that list
-        if (legalLocalMethods.contains(node.getMethodName())) {
-            System.out.println("Local method id " + node.getMethodName() + " found");
-        }
-        else {
-            System.out.println("Local method id " + node.getMethodName() + " not found");
+        if (!legalLocalMethods.contains(node.getMethodName())) {
             exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found"));
         }
     }
@@ -41,11 +37,7 @@ public class MethodCallVisitor implements NodeVisitor {
         //Then we find the list of messages it can receive
         ArrayList<String> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
         //We then check if the message is part of the list of allowed messages
-        if (legalOnMethods.contains(node.getMsgName())) {
-            System.out.println("On method id " + node.getMsgName() + " found");
-        }
-        else {
-            System.out.println("On method id " + node.getMsgName() + " not found");
+        if (!legalOnMethods.contains(node.getMsgName())) {
             exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
         }
 
@@ -71,14 +63,10 @@ public class MethodCallVisitor implements NodeVisitor {
 
         //We then check if every entry in the Scripts list also is in the Actors list
         for (String onMethod : legalOnMethodsScript) {
-            if (legalOnMethodsActor.contains(onMethod)) {
-                System.out.println("Actor: " + this.symbolTable.findActorParent(node) + " has on method: " + onMethod + " from Script: " + script.getName());
-            } else {
-                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
+            if (!legalOnMethodsActor.contains(onMethod)) {
                 exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
             }
         }
-
 
         this.visitChildren(node);
     }

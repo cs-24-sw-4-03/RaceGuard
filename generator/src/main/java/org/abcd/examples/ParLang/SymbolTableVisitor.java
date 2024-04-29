@@ -11,13 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/*TODO:
-    * 3. Create a new Visitor that checks that all calls to methods are legal.
-    * This includes that on methods are called as messages and that local methods are called from the Actor they are in
-    * 4. Add functionality to the new Visitor that checks that an Actor has all required methods if it implements a Script
-    * 5. Find out when it makes sense to check for duplicate method names in an Actor
-    * 6. Error handling
- */
 
 public class SymbolTableVisitor implements NodeVisitor {
     SymbolTable symbolTable;
@@ -38,11 +31,14 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
-        this.symbolTable.addScope(node.getId());
-        //Visits the children of the node to add the symbols to the symbol table
-        this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node
-        this.symbolTable.leaveScope();
+        if(this.symbolTable.addScope(node.getId())){
+            //Visits the children of the node to add the symbols to the symbol table
+            this.visitChildren(node);
+            //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node
+            this.symbolTable.leaveScope();
+        }else{
+            this.exceptions.add(new DuplicateScopeException("Script: " + node.getId() + " already exists"));
+        }
     }
 
     //Declares a variable in the symbol table if it does not already exist
@@ -54,18 +50,17 @@ public class SymbolTableVisitor implements NodeVisitor {
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
             }else{
-                exceptions.add(new DuplicateSymbolException("State symbol " + node.getId() + " already exists in Actor: " + this.symbolTable.findActorParent(node)));
+                this.exceptions.add(new DuplicateSymbolException("State symbol: " + node.getId() + " already exists in Actor: " + this.symbolTable.findActorParent(node)));
             }
         }else{
             if(this.symbolTable.lookUpSymbolCurrentScope(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
                 this.symbolTable.insertSymbol(node.getId(), attributes);
             }else{
-                exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope"));
+                this.exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope"));
             }
         }
         this.visitChildren(node);
-        //TODO: Find out what should be done, when trying to declare a symbol that already exists. Override? Error?
     }
 
     //Creates a new scope as a while iteration node is a new scope and leaves it after visiting the children
@@ -116,7 +111,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
             this.symbolTable.leaveScope();
         } else {
-            exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId()));
+            this.exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId() + " in Actor: " + this.symbolTable.findActorParent(node)));
         }
     }
 
@@ -132,18 +127,23 @@ public class SymbolTableVisitor implements NodeVisitor {
             Attributes attributes = new Attributes(paramNode.getType(), "param");
             attributes.setScope(scopeName);
             System.out.println("Param: " + paramNode.getName());
-            this.symbolTable.insertParams(paramNode.getName(), attributes);
+            if(!this.symbolTable.insertParams(paramNode.getName(), attributes)){
+                this.exceptions.add(new DuplicateSymbolException("Param: " + paramNode.getName() + " already exists in current scope"));
+            }
         }
     }
 
     @Override
     public void visit(ActorDclNode node) {
         System.out.println("\nActor: " + node.getId());
-        this.symbolTable.addScope(node.getId());
-        //Visits the children of the node to add the symbols to the symbol table
-        this.visitChildren(node);
-        //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the Actor node
-        this.symbolTable.leaveScope();
+        if(this.symbolTable.addScope(node.getId())){
+            //Visits the children of the node to add the symbols to the symbol table
+            this.visitChildren(node);
+            //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the Actor node
+            this.symbolTable.leaveScope();
+        }else{
+            this.exceptions.add(new DuplicateScopeException("Actor: " + node.getId() + " already exists"));
+        }
     }
 
     @Override
@@ -164,9 +164,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: EXCEPTION HANDLING RESTART HERE!'
-
-    //TODO: Set up error handling if symbol not found for normal symbols, State symbols and Knows symbols
     @Override
     public void visit(IdentifierNode node) {
         //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
@@ -175,7 +172,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 System.out.println("Found State symbol: " + node.getName());
             }else{
                 System.out.println("Not found State symbol: " + node.getName());
-                exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found"));
+                this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
             }
         //Ensures that we do not search for IdentifierNodes for method calls
         }else if (!(node.getParent() instanceof MethodCallNode)){
@@ -183,7 +180,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 System.out.println("Found symbol: " + node.getName());
             }else{
                 System.out.println("Not found symbol: " + node.getName());
-                exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
+                this.exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
             }
         }
     }
@@ -194,6 +191,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Found state symbol: " + node.getAccessIdentifier());
         }else{
             System.out.println("Not found state symbol: " + node.getAccessIdentifier());
+            this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
         }
 
         this.visitChildren(node);
@@ -205,15 +203,17 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Found symbol: " + node.getAccessIdentifier());
         }else{
             System.out.println("Not found symbol: " + node.getAccessIdentifier());
+            this.exceptions.add(new SymbolNotFoundException("Array symbol: "  + node.getAccessIdentifier() + " not found"));
         }
     }
 
     @Override
     public void visit(KnowsAccessNode node) {
         if(this.symbolTable.lookUpKnowsSymbol(node.getAccessIdentifier()) != null){
-            System.out.println("Found state symbol: " + node.getAccessIdentifier());
+            System.out.println("Found Knows symbol: " + node.getAccessIdentifier());
         }else{
-            System.out.println("Not found state symbol: " + node.getAccessIdentifier());
+            System.out.println("Not found Knows symbol: " + node.getAccessIdentifier());
+            this.exceptions.add(new SymbolNotFoundException("Knows symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
         }
 
         this.visitChildren(node);
@@ -227,6 +227,8 @@ public class SymbolTableVisitor implements NodeVisitor {
             if (this.symbolTable.lookUpKnowsSymbol(idChildNode.getName()) == null) {
                 Attributes attributes = new Attributes(idChildNode.getType(), "dcl");
                 this.symbolTable.insertKnowsSymbol(idChildNode.getName(), attributes);
+            }else{
+                this.exceptions.add(new DuplicateScopeException("Duplicate Knows symbol: " + idChildNode.getName() + " found in Actor: " + this.symbolTable.findActorParent(node)));
             }
         }
     }
@@ -247,10 +249,12 @@ public class SymbolTableVisitor implements NodeVisitor {
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
             this.symbolTable.leaveScope();
+        } else {
+            this.exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId() + " in Script: " + this.symbolTable.findActorParent(node)));
         }
     }
 
-
+    //TODO: IMPLEMENT!
     @Override
     public void visit(SendMsgNode node) {
         this.visitChildren(node);
