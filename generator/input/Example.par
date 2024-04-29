@@ -1,6 +1,4 @@
 main(){
-    int[] a = {1,2,3};
-    double[] D;
-    int b;
-    int c = 2;
+    string[] 1DArray = {"c","d"};
+       int[][] 2DArray = {{1,2},{3,4},{5,6}};
 }

@@ -4,6 +4,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CodeGenVisitor implements NodeVisitor {
 
@@ -322,27 +323,37 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
 
+
     @Override
     public void visit(IdentifierNode node) {
+        HashMap<String, String> HashMapConverter = new HashMap<>();
+        //1 dimensional arrays
+        HashMapConverter.put("int[]", "ArrayList<Integer>");
+        HashMapConverter.put("double[]", "ArrayList<Double>");
+        HashMapConverter.put("bool[]", "ArrayList<Boolean>");
+        HashMapConverter.put("string[]", "ArrayList<String>");
+        //2 dimensional arrays
+        HashMapConverter.put("int[][]", "ArrayList<ArrayList<Integer>>");
+        HashMapConverter.put("double[][]", "ArrayList<ArrayList<Double>>");
+        HashMapConverter.put("bool[][]", "ArrayList<ArrayList<Boolean>>");
+        HashMapConverter.put("string[][]", "ArrayList<ArrayList<String>>");
+        String arrayType = HashMapConverter.get(node.getType());
+
         if(node.getType()!= null && !node.getType().equals(VariableConverter(node.getType()))){
             stringBuilder.append(VariableConverter(node.getType()));
             stringBuilder.append(" ");
             stringBuilder.append(node.getName());
-
-        } else if (node.getType() != null && node.getType().equals("int[]")) {
-            stringBuilder.append("ArrayList<Integer> ");
+        } else if(arrayType !=null){
+            stringBuilder.append(arrayType);
+            stringBuilder.append(" ");
             stringBuilder.append(node.getName());
-            stringBuilder.append(" = new ArrayList<Integer>();\n");
+            stringBuilder.append(" = new ArrayList<>();\n");
 
-        } else if (node.getType() != null && node.getType().equals("double[]")) {
-            stringBuilder.append("ArrayList<Double> ");
-            stringBuilder.append(node.getName());
-            stringBuilder.append(" = new ArrayList<Double>();\n");
-        } else{
+        }
+        else{
             stringBuilder.append(node.getName());
         }
     }
-
 
     @Override
     public void visit(InitializationNode node) {
@@ -381,17 +392,71 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
-        AstNode ListName = node.getParent().getParent().getChildren().get(0);
+        if(node.getChildren() != null && !(node.getParent() instanceof ListNode)){
+            stringBuilder.append(".addAll(Arrays.asList(");
+            for(int i = 0; i < node.getChildren().size(); i++){
+                visitChild(node.getChildren().get(i));
+                if(i != node.getChildren().size()-1){
+                    stringBuilder.append(", ");
+                }
+            }
+            stringBuilder.append("));\n");
+        }
+        else {
+            stringBuilder.append("new ArrayList<>(Arrays.asList(");
+            for (int i = 0; i < node.getChildren().size(); i++) {
+                visitChild(node.getChildren().get(i));
+                if (i != node.getChildren().size() - 1) {
+                    stringBuilder.append(", ");
+                }
+            }
+            stringBuilder.append("))");
+        }
 
-        stringBuilder.append(".addAll(Arrays.asList(");
-        //visit all children of the list node and add "," between the children
-        for(int i = 0; i < node.getChildren().size(); i++){
-            visitChild(node.getChildren().get(i));
-            if(i != node.getChildren().size()-1){
-                stringBuilder.append(", ");
+
+        /*
+        if(node.getChildren().get(0) instanceof ListNode){
+            stringBuilder.append(".addAll(Arrays.asList(new ArrayList<>(Arrays.asList(");
+
+            if(node.getChildren().get(0) instanceof ListNode){
+                stringBuilder.append("CHILD");
+            }
+
+        }
+        else{
+            for(int i = 0; i < node.getChildren().size(); i++){
+                visitChild(node.getChildren().get(i));
+                if(i != node.getChildren().size()-1){
+                    stringBuilder.append(", ");
+                }
+            }
+            }
+         */
+
+        /*
+        if(node.getParent() instanceof ListNode){
+            for(int i = 0; i < node.getChildren().size(); i++){
+                visitChild(node.getChildren().get(i));
+                if(i != node.getChildren().size()-1){
+                    stringBuilder.append(", ");
+                }
             }
         }
-        stringBuilder.append("));\n");
+        else{
+            stringBuilder.append("1D");
+            stringBuilder.append(".addAll(Arrays.asList(");
+            //visit all children of the list node and add "," between the children
+            for(int i = 0; i < node.getChildren().size(); i++){
+                visitChild(node.getChildren().get(i));
+                if(i != node.getChildren().size()-1){
+                    stringBuilder.append(", ");
+                }
+            }
+            stringBuilder.append("));\n");      }
+
+         */
+
+
     }
 
     @Override
