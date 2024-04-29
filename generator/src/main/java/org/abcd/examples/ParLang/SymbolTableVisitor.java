@@ -196,8 +196,6 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Not found state symbol: " + node.getAccessIdentifier());
             this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
         }
-
-        this.visitChildren(node);
     }
 
     @Override
