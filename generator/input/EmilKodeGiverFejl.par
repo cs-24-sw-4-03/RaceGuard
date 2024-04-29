@@ -22,6 +22,7 @@ Actor NumActor follows TestScript{
 
         getSquaredActor <- getSquared(result);
     }
+    on willNotHave(){}
 
     local squared(double num): double{
         return num*num;
