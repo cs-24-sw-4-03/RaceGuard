@@ -1,0 +1,31 @@
+Script TestScript{
+    on getSquared(int x);
+
+    on willNotHave();
+}
+
+
+Actor NumActor follows TestScript{
+    State{
+        double number;
+    }
+    Knows{
+    NumActor testActor;
+    }
+    Spawn(double x){
+        State.number = x;
+    }
+    on getSquared(int x){
+        TestScript getSquaredActor = Spawn NumActor(2.2);
+        double result;
+        result = squared(State.number);
+
+        getSquaredActor <- getSquared(result);
+    }
+
+    local squared(double num): double{
+        return num*num;
+    }
+}
+
+main(){}
