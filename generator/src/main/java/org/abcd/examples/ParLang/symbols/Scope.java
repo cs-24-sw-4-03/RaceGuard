@@ -11,8 +11,8 @@ public class Scope {
     private final Map<String, Attributes> params = new LinkedHashMap<>();
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
-    private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
-    private final ArrayList<String> declaredOnMethods = new ArrayList<>();
+    private final HashMap<String, Attributes> declaredLocalMethods = new HashMap<>();
+    private final HashMap<String, Attributes> declaredOnMethods = new HashMap<>();
     private final ArrayList<String> actorsFollowingScript = new ArrayList<>();
 
 
@@ -72,42 +72,42 @@ public class Scope {
         return this.knowsSymbols;
     }
 
-    public void addDeclaredLocalMethod(String id) {
-        if(!this.declaredLocalMethods.contains(id)){
-            this.declaredLocalMethods.add(id);
+    public void addDeclaredLocalMethod(String id, Attributes attributes) {
+        if(!this.declaredLocalMethods.containsKey(id)){
+            this.declaredLocalMethods.put(id, attributes);
         }else{
             System.out.println("Duplicate local method id: " + id);
         }
     }
 
-    public ArrayList<String> getDeclaredLocalMethods() {
+    public HashMap<String, Attributes> getDeclaredLocalMethods() {
         if(!this.declaredLocalMethods.isEmpty()){
             return this.declaredLocalMethods;
         }else{
             if(this.parent != null){
                 return this.parent.getDeclaredLocalMethods();
             }else{
-                return new ArrayList<>();
+                return new HashMap<>();
             }
         }
     }
 
-    public void addDeclaredOnMethod(String id) {
-        if(!this.declaredOnMethods.contains(id)){
-            this.declaredOnMethods.add(id);
+    public void addDeclaredOnMethod(String id, Attributes attributes) {
+        if(!this.declaredOnMethods.containsKey(id)){
+            this.declaredOnMethods.put(id, attributes);
         }else{
             System.out.println("Duplicate on method id: " + id);
         }
     }
 
-    public ArrayList<String> getDeclaredOnMethods() {
+    public HashMap<String, Attributes> getDeclaredOnMethods() {
         if(!this.declaredOnMethods.isEmpty()){
             return this.declaredOnMethods;
         }else{
             if(this.parent != null){
                 return this.parent.getDeclaredOnMethods();
             }else{
-                return new ArrayList<>();
+                return new HashMap<>();
             }
         }
     }

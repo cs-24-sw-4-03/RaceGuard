@@ -4,9 +4,11 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.LocalMethodCallException;
 import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
 import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
+import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MethodCallVisitor implements NodeVisitor {
@@ -22,9 +24,9 @@ public class MethodCallVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node) {
         //First we find all the methods that the actor is allowed to call
-        ArrayList<String> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
+        HashMap<String, Attributes> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
         //Then we check if the called method is part of that list
-        if (!legalLocalMethods.contains(node.getMethodName())) {
+        if (!legalLocalMethods.containsKey(node.getMethodName())) {
             exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found"));
         }
     }
@@ -35,9 +37,9 @@ public class MethodCallVisitor implements NodeVisitor {
         this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
 
         //Then we find the list of messages it can receive
-        ArrayList<String> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+        HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
         //We then check if the message is part of the list of allowed messages
-        if (!legalOnMethods.contains(node.getMsgName())) {
+        if (!legalOnMethods.containsKey(node.getMsgName())) {
             exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
         }
 
@@ -52,18 +54,18 @@ public class MethodCallVisitor implements NodeVisitor {
         //A FollowsNode can only have 1 child. This child is allways an IdentifierNode
         IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
         //We get the list of on methods from the Actor we are currently within
-        ArrayList<String> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
+        HashMap<String, Attributes> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
 
         //We then enter the scope of the Script the Actor follows
         this.symbolTable.enterScope(script.getName());
         //We find its on methods
-        ArrayList<String> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
+        HashMap<String, Attributes> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
         //Then we leave the scope, such that we do not mess with the scope stack
         this.symbolTable.leaveScope();
 
         //We then check if every entry in the Scripts list also is in the Actors list
-        for (String onMethod : legalOnMethodsScript) {
-            if (!legalOnMethodsActor.contains(onMethod)) {
+        for (String onMethod : legalOnMethodsScript.keySet()) {
+            if (!legalOnMethodsActor.containsKey(onMethod)) {
                 exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
             }
         }

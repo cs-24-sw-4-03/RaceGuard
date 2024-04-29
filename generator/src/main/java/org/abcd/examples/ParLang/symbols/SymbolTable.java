@@ -6,6 +6,7 @@ import org.abcd.examples.ParLang.AstNodes.InitNode;
 import org.abcd.examples.ParLang.AstNodes.ScriptDclNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 
 public class SymbolTable {
@@ -161,19 +162,19 @@ public class SymbolTable {
 
     public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
 
-    public void insertLocalMethod(String symbol){
-        this.currentScope.addDeclaredLocalMethod(symbol);
+    public void insertLocalMethod(String symbol, Attributes attributes){
+        this.currentScope.addDeclaredLocalMethod(symbol, attributes);
     }
 
-    public ArrayList<String> getDeclaredLocalMethods(){
+    public HashMap<String, Attributes> getDeclaredLocalMethods(){
         return this.currentScope.getDeclaredLocalMethods();
     }
 
-    public void insertOnMethod(String symbol){
-        this.currentScope.addDeclaredOnMethod(symbol);
+    public void insertOnMethod(String symbol, Attributes attributes){
+        this.currentScope.addDeclaredOnMethod(symbol, attributes);
     }
 
-    public ArrayList<String> getDeclaredOnMethods(){
+    public HashMap<String, Attributes> getDeclaredOnMethods(){
         return this.currentScope.getDeclaredOnMethods();
     }
 
