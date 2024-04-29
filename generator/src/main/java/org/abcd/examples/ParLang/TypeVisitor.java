@@ -210,8 +210,8 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArgumentsNode node) {
-        this.visitChildren(node);
         /*try {*/
+            this.visitChildren(node);
             LinkedHashMap<String, Attributes> params;
             AstNode parent = node.getParent();
             if (parent instanceof MethodCallNode) {
@@ -251,6 +251,10 @@ public class TypeVisitor implements NodeVisitor {
         if (params.size() != size){
             throw new ArgumentsException("Number of arguments does not match the number of parameters in spawn actor: " + msgName);
         }
+        for (AstNode child : node.getChildren()) {
+            System.out.println("Child: " + child.getType());
+            System.out.println("Child: " + child.getNodeHash());
+        }
         for (int i = 0; i < size; i++) {
             System.out.println("Getting argTypes");
             String argType = node.getChildren().get(i).getType();
@@ -261,7 +265,7 @@ public class TypeVisitor implements NodeVisitor {
             System.out.println("paramType: " + paramType);
 
             if (!argType.equals(paramType)){
-                throw new ArgumentsException("Argument type does not match parameter type in send message: " + msgName);
+                throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName);
             }
         }
     }
