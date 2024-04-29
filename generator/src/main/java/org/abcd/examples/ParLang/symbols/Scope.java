@@ -8,11 +8,12 @@ public class Scope {
 
     //The symbols in the scope
     private final HashMap<String, Attributes> symbols = new HashMap<>();
-    private final LinkedHashMap<String, Attributes> params = new LinkedHashMap<>();
+    private final Map<String, Attributes> params = new LinkedHashMap<>();
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
-    private final HashMap<String, Attributes> declaredLocalMethods = new HashMap<>();
-    private final HashMap<String, Attributes> declaredOnMethods = new HashMap<>();
+    private final ArrayList<String> declaredLocalMethods = new ArrayList<>();
+    private final ArrayList<String> declaredOnMethods = new ArrayList<>();
+    private final ArrayList<String> actorsFollowingScript = new ArrayList<>();
 
 
 
@@ -43,11 +44,15 @@ public class Scope {
         return this.symbols;
     }
 
-    public void addParams(String id, Attributes attributes) {
-        this.params.put(id, attributes);
+    public boolean addParams(String id, Attributes attributes) {
+        if(!this.params.containsKey(id)){
+            this.params.put(id, attributes);
+            return true;
+        }
+        return false;
     }
 
-    public LinkedHashMap<String, Attributes> getParams() {
+    public Map<String, Attributes> getParams() {
         return this.params;
     }
 
@@ -55,7 +60,7 @@ public class Scope {
         this.stateSymbols.put(id, attributes);
     }
 
-    public HashMap<String, Attributes> getStateSymbols() {
+    public Map<String, Attributes> getStateSymbols() {
         return this.stateSymbols;
     }
 
@@ -63,47 +68,57 @@ public class Scope {
         this.knowsSymbols.put(id, attributes);
     }
 
-    public HashMap<String, Attributes> getKnowsSymbols() {
+    public Map<String, Attributes> getKnowsSymbols() {
         return this.knowsSymbols;
     }
 
-    public void addDeclaredLocalMethod(String id, Attributes attributes) {
-        if(!this.declaredLocalMethods.containsKey(id)){
-            this.declaredLocalMethods.put(id, attributes);
+    public void addDeclaredLocalMethod(String id) {
+        if(!this.declaredLocalMethods.contains(id)){
+            this.declaredLocalMethods.add(id);
         }else{
             System.out.println("Duplicate local method id: " + id);
         }
     }
 
-    public HashMap<String, Attributes> getDeclaredLocalMethods() {
+    public ArrayList<String> getDeclaredLocalMethods() {
         if(!this.declaredLocalMethods.isEmpty()){
             return this.declaredLocalMethods;
         }else{
             if(this.parent != null){
                 return this.parent.getDeclaredLocalMethods();
             }else{
-                return new HashMap<>();
+                return new ArrayList<>();
             }
         }
     }
 
-    public void addDeclaredOnMethod(String id, Attributes attributes) {
-        if(!this.declaredOnMethods.containsKey(id)){
-            this.declaredOnMethods.put(id, attributes);
+    public void addDeclaredOnMethod(String id) {
+        if(!this.declaredOnMethods.contains(id)){
+            this.declaredOnMethods.add(id);
         }else{
             System.out.println("Duplicate on method id: " + id);
         }
     }
 
-    public HashMap<String, Attributes> getDeclaredOnMethods() {
+    public ArrayList<String> getDeclaredOnMethods() {
         if(!this.declaredOnMethods.isEmpty()){
             return this.declaredOnMethods;
         }else{
             if(this.parent != null){
                 return this.parent.getDeclaredOnMethods();
             }else{
-                return new HashMap<>();
+                return new ArrayList<>();
             }
         }
+    }
+
+    public void addActorsFollowingScript(String actorName) {
+        if(!this.actorsFollowingScript.contains(actorName)){
+            this.actorsFollowingScript.add(actorName);
+        }
+    }
+
+    public ArrayList<String> getActorsFollowingScript() {
+        return this.actorsFollowingScript;
     }
 }

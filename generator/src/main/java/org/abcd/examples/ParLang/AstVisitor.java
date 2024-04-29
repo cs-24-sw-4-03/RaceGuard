@@ -31,6 +31,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             if(c instanceof TerminalNode){
                 continue; //skip if child is a terminal node
             }
+
             node.addChild(visit(c)); //visit the child and add it to the node
         }
         return node; //return the node with all children added
@@ -64,7 +65,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         SendMsgNode sendMsgNode = new SendMsgNode(receiver, msgName);
         if(receiver.equals("self")){
             sendMsgNode.addChild(new SelfNode());
-        }else{
+        }
+        else if (receiver.equals("sender")){
+            sendMsgNode.addChild(new SenderNode());
+        }
+        else{
             sendMsgNode.addChild(visit(ctx.identifier(0))); //Add the receiver as a Knows or State child
         }
         sendMsgNode.addChild(visit(ctx.arguments())); //add arguments as children
@@ -145,7 +150,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return childVisitor(node, children);
         }catch (DuplicateActorTypeException e){ //if error just return null to continue visiting
             System.out.println(e.getMessage());
-            return null;
+            return null; 
         }catch (Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -170,7 +175,8 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         KnowsNode knowsNode= new KnowsNode(ctx.KNOWS().getText());
         if (numOfChildren != 3){ //there are minimum 3 children, the parentheses and "knows" token
             //If there are more than 3 children, there are known actors
-            for (int i = 2; i < numOfChildren-1; i+=3){ //skip the semicolons
+
+            for (int i = 2; i < numOfChildren-1; i+=3){ //skip the commas
                 knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             } //add the known actors as children to the knowsNode
         }
@@ -197,17 +203,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitStateAccess(ParLangParser.StateAccessContext ctx) {
-        //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER]
+        //We can access Sate within an Actor; Structure:[STATE,DOT,IDENTIFIER | ARRAY_ACCESS]
         //Need to know: Identifier of what we want to access and the type of the value the identifier points to
         String accessType = "EMPTY"; //Until type-checker is implemented
         if (ctx.IDENTIFIER() != null) { //If the access is a simple identifier
             return new StateAccessNode(accessType, ctx.IDENTIFIER().getText()); //return a StateAccessNode with the accessType and accessIdentifier
         } //If the access is an array access
-
         AstNode child = visit(ctx.getChild(2)); //visit the array access
         StateAccessNode node = new StateAccessNode(accessType, ((ArrayAccessNode)child).getAccessIdentifier());
         node.addChild(child); //add the array access as a child
-        return node;
+        return node; //return the StateAccessNode with the array access added as a child
     }
 
     @Override public AstNode visitKnowsAccess(ParLangParser.KnowsAccessContext ctx){
@@ -238,7 +243,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return node; //return the methodNode with parameters and body added as children
     }
-
+    
     @Override public AstNode visitBody(ParLangParser.BodyContext ctx) {
         BodyNode bodyNode =new BodyNode();
         return childVisitor(bodyNode,ctx.children); //visit all children of the body node and add them as children to the bodyNode
@@ -271,6 +276,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText()); //ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
         IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
         dclNode.addChild(idNode); //add identifier as child
+
         ParLangParser.InitializationContext init=ctx.initialization(); //get the initialization value
         if(init!=null){//variable is initialized
             InitializationNode initializationNode=new InitializationNode();
@@ -485,7 +491,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         throw new RuntimeException("Unrecognized BoolTerm"); // If the boolean term is not recognized
     }
-
+  
     @Override
     public AstNode visitNegatedBool(ParLangParser.NegatedBoolContext ctx) {
         NegatedBoolNode boolNode = new NegatedBoolNode();

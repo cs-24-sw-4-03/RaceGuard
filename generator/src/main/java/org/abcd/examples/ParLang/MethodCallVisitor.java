@@ -1,14 +1,19 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
-import org.abcd.examples.ParLang.symbols.Attributes;
-import org.abcd.examples.ParLang.symbols.Scope;
+import org.abcd.examples.ParLang.Exceptions.LocalMethodCallException;
+import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
+import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
-import java.util.HashMap;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MethodCallVisitor implements NodeVisitor {
     SymbolTable symbolTable;
+    private List<RuntimeException> exceptions = new ArrayList<>();
+
+    public List<RuntimeException> getExceptions() {return this.exceptions;}
 
     public MethodCallVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -17,47 +22,23 @@ public class MethodCallVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node) {
         //First we find all the methods that the actor is allowed to call
-        HashMap<String, Attributes> legalMethods = this.symbolTable.getDeclaredLocalMethods();
+        ArrayList<String> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
         //Then we check if the called method is part of that list
-        if (legalMethods.containsKey(node.getMethodName())) {
-            System.out.println("Local method id " + node.getMethodName() + " found");
-        }
-        else {
-            System.out.println("Local method id " + node.getMethodName() + " not found");
+        if (!legalLocalMethods.contains(node.getMethodName())) {
+            exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found"));
         }
     }
 
     @Override
     public void visit(SendMsgNode node) {
         //First we enter the scope of the Actor we send the message to
-        AstNode receiverNode = node.getChildren().get(0);
-        String scopeName = null;
-        String currentActorName = this.symbolTable.findActorParent(node);
-        Scope currentActorScope = this.symbolTable.lookUpScope(currentActorName);
-
-        if(receiverNode instanceof SelfNode) { //You can send messages to yourself
-            scopeName =  currentActorScope.getScopeName();
-        }else if(receiverNode instanceof StateAccessNode || receiverNode instanceof KnowsAccessNode){
-            String receiverName = node.getReceiver().split("\\.")[1];
-            String accessType = currentActorScope.getKnowsSymbols().get(receiverName).getVariableType();
-            if(this.symbolTable.lookUpScope(accessType) != null) {
-                scopeName = accessType;
-            }
-        }else { //In other cases it should be another onMethod in an actor
-            scopeName = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
-        }
-        if(scopeName != null){
-            this.symbolTable.enterScope(scopeName);
-        }
+        this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
 
         //Then we find the list of messages it can receive
-        HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+        ArrayList<String> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
         //We then check if the message is part of the list of allowed messages
-        if (legalOnMethods.containsKey(node.getMsgName())) {
-            System.out.println("On method id " + node.getMsgName() + " found");
-        }
-        else {
-            System.out.println("On method id " + node.getMsgName() + " not found");
+        if (!legalOnMethods.contains(node.getMsgName())) {
+            exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
         }
 
         //We then leave the scope, such that we do not mess with our scope stack
@@ -71,25 +52,28 @@ public class MethodCallVisitor implements NodeVisitor {
         //A FollowsNode can only have 1 child. This child is allways an IdentifierNode
         IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
         //We get the list of on methods from the Actor we are currently within
-        HashMap<String, Attributes> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
+        ArrayList<String> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
 
         //We then enter the scope of the Script the Actor follows
         this.symbolTable.enterScope(script.getName());
         //We find its on methods
-        HashMap<String, Attributes> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
+        ArrayList<String> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
         //Then we leave the scope, such that we do not mess with the scope stack
         this.symbolTable.leaveScope();
 
         //We then check if every entry in the Scripts list also is in the Actors list
-        for (String onMethod : legalOnMethodsScript.keySet()) {
-            if (legalOnMethodsActor.containsKey(onMethod)) {
-                System.out.println("Actor: " + this.symbolTable.findActorParent(node) + " has on method: " + onMethod + " from Script: " + script.getName());
-            } else {
-                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
+        for (String onMethod : legalOnMethodsScript) {
+            if (!legalOnMethodsActor.contains(onMethod)) {
+                exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
             }
         }
 
+        this.visitChildren(node);
+    }
 
+    //TODO: Find out if this needs any more implementation
+    @Override
+    public void visit(SenderNode node) {
         this.visitChildren(node);
     }
 
@@ -98,11 +82,6 @@ public class MethodCallVisitor implements NodeVisitor {
         for(AstNode child : node.getChildren()){
             child.accept(this);
         }
-    }
-
-    @Override
-    public void visit(BoolAndExpNode node) {
-        this.visitChildren(node);
     }
 
     @Override
@@ -251,6 +230,11 @@ public class MethodCallVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(SelfNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
@@ -315,9 +299,8 @@ public class MethodCallVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SelfNode node) {
+    public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
     }
-
 
 }
