@@ -214,7 +214,6 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             LinkedHashMap<String, Attributes> params;
             AstNode parent = node.getParent();
-            int numOfChildren = node.getChildren().size();
             if (parent instanceof MethodCallNode) {
                 params = symbolTable.getCurrentScope().getParams();
                 MethodCallNode methodCallNode = (MethodCallNode) parent;
@@ -334,8 +333,14 @@ public class TypeVisitor implements NodeVisitor {
                 node.setType(idType);
                 return;
             }
+            ArrayList<String> actorsInScript = new ArrayList<>();
+            if (symbolTable.declaredScripts.contains(node.getType())){
+                symbolTable.enterScope(node.getType());
+                actorsInScript = symbolTable.getActorsFollowingScript();
+                symbolTable.leaveScope();
+            }
             String initType = node.getChildren().get(1).getType();
-            if (!idType.equals(initType)) {
+            if (!idType.equals(initType) && !actorsInScript.contains(initType)) {
                 throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
             }
             node.setType(idType);
