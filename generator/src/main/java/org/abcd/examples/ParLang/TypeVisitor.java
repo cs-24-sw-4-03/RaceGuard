@@ -104,19 +104,19 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(IdentifierNode node) {
         if(!(node.getParent() instanceof MethodCallNode)){
             System.out.println("Symbol: " + node.getName());
-            /*try {*/
-            if (hasParent(node, StateNode.class)) {
-                node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
-            } else if (hasParent(node, KnowsNode.class)) {
-                node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
-            } else {
-                System.out.println("Normal Symbol: " + node.getName());
-                node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+            try {
+                if (hasParent(node, StateNode.class)) {
+                    node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
+                } else if (hasParent(node, KnowsNode.class)) {
+                    node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
+                } else {
+                    System.out.println("Normal Symbol: " + node.getName());
+                    node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
+                }
             }
-        /*}
-        catch (Exception e) {
-            exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
-        }*/
+            catch (Exception e) {
+                exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
+            }
         }
     }
 
@@ -167,15 +167,16 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MethodCallNode node) {
         /*try {*/
-            if (!symbolTable.getDeclaredLocalMethods().containsKey(node.getMethodName())) {
+            if (!symbolTable.getDeclaredLocalMethods().contains(node.getMethodName())) {
                 throw new MethodCallException("Method: " + node.getMethodName() + " not found");
             } else{
                 System.out.println("Method: " + node.getMethodName() + " found");
-                node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
+                ArrayList<String> methods = symbolTable.getDeclaredLocalMethods();
+                node.setType(symbolTable.lookUpSymbol(methods.get(methods.indexOf(node.getMethodName()))).getVariableType());
             }
-            symbolTable.enterScope(node.getMethodName() + symbolTable.findActorParent(node));
+            //symbolTable.enterScope(node.getMethodName() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            symbolTable.leaveScope();
+            //symbolTable.leaveScope();
         /*}
         catch (MethodCallException e) {
             exceptions.add(e);
@@ -357,6 +358,12 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(SelfNode node) {
         this.visitChildren(node);
     }
+
+    @Override
+    public void visit(SenderNode node) {
+
+    }
+
     @Override
     public void visit(StateNode node) {
         //does not need types

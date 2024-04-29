@@ -164,18 +164,18 @@ public class SymbolTable {
     public void insertKnowsSymbol(String symbol, Attributes attributes){this.currentScope.addKnowsSymbols(symbol, attributes);}
 
     public void insertLocalMethod(String symbol, Attributes attributes){
-        this.currentScope.addDeclaredLocalMethod(symbol, attributes);
+        this.currentScope.addDeclaredLocalMethod(symbol);
     }
 
-    public HashMap<String, Attributes> getDeclaredLocalMethods(){
+    public ArrayList<String> getDeclaredLocalMethods(){
         return this.currentScope.getDeclaredLocalMethods();
     }
 
     public void insertOnMethod(String symbol, Attributes attributes){
-        this.currentScope.addDeclaredOnMethod(symbol, attributes);
+        this.currentScope.addDeclaredOnMethod(symbol);
     }
 
-    public HashMap<String, Attributes> getDeclaredOnMethods(){
+    public ArrayList<String> getDeclaredOnMethods(){
         return this.currentScope.getDeclaredOnMethods();
     }
 
