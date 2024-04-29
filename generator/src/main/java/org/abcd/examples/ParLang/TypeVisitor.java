@@ -111,6 +111,9 @@ public class TypeVisitor implements NodeVisitor {
             else if (hasParent(node, KnowsNode.class)) {
                 node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
             }
+            else if (hasParent(node, FollowsNode.class)) {
+                node.setType(node.getName());
+            }
             else {
                 System.out.println("Normal Symbol: " + node.getName());
                 System.out.println(symbolTable.getCurrentScope().getScopeName());
@@ -326,16 +329,16 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             int size = node.getChildren().size();
-            String identifierType = node.getChildren().get(0).getType();
+            String idType = node.getChildren().get(0).getType();
             if (size == 1) {
-                node.setType(identifierType);
+                node.setType(idType);
                 return;
             }
             String initType = node.getChildren().get(1).getType();
-            if (!identifierType.equals(initType)) {
-                throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable");
+            if (!idType.equals(initType)) {
+                throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
             }
-            node.setType(identifierType);
+            node.setType(idType);
        /* }
         catch (varDclNodeExeption e) {
             exceptions.add(e);
