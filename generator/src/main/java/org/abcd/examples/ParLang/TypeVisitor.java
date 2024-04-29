@@ -251,10 +251,6 @@ public class TypeVisitor implements NodeVisitor {
         if (params.size() != size){
             throw new ArgumentsException("Number of arguments does not match the number of parameters in spawn actor: " + msgName);
         }
-        for (AstNode child : node.getChildren()) {
-            System.out.println("Child: " + child.getType());
-            System.out.println("Child: " + child.getNodeHash());
-        }
         for (int i = 0; i < size; i++) {
             System.out.println("Getting argTypes");
             String argType = node.getChildren().get(i).getType();
