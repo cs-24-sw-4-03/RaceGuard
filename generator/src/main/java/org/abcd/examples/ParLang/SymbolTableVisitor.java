@@ -275,9 +275,21 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Find out if this needs any more implementation
     @Override
     public void visit(SenderNode node) {
+        AstNode parent = node.getParent();
+        while (parent.getParent() != null) {
+            if(parent instanceof MethodDclNode){
+                if(!Objects.equals(((MethodDclNode) parent).getMethodType(), "on")){
+                    exceptions.add(new SymbolNotFoundException("sender keyword cannot be used outside of on method"));
+                    break;
+                }else{
+                    break;
+                }
+            }else{
+                parent = parent.getParent();
+            }
+        }
         this.visitChildren(node);
     }
 

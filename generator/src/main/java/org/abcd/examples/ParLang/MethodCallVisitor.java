@@ -4,6 +4,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.LocalMethodCallException;
 import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
 import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
+import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
@@ -36,46 +37,51 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(SendMsgNode node) {
-        //First we check if it is either a Knows, State, Self, Sender or a normal variable
-        if(node.getReceiver().contains(".")){
-            //If it contains . then it is a Knows or State access. We therefore check which
-            String receiver = node.getReceiver().split("\\.")[1];
-            String accessModifier = node.getReceiver().split("\\.")[0];
-            if(accessModifier.equals("State")){
-                //We then enter the scope based on the correct symbol list
-                this.symbolTable.enterScope(this.symbolTable.lookUpStateSymbol(receiver).getVariableType());
-            } else if (accessModifier.equals("Knows")) {
-                this.symbolTable.enterScope(this.symbolTable.lookUpKnowsSymbol(receiver).getVariableType());
+        try{
+            //First we check if it is either a Knows, State, Self, Sender or a normal variable
+            if(node.getReceiver().contains(".")){
+                //If it contains . then it is a Knows or State access. We therefore check which
+                String receiver = node.getReceiver().split("\\.")[1];
+                String accessModifier = node.getReceiver().split("\\.")[0];
+                if(accessModifier.equals("State")){
+                    //We then enter the scope based on the correct symbol list
+                    this.symbolTable.enterScope(this.symbolTable.lookUpStateSymbol(receiver).getVariableType());
+                } else if (accessModifier.equals("Knows")) {
+                    this.symbolTable.enterScope(this.symbolTable.lookUpKnowsSymbol(receiver).getVariableType());
+                }
+
+            } else if (node.getReceiver().equals("sender")) {
+                //We cannot enter the scope of the sender as we cannot know the actor type of the sender
+                //We can therefore not check if it has the method
+                System.out.println("Sender: " + node.getReceiver());
+            } else if (node.getReceiver().equals("self")){
+                //We check if the Actor itself has the method we call
+                this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
+            } else{
+                //Otherwise we look up the symbol in the normal symbol list
+                this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
             }
 
-        } else if (node.getReceiver().equals("sender")) {
-            //We cannot enter the scope of the sender as we cannot know the actor type of the sender
-            //We can therefore not check if it has the method
-            System.out.println("Sender: " + node.getReceiver());
-        } else if (node.getReceiver().equals("self")){
-            //We check if the Actor itself has the method we call
-            this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
-        } else{
-            //Otherwise we look up the symbol in the normal symbol list
-            this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
-        }
+            //We do not need to search for a method if the receiver is a sender
+            if(!node.getReceiver().equals("sender")){
+                //Then we find the list of messages it can receive
+                HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+                //We then check if the message is part of the list of allowed messages
+                if (!legalOnMethods.containsKey(node.getMsgName())) {
+                    System.out.println("On method id " + node.getMsgName() + " not found");
+                    exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
+                }else{
+                    System.out.println("On method id " + node.getMsgName() + " found");
+                }
 
-        //We do not need to search for a method if the receiver is a sender
-        if(!node.getReceiver().equals("sender")){
-            //Then we find the list of messages it can receive
-            HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
-            //We then check if the message is part of the list of allowed messages
-            if (!legalOnMethods.containsKey(node.getMsgName())) {
-                System.out.println("On method id " + node.getMsgName() + " not found");
-                exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
-            }else{
-                System.out.println("On method id " + node.getMsgName() + " found");
+                //We then leave the scope, such that we do not mess with our scope stack
+                this.symbolTable.leaveScope();
             }
-
-            //We then leave the scope, such that we do not mess with our scope stack
-            this.symbolTable.leaveScope();
+            this.visitChildren(node);
+        } catch (NullPointerException e){
+            exceptions.add(new SymbolNotFoundException("Symbol: " + node.getReceiver() + " not found"));
         }
-        this.visitChildren(node);
+
     }
 
 
@@ -106,7 +112,6 @@ public class MethodCallVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    //TODO: Find out if this needs any more implementation
     @Override
     public void visit(SenderNode node) {
         this.visitChildren(node);

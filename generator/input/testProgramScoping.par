@@ -30,8 +30,10 @@ Actor Test{
 		}
 		Knows.testActor <- TestOn();
 		self <- TestOn();
-		sender <- TestOn();
 		State.testStateActor <- TestOn();
+		test <- TestOn();
+
+		sender <- TestOn();
 
 
 	}
