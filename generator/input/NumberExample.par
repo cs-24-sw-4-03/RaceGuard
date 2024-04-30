@@ -1,0 +1,22 @@
+Script number{
+	local squared(double num): double;
+}
+
+Actor numActor{
+	State{
+		double number;
+	}
+	Knows{}
+	Spawn(double x){
+		State.number = x;
+	}
+	on getSquared(){
+		double result;
+		result = squared(State.number);
+	}
+	local squared(double num): double{
+		return num*num;
+	}
+}
+
+main(){}

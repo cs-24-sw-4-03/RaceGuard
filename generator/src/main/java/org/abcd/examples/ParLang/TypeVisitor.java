@@ -46,7 +46,7 @@ public class TypeVisitor implements NodeVisitor {
         if (symbolTable.declaredScripts.contains(type2)){
             symbolTable.enterScope(type2);
             ArrayList<String> types = symbolTable.getActorsFollowingScript();
-            if (types.contains(type2)){
+            if (types.contains(type1)){
                 symbolTable.leaveScope();
                 return type2;
             }
