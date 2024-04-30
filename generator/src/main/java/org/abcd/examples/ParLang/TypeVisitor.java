@@ -595,10 +595,10 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private String findResultingType(String leftType, String rightType){
-        if (leftType.equals("int") && rightType.equals("int"))
-        {
+        if (leftType.equals("int") && rightType.equals("int")) {
             return "int";
-        } else if ( leftType.equals("int") && rightType.equals("double") ||
+        }
+        else if ( leftType.equals("int") && rightType.equals("double") ||
                     leftType.equals("double") && rightType.equals("int") ||
                     leftType.equals("double") && rightType.equals("double")){
             return "double";
