@@ -83,6 +83,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
+        this.symbolTable.enterScope(node.getId() + this.symbolTable.findActorParent(node));
         this.visitChildren(node);
         /*try {*/
             if (node.getType() == null) {
@@ -91,6 +92,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getMethodType() == null) {
                 throw new ScriptMethodException("(on/local) Method type is not defined for script method node");
             }
+            this.symbolTable.leaveScope();
        /* }
         catch (ScriptMethodException e) {
             exceptions.add(e);
@@ -134,7 +136,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        try { //should be tested but i cannot test it
+        try {
             if(!(node.getParent() instanceof MethodCallNode)) {
                 System.out.println("Symbol: " + node.getName());
                 if (hasParent(node, StateNode.class)) {
