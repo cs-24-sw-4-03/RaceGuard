@@ -103,6 +103,26 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         /*try {*/
+            AstNode receiverNode = node.getChildren().get(0);
+            String scopeName = null;
+            String currentActorName = this.symbolTable.findActorParent(node);
+            Scope currentActorScope = this.symbolTable.lookUpScope(currentActorName);
+
+            if(receiverNode instanceof SelfNode) { //You can send messages to yourself
+                scopeName =  currentActorScope.getScopeName();
+            }else if(receiverNode instanceof StateAccessNode || receiverNode instanceof KnowsAccessNode){
+                String receiverName = node.getReceiver().split("\\.")[1];
+                String accessType = currentActorScope.getKnowsSymbols().get(receiverName).getVariableType();
+                if(this.symbolTable.lookUpScope(accessType) != null) {
+                    scopeName = accessType;
+                }
+            }else {
+                scopeName = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
+            }
+            if(scopeName != null){
+                this.symbolTable.enterScope(scopeName);
+            }
+
             if (symbolTable.lookUpScope(node.getMsgName() + symbolTable.findActorParent(node)) == null) {
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
             }else {
