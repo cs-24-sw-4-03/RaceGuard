@@ -439,9 +439,7 @@ public class TypeVisitor implements NodeVisitor {
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
             if (node.getMethodType().equals("local")){
-                System.out.println("-------------------------");
-                System.out.println("Came to method: " + node.getId());
-                String childType = node.getChildren().get(1).getType();
+                String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
                 String typeMatch = typeMatchOrConvert(nodeType, childType);
                 if (typeMatch == null ) {
