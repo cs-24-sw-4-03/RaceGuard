@@ -7,24 +7,23 @@ Script TestScript{
 
 Actor NumActor follows TestScript{
     State{
-        double number;
+        int number;
     }
     Knows{
     NumActor testActor;
     }
-    Spawn(double x){
+    Spawn(int x){
         State.number = x;
     }
     on getSquared(int x){
-        TestScript getSquaredActor = Spawn NumActor(2.2);
+        TestScript getSquaredActor = Spawn NumActor(x);
         double result;
-        result = squared(State.number);
-
+        result = squared(x);
         getSquaredActor <- getSquared(result);
     }
     on willNotHave(){}
 
-    local squared(double num): double{
+    local squared(int num): double{
         return num*num;
     }
 }
