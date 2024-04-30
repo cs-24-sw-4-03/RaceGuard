@@ -580,7 +580,7 @@ public class TypeVisitor implements NodeVisitor {
             //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
             String leftType = node.getChildren().get(0).getType();
             String rightType = node.getChildren().get(1).getType();
-            String resultType = findResultingType(leftType, rightType);
+            String resultType = typeMatchOrConvert(leftType, rightType);
             if (resultType == null) {
                 throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType);
             }
@@ -592,19 +592,6 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new ArithExpException(e.getMessage() + " in ArithExpNode"));
         }*/
-    }
-
-    private String findResultingType(String leftType, String rightType){
-        if (leftType.equals("int") && rightType.equals("int")) {
-            return "int";
-        }
-        else if ( leftType.equals("int") && rightType.equals("double") ||
-                    leftType.equals("double") && rightType.equals("int") ||
-                    leftType.equals("double") && rightType.equals("double")){
-            return "double";
-        }
-        //All other cases returns null(Also where left or right type == null)
-        return null;
     }
 
     @Override
