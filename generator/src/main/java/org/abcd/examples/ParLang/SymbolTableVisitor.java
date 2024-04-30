@@ -33,6 +33,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptDclNode node) {
         if(this.symbolTable.addScope(node.getId())){
+            this.symbolTable.declaredScripts.add(node.getId());
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node

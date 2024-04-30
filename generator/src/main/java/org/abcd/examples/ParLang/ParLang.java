@@ -54,12 +54,6 @@ public class ParLang {
         SymbolTable symbolTable = new SymbolTable();
 
 
-        System.out.println("\nFuncVisitor");
-        FuncVisitor funcVisitor = new FuncVisitor(symbolTable);
-        funcVisitor.visit(ast);
-        printExceptions(funcVisitor.getExceptions());
-
-
         System.out.println("\nSymbolTableVisitor");
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
