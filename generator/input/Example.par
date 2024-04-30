@@ -1,4 +1,16 @@
 main(){
-    string[] 1DArray = {"c","d"};
-       int[][] 2DArray = {{1,2},{3,4},{5,6}};
+    string[] A = {"a", "b", "c", "d", "e"};
+    print(A);
+    A= {"aa", "bb", "cc", "dd", "ee"};
+    print(A);
+    string[][] B = {{"a", "b", "c", "d", "e"}, {"a", "b", "c", "d", "e"}};
+    print(B);
+    B = {{"aa", "bb", "cc", "dd", "ee"}, {"aa", "bb", "cc", "dd", "ee"}};
+    print(B);
+
+    for(int i = 0; i < 5; i = i + 1){
+        A = {"a"};
+    }
+
+
 }

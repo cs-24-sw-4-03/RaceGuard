@@ -349,6 +349,12 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(node.getName());
             stringBuilder.append(" = new ArrayList<>();\n");
 
+
+            //Check if the parent is a var dcl node and has more than one child, then append the name of the node which
+            //is used to add elements to the arraylist in the ListNode
+            if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
+                stringBuilder.append(node.getName());
+            }
         }
         else{
             stringBuilder.append(node.getName());
@@ -400,7 +406,7 @@ public class CodeGenVisitor implements NodeVisitor {
                     stringBuilder.append(", ");
                 }
             }
-            stringBuilder.append("));\n");
+            stringBuilder.append("))");
         }
         else {
             stringBuilder.append("new ArrayList<>(Arrays.asList(");
@@ -412,50 +418,6 @@ public class CodeGenVisitor implements NodeVisitor {
             }
             stringBuilder.append("))");
         }
-
-
-        /*
-        if(node.getChildren().get(0) instanceof ListNode){
-            stringBuilder.append(".addAll(Arrays.asList(new ArrayList<>(Arrays.asList(");
-
-            if(node.getChildren().get(0) instanceof ListNode){
-                stringBuilder.append("CHILD");
-            }
-
-        }
-        else{
-            for(int i = 0; i < node.getChildren().size(); i++){
-                visitChild(node.getChildren().get(i));
-                if(i != node.getChildren().size()-1){
-                    stringBuilder.append(", ");
-                }
-            }
-            }
-         */
-
-        /*
-        if(node.getParent() instanceof ListNode){
-            for(int i = 0; i < node.getChildren().size(); i++){
-                visitChild(node.getChildren().get(i));
-                if(i != node.getChildren().size()-1){
-                    stringBuilder.append(", ");
-                }
-            }
-        }
-        else{
-            stringBuilder.append("1D");
-            stringBuilder.append(".addAll(Arrays.asList(");
-            //visit all children of the list node and add "," between the children
-            for(int i = 0; i < node.getChildren().size(); i++){
-                visitChild(node.getChildren().get(i));
-                if(i != node.getChildren().size()-1){
-                    stringBuilder.append(", ");
-                }
-            }
-            stringBuilder.append("));\n");      }
-
-         */
-
 
     }
 
