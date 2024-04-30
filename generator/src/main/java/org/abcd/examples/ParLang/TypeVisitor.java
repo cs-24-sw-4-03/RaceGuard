@@ -385,6 +385,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
+            node.setType(node.getId());
             this.symbolTable.leaveScope();
         /*}
         catch (Exception e) {
@@ -437,14 +438,15 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            String childType = node.getChildren().get(0).getType();
-            String nodeType = node.getType();
-            String typeMatch = typeMatchOrConvert(nodeType, childType);
-            if (typeMatch == null ) {
-                throw new MethodDclNodeException("Return does not match returnType of method");
-            }
-            if (!node.getMethodType().equals("local")){
-                throw new MethodCallException("Method type is not local");
+            if (node.getMethodType().equals("local")){
+                System.out.println("-------------------------");
+                System.out.println("Came to method: " + node.getId());
+                String childType = node.getChildren().get(1).getType();
+                String nodeType = node.getType();
+                String typeMatch = typeMatchOrConvert(nodeType, childType);
+                if (typeMatch == null ) {
+                    throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
+                }
             }
             this.symbolTable.leaveScope();
         /*}
