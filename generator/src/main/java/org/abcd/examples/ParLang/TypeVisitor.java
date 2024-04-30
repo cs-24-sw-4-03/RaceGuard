@@ -136,7 +136,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        try {
+        /*try { */
             if(!(node.getParent() instanceof MethodCallNode)) {
                 System.out.println("Symbol: " + node.getName());
                 if (hasParent(node, StateNode.class)) {
@@ -154,10 +154,10 @@ public class TypeVisitor implements NodeVisitor {
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
             }
-        }
+        /*}
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
-        }
+        }*/
     }
 
     @Override
@@ -244,7 +244,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArgumentsNode node) {
-        try { //identifiernode problem carried over to this
+        /*try { */
             this.visitChildren(node);
             LinkedHashMap<String, Attributes> params;
             AstNode parent = node.getParent();
@@ -272,13 +272,13 @@ public class TypeVisitor implements NodeVisitor {
             } else {
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
             }
-        }
+        /*}
         catch (ArgumentsException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ArgumentsException(e.getMessage() + " in ArgumentsNode"));
-        }
+        }*/
     }
     private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
@@ -387,6 +387,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
+            node.setType(node.getId());
             this.symbolTable.leaveScope();
         /*}
         catch (Exception e) {
@@ -439,14 +440,13 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            String childType = node.getChildren().get(0).getType();
-            String nodeType = node.getType();
-            String typeMatch = typeMatchOrConvert(nodeType, childType);
-            if (typeMatch == null ) {
-                throw new MethodDclNodeException("Return does not match returnType of method");
-            }
-            if (!node.getMethodType().equals("local")){
-                throw new MethodCallException("Method type is not local");
+            if (node.getMethodType().equals("local")){
+                String childType = node.getChildren().get(1).getType(); //getting BodyNode child
+                String nodeType = node.getType();
+                String typeMatch = typeMatchOrConvert(nodeType, childType);
+                if (typeMatch == null ) {
+                    throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
+                }
             }
             this.symbolTable.leaveScope();
         /*}
