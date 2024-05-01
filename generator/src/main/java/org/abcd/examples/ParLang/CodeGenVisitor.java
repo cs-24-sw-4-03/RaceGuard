@@ -427,9 +427,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
-        if (node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode) {
-
-        } else {
+        if (!(node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode)) {
             if (node.getChildren() != null && !(node.getParent() instanceof ListNode)) {
                 stringBuilder.append(".addAll(Arrays.asList(");
             } else {
@@ -437,9 +435,7 @@ public class CodeGenVisitor implements NodeVisitor {
             }
             separateElementsList(node);
         }
-
     }
-
     private void separateElementsList(ListNode node) {
         for(int i = 0; i < node.getChildren().size(); i++){
             visitChild(node.getChildren().get(i));
