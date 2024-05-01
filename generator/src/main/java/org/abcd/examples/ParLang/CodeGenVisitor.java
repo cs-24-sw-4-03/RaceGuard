@@ -5,6 +5,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class CodeGenVisitor implements NodeVisitor {
 
@@ -65,6 +66,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArrayAccessNode node) {
+        stringBuilder.append(node.getAccessIdentifier());
 
     }
     private void resetStringBuilder(StringBuilder sb) {
@@ -158,10 +160,11 @@ public class CodeGenVisitor implements NodeVisitor {
     AstNode rightChild = node.getChildren().get(1);
 
     if(!(node.getChildren().get(1) instanceof ListNode)){
-        visitChild(leftChild);
-        stringBuilder.append(" = ");
-        visitChild(rightChild);
-    } else {
+            visitChild(leftChild);
+            stringBuilder.append(" = ");
+            visitChild(rightChild);
+    }
+    else {
         visitChild(leftChild);
         visitChild(rightChild);
     }
@@ -398,27 +401,34 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
-        if(node.getChildren() != null && !(node.getParent() instanceof ListNode)){
-            stringBuilder.append(".addAll(Arrays.asList(");
-            for(int i = 0; i < node.getChildren().size(); i++){
-                visitChild(node.getChildren().get(i));
-                if(i != node.getChildren().size()-1){
-                    stringBuilder.append(", ");
-                }
+        if (node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode) {
+            int bracketCount = ((ArrayAccessNode) node.getParent().getChildren().get(0)).getBracketCount();
+            if(bracketCount == 1){
+                stringBuilder.append("set(");
+                
+            } else {
+                stringBuilder.append("new ArrayList<>(Arrays.asList(new ArrayList<>(Arrays.asList(");
             }
-            stringBuilder.append("))");
-        }
-        else {
-            stringBuilder.append("new ArrayList<>(Arrays.asList(");
-            for (int i = 0; i < node.getChildren().size(); i++) {
-                visitChild(node.getChildren().get(i));
-                if (i != node.getChildren().size() - 1) {
-                    stringBuilder.append(", ");
-                }
+            stringBuilder.append(bracketCount);
+        } else {
+            if (node.getChildren() != null && !(node.getParent() instanceof ListNode)) {
+                stringBuilder.append(".addAll(Arrays.asList(");
+            } else {
+                stringBuilder.append("new ArrayList<>(Arrays.asList(");
             }
-            stringBuilder.append("))");
+            separateElementsList(node);
         }
 
+    }
+
+    private void separateElementsList(ListNode node) {
+        for(int i = 0; i < node.getChildren().size(); i++){
+            visitChild(node.getChildren().get(i));
+            if(i != node.getChildren().size()-1){
+                stringBuilder.append(", ");
+            }
+        }
+        stringBuilder.append("))");
     }
 
     @Override

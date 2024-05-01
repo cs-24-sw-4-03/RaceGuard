@@ -147,7 +147,7 @@ methodCall : identifier arguments;
 // to instanziate a new actor of a defined type
 spawnActor : SPAWN identifier arguments;
 //access array
-arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
+arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
 
 //arbritatry lsit of either ints, doubles, bools, or strings
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;

@@ -1,16 +1,11 @@
 main(){
-    string[] A = {"a", "b", "c", "d", "e"};
-    print(A);
-    A= {"aa", "bb", "cc", "dd", "ee"};
-    print(A);
-    string[][] B = {{"a", "b", "c", "d", "e"}, {"a", "b", "c", "d", "e"}};
-    print(B);
-    B = {{"aa", "bb", "cc", "dd", "ee"}, {"aa", "bb", "cc", "dd", "ee"}};
-    print(B);
+   string[][] a = {{"a", "b", "c"}, {"d", "e", "f"}};
+   a[0][0] = {"x"};
 
-    for(int i = 0; i < 5; i = i + 1){
-        A = {"a"};
-    }
+   string[] b = {"a", "b", "c"};
+    b[0] = {"x"};
+
+
 
 
 }
