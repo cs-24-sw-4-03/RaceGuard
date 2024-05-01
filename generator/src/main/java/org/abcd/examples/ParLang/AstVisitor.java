@@ -288,11 +288,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         AstNode varNode=visit(ctx.getChild(0)); //visit the variable
         if (varNode instanceof ArrayAccessNode) { //Check if the variable is an array access and check if it is a multi-dimensional array
             for(int i=0;i<ctx.getChild(0).getChildCount();i++){
-                if(ctx.getChild(0).getChild(i).getText().contains("[")){
+                String arrayIndexText=ctx.getChild(0).getChild(i).getText();
+                if(arrayIndexText.contains("[")){
                     ((ArrayAccessNode) varNode).setBracketCount(((ArrayAccessNode) varNode).getBracketCount()+1);
                 }
             }
-
 
         }
         AstNode valueNode=visit(ctx.getChild(2)); //visit the value
@@ -320,6 +320,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
+
         if(ctx.getChildCount()==1){ //If there is only one child,
             return visit(ctx.term(0)); //visit the term
         }else{ //If there are more than one child
@@ -517,10 +518,16 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return new CompareExpNode(operator, leftOperand, rightOperand);
     }
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
-
         //An array access
         String accessIdentifier = ctx.identifier().getText();
-        return new ArrayAccessNode("", accessIdentifier);
+        AstNode node = new ArrayAccessNode("",accessIdentifier);//Until type-checker is implemented
+        if(ctx.arithExp(0)!=null){ //If there is an arithmetic expression
+            node.addChild(visit(ctx.arithExp(0))); //visit and add the arithmetic expression as a child
+        }
+        if(ctx.arithExp(1)!=null){ //If there is a second arithmetic expression
+            node.addChild(visit(ctx.arithExp(1))); //visit and add the second arithmetic expression as a child
+        }
+        return node;
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();

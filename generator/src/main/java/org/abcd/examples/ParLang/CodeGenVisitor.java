@@ -67,6 +67,32 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
+        int bracketCount = node.getBracketCount();
+
+        if(bracketCount == 1){
+                stringBuilder.append(".set(");
+                if(node.getChildren().get(0) instanceof IdentifierNode){
+                    stringBuilder.append("(int) ");
+                }
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append(", ");
+                visit(node.getParent().getChildren().get(1));
+        }
+        else {
+            stringBuilder.append(".get(");
+            if(node.getChildren().get(0) instanceof IdentifierNode){
+                stringBuilder.append("(int) ");
+            }
+            visitChild(node.getChildren().get(0));
+            stringBuilder.append(").set(");
+            if(node.getChildren().get(1) instanceof IdentifierNode){
+                stringBuilder.append("(int) ");
+            }
+            visitChild(node.getChildren().get(1));
+            stringBuilder.append(", ");
+            visit(node.getParent().getChildren().get(1));
+        }
+
 
     }
     private void resetStringBuilder(StringBuilder sb) {
@@ -159,7 +185,7 @@ public class CodeGenVisitor implements NodeVisitor {
     AstNode leftChild = node.getChildren().get(0);
     AstNode rightChild = node.getChildren().get(1);
 
-    if(!(node.getChildren().get(1) instanceof ListNode)){
+    if(!(node.getChildren().get(1) instanceof ListNode) && !(node.getChildren().get(0) instanceof ArrayAccessNode)){
             visitChild(leftChild);
             stringBuilder.append(" = ");
             visitChild(rightChild);
@@ -167,8 +193,8 @@ public class CodeGenVisitor implements NodeVisitor {
     else {
         visitChild(leftChild);
         visitChild(rightChild);
+        stringBuilder.append(")");
     }
-
     if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
         stringBuilder.append(";\n");
         codeOutput.add(getLine());
@@ -402,14 +428,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ListNode node) {
         if (node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode) {
-            int bracketCount = ((ArrayAccessNode) node.getParent().getChildren().get(0)).getBracketCount();
-            if(bracketCount == 1){
-                stringBuilder.append("set(");
-                
-            } else {
-                stringBuilder.append("new ArrayList<>(Arrays.asList(new ArrayList<>(Arrays.asList(");
-            }
-            stringBuilder.append(bracketCount);
+
         } else {
             if (node.getChildren() != null && !(node.getParent() instanceof ListNode)) {
                 stringBuilder.append(".addAll(Arrays.asList(");

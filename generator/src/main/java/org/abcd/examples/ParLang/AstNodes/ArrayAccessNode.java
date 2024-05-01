@@ -16,6 +16,8 @@ public class ArrayAccessNode extends AccessNode{
     public void setBracketCount(int bracketCount) {
         this.bracketCount = bracketCount;
     }
+
+
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);
