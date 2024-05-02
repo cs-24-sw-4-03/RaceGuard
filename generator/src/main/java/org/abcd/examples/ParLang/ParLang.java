@@ -1,4 +1,7 @@
 package org.abcd.examples.ParLang;
+// import ANTLR's runtime libraries
+import org.abcd.examples.ParLang.AstNodes.InitNode;
+import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -6,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.abcd.examples.ParLang.AstNodes.AstNode;
 
@@ -32,11 +36,26 @@ public class ParLang {
 
         TypeContainer typeContainer = new TypeContainer();
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
-        AstNode ast = visitor.visit(tree);
+        InitNode ast=(InitNode) tree.accept(visitor);
 
         printAST(ast, args);
         //printCST(tree, parser);
-        generateCode(ast);
+
+        System.out.println("\nScoping");
+        SymbolTable symbolTable = new SymbolTable();
+
+
+        System.out.println("\nSymbolTableVisitor");
+        SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
+        symbolTableVisitor.visit(ast);
+        printExceptions(symbolTableVisitor.getExceptions());
+
+        System.out.println("\nMethodCallVisitor");
+        MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
+        methodCallVisitor.visit(ast);
+        printExceptions(methodCallVisitor.getExceptions());
+
+       generateCode(ast);
 
     }
     private static void validateSource(Path source) throws IOException {
@@ -70,6 +89,15 @@ public class ParLang {
     private static void printCST(ParseTree tree, ParLangParser parser) {
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // Print LISP-style tree
+    }
+
+
+    private static void printExceptions(List<RuntimeException> exceptions){
+        System.out.println("\nExceptions:");
+        for(RuntimeException e : exceptions){
+            System.out.println(e.toString());
+        }
+
     }
 
     private static void generateCode(AstNode ast) throws IOException {

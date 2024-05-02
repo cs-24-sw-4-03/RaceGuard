@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
 import  org.abcd.examples.ParLang.Exceptions.*;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +28,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     private AstNode childVisitor(AstNode node, List<ParseTree> children){
         //visit all children of a node and add them to the node
         for(ParseTree c:children){
-            if(c.getPayload() instanceof CommonToken){
-                continue; //if child is a CommonToken, e.g. "{", then skip.
+            if(c instanceof TerminalNode){
+                continue; //skip if child is a terminal node
             }
+
             node.addChild(visit(c)); //visit the child and add it to the node
         }
         return node; //return the node with all children added
@@ -59,7 +61,18 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitSendMsg(ParLangParser.SendMsgContext ctx) {
         //SendMsg has the structure: [IDENTIFIER,SEND_MSG,IDENTIFIER,LPAREN,ARGUMENTS,RPAREN]
-        SendMsgNode sendMsgNode = new SendMsgNode(ctx.getChild(0).getText(), ctx.getChild(2).getText());
+        String receiver = ctx.getChild(0).getText();
+        String msgName = ctx.getChild(2).getText();
+        SendMsgNode sendMsgNode = new SendMsgNode(receiver, msgName);
+        if(receiver.equals("self")){
+            sendMsgNode.addChild(new SelfNode());
+        }
+        else if (receiver.equals("sender")){
+            sendMsgNode.addChild(new SenderNode());
+        }
+        else{
+            sendMsgNode.addChild(visit(ctx.identifier(0))); //Add the receiver as a Knows or State child
+        }
         sendMsgNode.addChild(visit(ctx.arguments())); //add arguments as children
         return sendMsgNode;
     }
@@ -89,7 +102,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
             } else {//extend the typeContainer list with new types
                 typeContainer.addType(scriptName);
-                typeContainer.addType(scriptName + "[]");
             }
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
             children.remove(1);//remove identifier from list of children
@@ -131,7 +143,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
                 throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
             } else {//extend the typeContainer list with new types
                 typeContainer.addType(actorName); //add the actorType to the typeContainer
-                typeContainer.addType(actorName + "[]"); //add the array holding actorType to the typeContainer
             }
             ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
@@ -396,6 +407,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return new DoubleNode(Double.parseDouble(ctx.getText())); //parse the number as a double
         }else { //If the number is an integer
             return new IntegerNode(Integer.parseInt(ctx.getText())); //parse the number as an integer
+        }
+    }
+
+    @Override public AstNode visitValue(ParLangParser.ValueContext ctx){
+        if(ctx.SELF()!=null){//If ValueContext has the terminal node SELF as a chile
+            return new SelfNode(); //return a SelfNode
+        }else{//else child is a non-terminal
+            return visitChildren(ctx);// visit the non-terminal child
         }
     }
 
