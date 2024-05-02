@@ -42,10 +42,10 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " : " + ((IntegerNode)node).getValue() + " with type: " + node.getType());
                     break;
                 case "ParametersNode":
-                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers());
+                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers() + " with type: " + node.getType());
                     break;
                 case "IdentifierNode":
-                    this.print(localIndent, className  + " " + ((IdentifierNode)node).getName() + " with type: " + ((IdentifierNode)node).getType() );
+                    this.print(localIndent, className + " type: " + ((IdentifierNode)node).getType() + " id: " + ((IdentifierNode)node).getName());
                     break;
                 case "SpawnActorNode":
                     this.print(localIndent, className + " : " + ((SpawnActorNode)node).getType() + " with type: " + node.getType());
@@ -57,12 +57,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " id: " + ((ActorDclNode)node).getId() + " with type: " + node.getType());
                     break;
                 case "MethodDclNode":
-                    if (((MethodDclNode)node).getMethodType().equals("on")){
-                        this.print(localIndent, className + " " +((MethodDclNode)node).getMethodType()+ " id: " + ((MethodDclNode)node).getId());
-                    }
-                    else {
-                        this.print(localIndent, className + " " + ((MethodDclNode) node).getMethodType() + " id: " + ((MethodDclNode) node).getId() + " return type: " + node.getType());
-                    }
+                    this.print(localIndent, className + " " +((MethodDclNode)node).getMethodType()+ " id: " + ((MethodDclNode)node).getId()+ " return type: "+((MethodDclNode)node).getType() + " with type: " + node.getType());
                     break;
                 case "ScriptMethodNode":
                     if (((ScriptMethodNode)node).getMethodType().equals("on")) {
