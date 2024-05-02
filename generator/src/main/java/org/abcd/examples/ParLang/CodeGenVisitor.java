@@ -105,14 +105,15 @@ public class CodeGenVisitor implements NodeVisitor {
 
         //imports necessary for most akka actor classes
         stringBuilder
-        .append("import akka.actor.typed.ActorRef; \n")
-        .append("import akka.actor.typed.Behavior; \n")
-        .append("import akka.actor.typed.javadsl.*; \n")
-        .append("import akka.actor.typed.ActorSystem; \n");
-
+                .append("import akka.actor.ActorRef;\n")
+                .append("import akka.actor.ActorSystem;\n")
+                .append("import akka.actor.Props;\n")
+                .append("import akka.actor.UntypedAbstractActor;\n")
+                .append("import akka.event.Logging;\n")
+                .append("import akka.event.LoggingAdapter;\n");
         stringBuilder.append("public class ")
             .append(node.getId())
-            .append(" extends AbstractBehavior<") // Extending AbstractBehavior to manage state and behavior
+            .append(" extends UntypedAbstractActor")
             .append(" {\n");
         codeOutput.add(getLine());
         localIndent++;
@@ -180,10 +181,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //In FactorialHelper this is: private final int currentValue;
     @Override
     public void visit(StateNode node) {
-        stringBuilder.append("private ");
         visitChildren(node);
-        codeOutput.add(getLine());
-
     }
 
     @Override
@@ -333,9 +331,6 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(" ");
         }
         stringBuilder.append(node.getName());
-        codeOutput.add(getLine());
-        
-        
     }
 
 
@@ -491,11 +486,14 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
+        if (node.getParent() instanceof StateNode) {
+            stringBuilder.append("private final ");
+        }
         visitChildren(node);
         if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
-                stringBuilder.append(";\n");
-                codeOutput.add(getLine());
-            }
+            stringBuilder.append(";\n");
+            codeOutput.add(getLine());
+        }
     }
 
     @Override
