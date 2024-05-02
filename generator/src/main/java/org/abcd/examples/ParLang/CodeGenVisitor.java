@@ -105,14 +105,15 @@ public class CodeGenVisitor implements NodeVisitor {
 
         //imports necessary for most akka actor classes
         stringBuilder
-        .append("import akka.actor.typed.ActorRef; \n")
-        .append("import akka.actor.typed.Behavior; \n")
-        .append("import akka.actor.typed.javadsl.*; \n")
-        .append("import akka.actor.typed.ActorSystem; \n");
-
+                .append("import akka.actor.ActorRef;\n")
+                .append("import akka.actor.ActorSystem;\n")
+                .append("import akka.actor.Props;\n")
+                .append("import akka.actor.UntypedAbstractActor;\n")
+                .append("import akka.event.Logging;\n")
+                .append("import akka.event.LoggingAdapter;\n");
         stringBuilder.append("public class ")
             .append(node.getId())
-            .append(" extends AbstractBehavior<") // Extending AbstractBehavior to manage state and behavior
+            .append(" extends UntypedAbstractActor") // Extending AbstractBehavior to manage state and behavior
             .append(" {\n");
         codeOutput.add(getLine());
         localIndent++;
