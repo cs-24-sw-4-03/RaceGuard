@@ -1,0 +1,60 @@
+main(int z){
+int c = 7;
+}
+
+Actor Test{
+	State{
+	    int y;
+	    int[] stateArray;
+	    Test testStateActor
+	}
+	Knows{
+	    Test testActor;
+	}
+
+	Spawn(int x){
+		State.y = x;
+	}
+
+	local testLocal(int z): void{
+	    int[] intArray = {2, 3, 5};
+	    int testArray = intArray[2];
+
+	    Knows.testActor = Spawn Test(5);
+
+	    State.stateArray[0] = 27;
+
+        testArray = intArray[1];
+		for(int y = 0; y<z ; y = y+1){
+
+		}
+		Knows.testActor <- TestOn();
+		self <- TestOn();
+		State.testStateActor <- TestOn();
+		test <- TestOn();
+
+		sender <- TestOn();
+
+
+	}
+
+	on TestOn(){
+	    testLocal(77);
+	}
+}
+
+Actor Test2{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+    local testOfTest2(): int{
+        testLocal();
+        return 2;
+    }
+
+    local testLocal(): void{
+        int x = 2;
+    }
+}
