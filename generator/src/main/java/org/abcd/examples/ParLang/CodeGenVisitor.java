@@ -181,10 +181,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //In FactorialHelper this is: private final int currentValue;
     @Override
     public void visit(StateNode node) {
-        stringBuilder.append("private ");
         visitChildren(node);
-        codeOutput.add(getLine());
-
     }
 
     @Override
@@ -334,9 +331,6 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(" ");
         }
         stringBuilder.append(node.getName());
-        codeOutput.add(getLine());
-        
-        
     }
 
 
@@ -492,11 +486,14 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
+        if (node.getParent() instanceof StateNode) {
+            stringBuilder.append("private final ");
+        }
         visitChildren(node);
         if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
-                stringBuilder.append(";\n");
-                codeOutput.add(getLine());
-            }
+            stringBuilder.append(";\n");
+            codeOutput.add(getLine());
+        }
     }
 
     @Override

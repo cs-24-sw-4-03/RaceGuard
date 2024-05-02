@@ -9,7 +9,7 @@ main() {
 }
 
 Actor GreeterMain follows HelloWorld {
-    State {}
+    State {int i = 0; int j = 0;}
     Knows {}
 
     Spawn() {
