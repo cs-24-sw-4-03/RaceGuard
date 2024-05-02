@@ -4,10 +4,13 @@ import org.abcd.examples.ParLang.AstNodes.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class CodeGenVisitor implements NodeVisitor {
 
-    private String dirPath = System.getProperty("user.dir") + "/output";
+    private String
+            dirPath = System.getProperty("user.dir") + "/output";
 
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
@@ -20,7 +23,7 @@ public class CodeGenVisitor implements NodeVisitor {
         int indent = localIndent;
 
         if (line.endsWith("}\n")){
-            indent--;
+            //indent--;
         }
         line = line.indent(indent * 4);
 
@@ -55,6 +58,14 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visitChildren(AstNode node) {
         for (AstNode childNode : node.getChildren()) {
             childNode.accept(this);
+        }
+    }
+
+    public void visitChildren(AstNode node, String before, String after){
+        for (AstNode childNode : node.getChildren()) {
+            stringBuilder.append(before);
+            childNode.accept(this);
+            stringBuilder.append(after);
         }
     }
 
@@ -326,13 +337,13 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        if(node.getType()!= null){
-            stringBuilder.append(VariableConverter(node.getType()));
-            stringBuilder.append(" ");
+        if(node.getIsActor() && node.getType()!= null){
+            stringBuilder.append(java.ACTORREF.getValue()).append(" ");
+        } else if (node.getType()!= null) {
+            stringBuilder.append(VariableConverter(node.getType())).append(" ");
         }
         stringBuilder.append(node.getName());
     }
-
 
     @Override
     public void visit(InitializationNode node) {
@@ -410,10 +421,7 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChild(node.getChildren().get(0));
     }
 
-    @Override
-    public void visit(ParametersNode node) {
 
-    }
 
     @Override
     public void visit(PrintCallNode node) {
@@ -430,13 +438,95 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
+        resetStringBuilder();
 
+        appendImport("akka.actor","ActorRef");
+        appendClassDefinition(java.PUBLIC.getValue(),node.getId());
+        appendBody(node);
+
+        writeToFile(node.getId(),codeOutput);
     }
 
     @Override
     public void visit(ScriptMethodNode node) {
+        stringBuilder
+                .append(java.PUBLIC.getValue())
+                .append(java.STATIC.getValue())
+                .append(java.FINAL.getValue())
+                .append(java.CLASS.getValue())
+                .append(node.getId());
 
+        appendBody(node);
     }
+
+    @Override
+    public void visit(ParametersNode node) {
+        if(node.getParent() instanceof ScriptMethodNode){
+            localIndent++;
+            visitChildren(node,java.PUBLIC.getValue(),";\n");
+            localIndent--;
+            codeOutput.add(getLine());
+        }
+    }
+
+
+
+
+
+    private void appendClassDefinition(String access, String name) {
+        stringBuilder.append(access).append(java.CLASS.getValue()).append(name);
+    }
+
+    private void resetStringBuilder(){
+        resetStringBuilder(stringBuilder);
+        resetCodeOutput(codeOutput);
+        localIndent = 0;
+    }
+
+    private void appendImports(String pack, String firstClassName, String...additionalClassNames){
+        appendImport(pack,firstClassName);
+        for(String className:additionalClassNames){
+            appendImport(pack,className);
+        }
+    }
+
+    private void appendImport(String pack,String className){
+        stringBuilder.append(java.IMPORT.getValue()).append(pack).append(".").append(className).append(";\n");
+    }
+
+    private void appendBody(AstNode node){
+        stringBuilder.append( " {\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        visitChildren(node);
+        localIndent--;
+        stringBuilder.append( "}\n");
+        codeOutput.add(getLine());
+    }
+
+
+    private enum java{
+        CLASS("class "),
+        PUBLIC("public "),
+        PRIVATE("private "),
+        STATIC("static "),
+        FINAL("final "),
+        IMPORT("import "),
+        IMPLEMENTS("implements "),
+        EXTENDS("extends "),
+        ACTORREF("ActorRef ");
+
+        private String string;
+        private java(String s){
+            this.string=s;
+        }
+
+        public String getValue(){return string;}
+    }
+
+
+
+
 
     //DOES NOT WORK
     @Override
@@ -505,4 +595,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("\n");
         codeOutput.add(getLine());
     }
+
+
 }
