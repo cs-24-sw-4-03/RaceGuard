@@ -1,6 +1,4 @@
 Script TestScript{
     on testMethod1(int p, actor a);
-    on testMetho2(int p, actor a);
-    local testMethod3local(String s):int;
 }
 main(){}

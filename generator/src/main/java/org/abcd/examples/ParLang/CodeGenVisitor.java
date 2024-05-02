@@ -338,6 +338,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(IdentifierNode node) {
         if(node.getIsActor() && node.getType()!= null){
+            System.out.println("twst");
             stringBuilder.append(java.ACTORREF.getValue()).append(" ");
         } else if (node.getType()!= null) {
             stringBuilder.append(VariableConverter(node.getType())).append(" ");
@@ -440,7 +441,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ScriptDclNode node) {
         resetStringBuilder();
 
-        appendImport("akka.actor","ActorRef");
+        appendImports("akka.actor","ActorRef");
         appendClassDefinition(java.PUBLIC.getValue(),node.getId());
         appendBody(node);
 
@@ -455,7 +456,6 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(java.FINAL.getValue())
                 .append(java.CLASS.getValue())
                 .append(node.getId());
-
         appendBody(node);
     }
 
@@ -488,6 +488,7 @@ public class CodeGenVisitor implements NodeVisitor {
         for(String className:additionalClassNames){
             appendImport(pack,className);
         }
+        stringBuilder.append("\n");
     }
 
     private void appendImport(String pack,String className){
@@ -497,9 +498,11 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendBody(AstNode node){
         stringBuilder.append( " {\n");
         codeOutput.add(getLine());
+
         localIndent++;
         visitChildren(node);
         localIndent--;
+
         stringBuilder.append( "}\n");
         codeOutput.add(getLine());
     }
