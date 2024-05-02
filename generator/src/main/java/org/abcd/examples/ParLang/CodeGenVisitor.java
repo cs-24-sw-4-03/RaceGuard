@@ -245,6 +245,17 @@ public class CodeGenVisitor implements NodeVisitor {
         }
 
     }
+
+    @Override
+    public void visit(SelfNode node) {
+
+    }
+
+    @Override
+    public void visit(SenderNode node) {
+
+    }
+
     @Override
     public void visit(CompareExpNode node) {
         if(node.getIsParenthesized()){
