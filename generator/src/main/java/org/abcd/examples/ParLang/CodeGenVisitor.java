@@ -113,7 +113,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("import akka.event.LoggingAdapter;\n");
         stringBuilder.append("public class ")
             .append(node.getId())
-            .append(" extends UntypedAbstractActor") // Extending AbstractBehavior to manage state and behavior
+            .append(" extends UntypedAbstractActor")
             .append(" {\n");
         codeOutput.add(getLine());
         localIndent++;
