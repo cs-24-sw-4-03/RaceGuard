@@ -329,7 +329,15 @@ public class TypeVisitor implements NodeVisitor {
                             attributes = symbolTable.lookUpSymbol(receiver);
                             break;
                     }
-                } else {
+                }
+                else if(receiver.equals("self")){
+                    AstNode findParent = parent;
+                    while (!(findParent instanceof ActorDclNode)){
+                        findParent = findParent.getParent();
+                    }
+                    attributes = new Attributes(((ActorDclNode) findParent).getId(), "Actor");
+                }
+                else {
                     attributes = symbolTable.lookUpSymbol(receiver);
                 }
                 if (!receiver.equals("sender")) {
