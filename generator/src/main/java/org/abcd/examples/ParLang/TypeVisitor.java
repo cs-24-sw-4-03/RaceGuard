@@ -443,7 +443,8 @@ public class TypeVisitor implements NodeVisitor {
     }
     @Override
     public void visit(SelfNode node) {
-        this.visitChildren(node);
+        //We do not visit children since this is a leaf node
+        node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
     }
 
     @Override
