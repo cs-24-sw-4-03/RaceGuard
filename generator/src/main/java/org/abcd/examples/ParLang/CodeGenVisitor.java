@@ -68,7 +68,9 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
 
-        boolean isGrandparentVarDclOrSiblingIdentifier = (node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode);
+        boolean isGrandparentVarDclOrSiblingIdentifier =
+                (node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode);
+
         int childrenSize = node.getChildren().size();
 
         if(isGrandparentVarDclOrSiblingIdentifier && childrenSize == 1){
@@ -419,13 +421,6 @@ public class CodeGenVisitor implements NodeVisitor {
         if(!(node.getChildren().get(0) instanceof ListNode)){
             stringBuilder.append(" = ");
         }
-
-        /*if(node.getChildren().get(0) instanceof ArrayAccessNode){
-            stringBuilder.append("ARRAYACCESS");
-        }
-
-         */
-
         visitChildren(node);
     }
 
@@ -523,10 +518,53 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(PrintCallNode node) {
         stringBuilder.append("System.out.println(");
-        visitChild(node.getChildren().get(0));
+        int childrenSizeOfArray = node.getChildren().get(0).getChildren().size(); //get the dimensions of the array
+        //check if the array is a 1D array or 2D array else just normal print
+        if (node.getChildren().get(0) instanceof ArrayAccessNode && childrenSizeOfArray == 1) {
+            stringBuilder.append(((ArrayAccessNode) node.getChildren().get(0)).getAccessIdentifier());
+            stringBuilder.append(".get(");
+            if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
+                stringBuilder.append("(int) ");
+            }
+            visit(node.getChildren().get(0));
+            stringBuilder.append(")");
+            //Visit all the children of the print call node.
+            visitPrintChildren(node);
+        } else if(node.getChildren().get(0) instanceof ArrayAccessNode && childrenSizeOfArray == 2) {
+            stringBuilder.append(((ArrayAccessNode) node.getChildren().get(0)).getAccessIdentifier());
+            stringBuilder.append(".get(");
+            if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
+                stringBuilder.append("(int) ");
+            }
+            visitChild(node.getChildren().get(0).getChildren().get(0));
+            stringBuilder.append(").get(");
+            if(node.getChildren().get(0).getChildren().get(1) instanceof IdentifierNode){//typecast if the child is an identifier
+                stringBuilder.append("(int) ");
+            }
+            visitChild(node.getChildren().get(0).getChildren().get(1));
+            stringBuilder.append(")");
+            //Visit all the children of the print call node.
+            visitPrintChildren(node);
+        }
+        else {
+            visitChild(node.getChildren().get(0));
+            //Visit all the children of the print call node.
+            visitPrintChildren(node);
+        }
         stringBuilder.append(");\n");
         codeOutput.add(getLine());
     }
+
+    private void visitPrintChildren(PrintCallNode node) {
+        if(node.getChildren().size() > 1){
+            for(int i = 1; i < node.getChildren().size(); i++){
+                stringBuilder.append(" + ");
+                visitChild(node.getChildren().get(i));
+            }
+
+        }
+    }
+
 
     @Override
     public void visit(ReturnStatementNode node) {
