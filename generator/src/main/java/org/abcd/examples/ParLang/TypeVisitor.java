@@ -6,7 +6,6 @@ import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-
 import java.util.*;
 
 public class TypeVisitor implements NodeVisitor {
@@ -53,6 +52,31 @@ public class TypeVisitor implements NodeVisitor {
             symbolTable.leaveScope();
         }
         return null;
+    }
+
+    private boolean canConvert(String assignTo, String assignFrom){
+        if (assignTo.equals(assignFrom)){
+            return true;
+        }
+        if (assignTo.equals("int") && assignFrom.equals("double")){
+            System.out.println("Cannot convert double to int");
+            return false;
+        }
+        if (assignTo.equals("double") && assignFrom.equals("int")){
+            System.out.println("Can convert int to double");
+            return true;
+        }
+        if (symbolTable.declaredScripts.contains(assignTo)){
+            symbolTable.enterScope(assignTo);
+            ArrayList<String> types = symbolTable.getActorsFollowingScript();
+            if (types.contains(assignFrom)){
+                System.out.println("Can convert " + assignFrom + " to " + assignTo);
+                symbolTable.leaveScope();
+                return true;
+            }
+            symbolTable.leaveScope();
+        }
+        return false;
     }
 
     @Override
@@ -319,7 +343,7 @@ public class TypeVisitor implements NodeVisitor {
             String paramType = params.get(entry.getKey()).getVariableType();
             System.out.println("paramType: " + paramType);
 
-            if (!argType.equals(paramType)){
+            if (!canConvert(paramType, argType)){
                 throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName);
             }
         }
@@ -331,8 +355,8 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             String identifierType = node.getChildren().get(0).getType();
             String assignType = node.getChildren().get(1).getType();
-            if (!identifierType.equals(assignType)) {
-                throw new AssignExecption("Type mismatch in assignment");
+            if (!canConvert(identifierType, assignType)) {
+                throw new AssignExecption("Type mismatch in assignment between " + identifierType + " and " + assignType);
             }
             node.setType(identifierType);
         /*}
