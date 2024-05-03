@@ -118,19 +118,15 @@ public class TypeVisitor implements NodeVisitor {
                 if(this.symbolTable.lookUpScope(accessType) != null) {
                     scopeName = accessType;
                 }
-            }else {
-                scopeName = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
+            }else{ //Otherwise it is an identifier node
+                scopeName = node.getReceiver();
+                scopeName += this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
             }
             if(scopeName != null){
                 this.symbolTable.enterScope(scopeName);
-            }
-
-            if (symbolTable.lookUpScope(node.getMsgName() + symbolTable.findActorParent(node)) == null) {
+            }else{
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
-            }else {
-                System.out.println("Method: " + node.getMsgName() + " found");
             }
-            symbolTable.enterScope(node.getMsgName() + symbolTable.findActorParent(node));
             this.visitChildren(node);
             symbolTable.leaveScope();
        /* }
