@@ -461,7 +461,7 @@ public class TypeVisitor implements NodeVisitor {
             String nodeType = node.getType();
             String typeMatch = typeMatchOrConvert(nodeType, childType);
             if (typeMatch == null ) {
-                throw new MethodDclNodeException("Return does not match returnType of method");
+                throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
             }
             if (!node.getMethodType().equals("local")){
                 throw new MethodCallException("Method type is not local");
