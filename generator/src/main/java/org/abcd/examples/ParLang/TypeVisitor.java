@@ -883,6 +883,9 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals("string")) {
+                    if (child.getType().equals("int") || child.getType().equals("double")) {
+                        continue;
+                    }
                     throw new PrintException("Print statement only accepts string arguments");
                 }
             }
