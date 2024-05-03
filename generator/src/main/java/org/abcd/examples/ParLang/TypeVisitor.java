@@ -60,18 +60,18 @@ public class TypeVisitor implements NodeVisitor {
             return true;
         }
         if (assignTo.equals("int") && assignFrom.equals("double")){
-            System.out.println("Cannot convert double to int");
+            System.out.println("-------------Cannot convert double to int");
             return false;
         }
         if (assignTo.equals("double") && assignFrom.equals("int")){
-            System.out.println("Can convert int to double");
+            System.out.println("----------Can convert int to double");
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
             symbolTable.enterScope(assignTo);
             ArrayList<String> types = symbolTable.getActorsFollowingScript();
             if (types.contains(assignFrom)){
-                System.out.println("Can convert " + assignFrom + " to " + assignTo);
+                System.out.println("---------------Can convert " + assignFrom + " to " + assignTo);
                 symbolTable.leaveScope();
                 return true;
             }

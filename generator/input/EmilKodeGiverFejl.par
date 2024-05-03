@@ -7,7 +7,7 @@ Script TestScript{
 
 Actor NumActor follows TestScript{
     State{
-        int number;
+        double number;
     }
     Knows{
     NumActor testActor;
@@ -19,7 +19,7 @@ Actor NumActor follows TestScript{
         TestScript getSquaredActor = Spawn NumActor(x);
         double result;
         result = squared(x);
-        getSquaredActor <- getSquared(result);
+        getSquaredActor <- getSquared(x);
     }
     on willNotHave(){}
 
