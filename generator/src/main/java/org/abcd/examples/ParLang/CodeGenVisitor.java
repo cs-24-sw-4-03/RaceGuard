@@ -67,99 +67,75 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
+        //e.g: int x = a[0]; x = a[1];
         if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 1){
-           accessArrayFirstChild(node);
+           stringBuilder.append("FIRSTCHILD");
+            accessArrayFirstChild(node);
         }
+        //e.g: int x = a[0][0]; x = a[1][1];
         else if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 2){
             accessArrayFirstChild(node);
             accessArraySecondChild(node);
         }
+        //Assign values to 1D array
         else if(accessArrayDimensions(node) == 1){
-            stringBuilder.append(".set(");
-            if(node.getChildren().get(0) instanceof IdentifierNode){
-                stringBuilder.append("(int) ");
+            //Set method for a index in a 1D array with a value
+            //First child need a set method: .set(index, value)
+            //e.g: a[0] = 1;
+            //if trying to assign a 1D array with another 1D array
+            //First child need a set method: .set(index, secondChild)
+            //e.g: a[0] = b[0];
+            if (node.getParent().getChildren().getFirst() == node) {
+                stringBuilder.append(".set(");
+                typeCastFirstArrayAccessNode(node);
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append(", ");
             }
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(", ");
-            visit(node.getParent().getChildren().get(1));
-        } else {
-            if(node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode && node.getParent().getChildren().get(1) instanceof ArrayAccessNode){
-                if(node.getParent().getChildren().getFirst() == node){
-                    stringBuilder.append(".get(");
-                    if(node.getChildren().get(0) instanceof IdentifierNode){
-                        stringBuilder.append("(int) ");
-                    }
-                    visitChild(node.getChildren().get(0));
-                    stringBuilder.append(").set(");
-                    if(node.getChildren().get(1) instanceof IdentifierNode){
-                        stringBuilder.append("(int) ");
-                    }
-                    visitChild(node.getChildren().get(1));
-                    stringBuilder.append(", ");
-                }
-                else {
-                    stringBuilder.append(".get(");
-                    if(node.getChildren().get(0) instanceof IdentifierNode){
-                        stringBuilder.append("(int) ");
-                    }
-                    visitChild(node.getChildren().get(0));
-                    stringBuilder.append(").get(");
-                    if(node.getChildren().get(1) instanceof IdentifierNode){
-                        stringBuilder.append("(int) ");
-                    }
-                    visitChild(node.getChildren().get(1));
-                    stringBuilder.append(")");
-                }
-            }
+            //Get method for a index in a 1D array when assigning to another 1D array
+            //Second child need a get method: .get(index)
             else {
                 stringBuilder.append(".get(");
-                if(node.getChildren().get(0) instanceof IdentifierNode){
-                    stringBuilder.append("(int) ");
-                }
+                typeCastFirstArrayAccessNode(node);
                 visitChild(node.getChildren().get(0));
-
+                stringBuilder.append(")");
             }
-
-/*
-stringBuilder.append(".get(");
-                if(node.getChildren().get(0) instanceof IdentifierNode){
-                    stringBuilder.append("(int) ");
-                }
-                visitChild(node.getChildren().get(0));
-
-                if() {
-                    stringBuilder.append(").get(");
-                    if(node.getChildren().get(1) instanceof IdentifierNode){
-                        stringBuilder.append("(int) ");
-                    }
-                    visitChild(node.getChildren().get(1));
-                    stringBuilder.append(")");
-                }
-
-
-                else {
+        }
+        //Assign a 2D array with another 2D array
+        else {
+                //First child of the assign node need a get and set method: .get(index).set(index, secondChild)
+                if (node.getParent().getChildren().getFirst() == node) {
+                    stringBuilder.append(".get(");
+                    typeCastFirstArrayAccessNode(node);
+                    visitChild(node.getChildren().get(0));
                     stringBuilder.append(").set(");
-                    if(node.getChildren().get(1) instanceof IdentifierNode){
-                        stringBuilder.append("(int) ");
-                    }
+                    typeCastSecondArrayAccessNode(node);
                     visitChild(node.getChildren().get(1));
                     stringBuilder.append(", ");
                 }
-
- */
-
-
-                /*
-                visitChild(node.getChildren().get(1));
-                stringBuilder.append(", ");
-                visitChild(node.getParent().getChildren().get(1));
-
-
-                 */
-
-
+                //Second child of the assign node only needs get methods: .get(index).get(index)
+                else {
+                    stringBuilder.append(".get(");
+                    typeCastFirstArrayAccessNode(node);
+                    visitChild(node.getChildren().get(0));
+                    stringBuilder.append(").get(");
+                    typeCastSecondArrayAccessNode(node);
+                    visitChild(node.getChildren().get(1));
+                    stringBuilder.append(")");
+            }
         }
     }
+
+    private void typeCastFirstArrayAccessNode(ArrayAccessNode node){
+        if(node.getChildren().get(0) instanceof IdentifierNode){
+            stringBuilder.append("(int) ");
+        }
+    }
+    private void typeCastSecondArrayAccessNode(ArrayAccessNode node){
+        if(node.getChildren().get(1) instanceof IdentifierNode){
+            stringBuilder.append("(int) ");
+        }
+    }
+    //Checks if the grandparent is a VarDclNode or if the sibling is an identifier
     private boolean isGrandparentVarDclOrSiblingIdentifier(ArrayAccessNode node){
         return node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode;
 
@@ -174,6 +150,7 @@ stringBuilder.append(".get(");
         visitChild(node.getChildren().get(1));
         stringBuilder.append(")");
     }
+    //Check if the array access node is a 1D array or 2D array
     private int accessArrayDimensions(ArrayAccessNode node){
         if(node.getChildren().size() == 1){
             return 1;

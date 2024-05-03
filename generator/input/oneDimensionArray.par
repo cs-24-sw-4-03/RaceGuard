@@ -1,0 +1,6 @@
+main(){
+    bool[] a = {true, false, true, false, true, false, true, false, true, false};
+    print(a);
+    print(a[0]);
+    a[0] = false;
+}

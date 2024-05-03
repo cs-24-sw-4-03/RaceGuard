@@ -9,14 +9,13 @@ main(){
                {0, 0, 0},
                {0, 0, 0}
            };
-
-           int numRows = 3;
-           int numCols = 3;
+          int numRows = 3;
+          int numCols = 3;
 
            for (int col = 0; col < numCols; col = col + 1) {
                for (int row = 0; row < numRows; row = row + 1) {
-                   print("col: " + col + " row: " + row);
-                   empty[col][row] = matrix[row][col];
+                  print("col: " + col + " row: " + row);
+                  empty[col][row] = matrix[row][col];
                }
            }
            print(empty);
