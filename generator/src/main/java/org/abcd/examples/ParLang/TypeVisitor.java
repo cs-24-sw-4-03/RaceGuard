@@ -24,6 +24,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private String typeMatchOrConvert(String type1, String type2){
+        System.out.println("checking type match or convert between " + type1 + " and " + type2 + " in TypeVisitor");
         if (type1.equals(type2)){
             return type1;
         }
@@ -817,11 +818,9 @@ public class TypeVisitor implements NodeVisitor {
                 throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode");
             }
             this.visitChildren(node);
-            for (AstNode child : node.getChildren()) {
-                if (!TypeContainer.hasType(child.getType())) {
-                    throw new KnowsAccessException("KnowsAccessNode children does not have known type");
-                }
-            }
+            String id = node.getAccessIdentifier();
+            Attributes attributes = symbolTable.lookUpKnowsSymbol(id);
+            node.setType(attributes.getVariableType());
         /*}
         catch (KnowsAccessException e) {
             exceptions.add(e);

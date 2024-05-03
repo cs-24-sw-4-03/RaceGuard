@@ -16,7 +16,7 @@ Actor House follows Shape, ShapeManager{
 	Knows{Shape Square; Shape Triangle;}
 	Spawn(double houseWidth, double houseHeight){
 		State.resultsRecieved = 0;
-		State.area = 0;
+		State.area = 0.0;
         Knows.Square = Spawn Square((2/3) * houseHeight, houseWidth);
         Knows.Triangle = Spawn Triangle((1/3) * houseHeight, houseWidth);
     }
@@ -43,11 +43,11 @@ Actor House follows Shape, ShapeManager{
 
 Actor Square follows Shape{
 	State{
-		int height;
-		int length;
+		double height;
+		double length;
     }
 	Knows{}
-    Spawn(int height, int length){
+    Spawn(double height, double length){
         State.height = height;
         State.length = length;
     }
@@ -59,11 +59,11 @@ Actor Square follows Shape{
 
 Actor Triangle follows Shape{
 	State{
-		int height;
-		int baseLenght;
+		double height;
+		double baseLength;
     }
 	Knows{}
-    Spawn(int height, int baseLength){
+    Spawn(double height, double baseLength){
         State.height = height;
         State.baseLength = baseLength;
     }
