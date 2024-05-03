@@ -28,9 +28,9 @@ Actor FactorialManager{
     Spawn(){}
 
     on calcFactorial( Factorial replyTo, int number) {
-	    if(x != 0) {
+	    if(number != 0) {
 	    FactorialHelper helper = Spawn FactorialHelper(replyTo, number);
-		self <- calcFactorial(helper, x-1);
+		self <- calcFactorial(helper, number-1);
         }else{
             replyTo <- multiply(1);
         }
