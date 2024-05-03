@@ -14,8 +14,6 @@ public class SymbolTable {
     private Scope currentScope;
     final private Scope globalScope;
     final private Stack<Scope> scopeStack = new Stack<>();
-    public ArrayList<String> declaredOnMethods = new ArrayList<>();
-    public ArrayList<String> declaredActors = new ArrayList<>();
     public ArrayList<String> declaredScripts = new ArrayList<>();
 
 
@@ -48,6 +46,7 @@ public class SymbolTable {
     //Pops the top scope from the stack and sets it as the currentScope
     //TODO: C* sets the name of the original currentScope, find out if there is a reason for this
     public void leaveScope(){
+        System.out.println("Leaving scope: " + this.currentScope.getScopeName());
         if(!this.scopeStack.empty()){
             this.currentScope = this.scopeStack.pop();
         } else{
@@ -84,6 +83,7 @@ public class SymbolTable {
     }
 
     public boolean enterScope(String scopeName){
+        System.out.println("Entering scope: " + scopeName);
         Scope scope = this.findScope(scopeName, this.globalScope);
 
         if(scope != null){
@@ -112,6 +112,7 @@ public class SymbolTable {
         //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
+            System.out.println("looking in scope---------" + scope.getScopeName() + "for symbol: " + symbol);
             if(!scope.getSymbols().isEmpty() && scope.getSymbols().containsKey(symbol)){
                 return scope.getSymbols().get(symbol);
             } else if (!scope.getParams().isEmpty() && scope.getParams().containsKey(symbol)) {
@@ -147,6 +148,7 @@ public class SymbolTable {
         //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
+            System.out.println("looking in scope---------" + scope.getScopeName() + "for symbol: " + symbol);
             if(!scope.getKnowsSymbols().isEmpty() && scope.getKnowsSymbols().containsKey(symbol)){
                 return scope.getKnowsSymbols().get(symbol);
             }

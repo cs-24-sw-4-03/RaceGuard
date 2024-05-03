@@ -1,146 +1,146 @@
-//Script Shape{
-//on getArea();
-//}
+Script Shape{
+    on getArea();
+}
 
-//Script ShapeManager{
-//on calcArea();
-//on areaResult(double result);
-//on printArea();
-//}
+Script ShapeManager{
+    on calcArea();
+    on areaResult(double result);
+    on printArea();
+}
 
 Actor House follows Shape, ShapeManager{
 	State{
-	int resultsRecieved;
-	double area;
-}
+        int resultsRecieved;
+        double area;
+    }
 	Knows{Shape Square; Shape Triangle;}
 	Spawn(double houseWidth, double houseHeight){
 		State.resultsRecieved = 0;
-		State.areaResult = 0;
-	Knows.Square = Spawn Square((2/3) * houseHeight, houseWidth);
-	Knows.Triangle = Spawn Triangle((1/3) * houseHeight, houseWidth);
-}
+		State.area = 0.0;
+        Knows.Square = Spawn Square((2/3) * houseHeight, houseWidth);
+        Knows.Triangle = Spawn Triangle((1/3) * houseHeight, houseWidth);
+    }
 
-on calcArea(){
-	Knows.Square <- getArea();
-	Knows.Trianlge <- getArea();
-}
+    on calcArea(){
+        Knows.Square <- getArea();
+        Knows.Triangle <- getArea();
+    }
 
-on areaResult(double result){
-	if (State.resultsRecieved > 0){
-		State.area = State.area + result;
-}
-else{
-	State.area = result;
-	State.resultsRecieved = State.resultRecieved + 1;
-}
-}
+    on areaResult(double result){
+        if (State.resultsRecieved > 0){
+            State.area = State.area + result;
+        }
+        else{
+            State.area = result;
+            State.resultsRecieved = State.resultRecieved + 1;
+        }
+    }
 
-on printArea(){
-	print("here is the house area: " + State.area);
-}
+    on printArea(){
+        print("here is the house area: " + State.area);
+    }
 }
 
 Actor Square follows Shape{
 	State{
-		int height;
-		int length;
-}
+		double height;
+		double length;
+    }
 	Knows{}
-	Spawn(int height, int length){
-	State.height = height;
-	State.length = length;
-}
+    Spawn(double height, double length){
+        State.height = height;
+        State.length = length;
+    }
 
-on getArea(){
-	sender <- areaResult( height * length );
-}
+    on getArea(){
+        sender <- areaResult( height * length );
+    }
 }
 
 Actor Triangle follows Shape{
 	State{
-		int height;
-		int baseLenght;
-}
+		double height;
+		double baseLength;
+    }
 	Knows{}
-	Spawn(int height, int baseLength){
-	State.height = height;
-	State.baseLength = baseLength;
-}
+    Spawn(double height, double baseLength){
+        State.height = height;
+        State.baseLength = baseLength;
+    }
 
-on getArea(){
-	sender <- areaResult( height * ( 2 / baseLength ) );
-}
+    on getArea(){
+        sender <- areaResult( height * ( 2 / baseLength ) );
+    }
 }
 
 Actor CircleManager follows Shape, ShapeManager{
 	State{
-	double area;
-}
+        double area;
+    }
 	Knows{Shape Circle;}
-	Spawn(double radius){
-		State.area = 0;
-	Knows.Circle = Spawn Circle(State.radius);
-}
+    Spawn(double radius){
+        State.area = 0;
+        Knows.Circle = Spawn Circle(State.radius);
+    }
 
-on calcArea(){
-	Knows.Circle <- getArea();
-}
+    on calcArea(){
+        Knows.Circle <- getArea();
+    }
 
-on areaResult(double result){
-	State.area = result;
-}
+    on areaResult(double result){
+        State.area = result;
+    }
 
-on printArea(){
-	print("here is the circle area: " + State.area);
-}
+    on printArea(){
+        print("here is the circle area: " + State.area);
+    }
 }
 
 Actor Circle follows Shape{
 	State{
-	double radius;
-}
+        double radius;
+    }
 	Knows{}
 	Spawn(double radius){
-	State.radius = radius;
-}
+        State.radius = radius;
+    }
 
-on getArea(){
-	sender <- areaResult( radius * radius * 3.14 );
-}
+    on getArea(){
+        sender <- areaResult( radius * radius * 3.14 );
+    }
 }
 
 Actor ShapesManager follows Shape, ShapeManager{
 	State{
 		int resultsRecieved;
-	double fullArea;
-}
+        double fullArea;
+    }
 	Knows{Shape shape1; Shape shape2; Shape shape3;}
 	Spawn(Shape shape1, Shape shape2, Shape shape3){
 		Knows.shape1 = shape1;
 		Knows.shape2 = shape2;
-Knows.shape3 = shape3;
-}
+        Knows.shape3 = shape3;
+    }
 
-on calcArea(){
-Knows.shape1 <- getArea();
-		Knows.shape2 <- getArea();
-Knows.shape3 <- getArea();
-}
+    on calcArea(){
+        Knows.shape1 <- getArea();
+        Knows.shape2 <- getArea();
+        Knows.shape3 <- getArea();
+    }
 
-on areaResult(double result){
-	if (State.resultsRecieved > 1){
-		State.area = State.area + result;
-}
-else{
-	State.area = result;
-	State.resultsRecieved = State.resultRecieved + 1;
-}
-}
+    on areaResult(double result){
+        if (State.resultsRecieved > 1){
+            State.area = State.area + result;
+        }
+        else{
+            State.area = result;
+            State.resultsRecieved = State.resultRecieved + 1;
+        }
+    }
 
-on printArea(){
-	print("here is the managers area: " + State.area);
-}
+    on printArea(){
+        print("here is the managers area: " + State.area);
+    }
 }
 main(){
 	House house = Spawn House(10, 7);
