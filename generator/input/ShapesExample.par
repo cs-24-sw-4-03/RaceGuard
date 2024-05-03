@@ -16,14 +16,14 @@ Actor House follows Shape, ShapeManager{
 	Knows{Shape Square; Shape Triangle;}
 	Spawn(double houseWidth, double houseHeight){
 		State.resultsRecieved = 0;
-		State.areaResult = 0;
+		State.area = 0;
         Knows.Square = Spawn Square((2/3) * houseHeight, houseWidth);
         Knows.Triangle = Spawn Triangle((1/3) * houseHeight, houseWidth);
     }
 
     on calcArea(){
         Knows.Square <- getArea();
-        Knows.Trianlge <- getArea();
+        Knows.Triangle <- getArea();
     }
 
     on areaResult(double result){
