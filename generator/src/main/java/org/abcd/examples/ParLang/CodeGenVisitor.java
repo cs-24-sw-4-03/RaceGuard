@@ -67,25 +67,14 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
-
-        boolean isGrandparentVarDclOrSiblingIdentifier =
-                (node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode);
-
-        int childrenSize = node.getChildren().size();
-
-        if(isGrandparentVarDclOrSiblingIdentifier && childrenSize == 1){
-            stringBuilder.append(".get(");
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(")");
+        if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 1){
+           accessArrayFirstChild(node);
         }
-        else if(isGrandparentVarDclOrSiblingIdentifier && childrenSize == 2){
-            stringBuilder.append(".get(");
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(").get(");
-            visitChild(node.getChildren().get(1));
-            stringBuilder.append(")");
+        else if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 2){
+            accessArrayFirstChild(node);
+            accessArraySecondChild(node);
         }
-        else if(node.getChildren().size() == 1){
+        else if(accessArrayDimensions(node) == 1){
             stringBuilder.append(".set(");
             if(node.getChildren().get(0) instanceof IdentifierNode){
                 stringBuilder.append("(int) ");
@@ -93,23 +82,105 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChild(node.getChildren().get(0));
             stringBuilder.append(", ");
             visit(node.getParent().getChildren().get(1));
-        }
-        else {
-            stringBuilder.append(".get(");
-            if(node.getChildren().get(0) instanceof IdentifierNode){
-                stringBuilder.append("(int) ");
+        } else {
+            if(node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode && node.getParent().getChildren().get(1) instanceof ArrayAccessNode){
+                if(node.getParent().getChildren().getFirst() == node){
+                    stringBuilder.append(".get(");
+                    if(node.getChildren().get(0) instanceof IdentifierNode){
+                        stringBuilder.append("(int) ");
+                    }
+                    visitChild(node.getChildren().get(0));
+                    stringBuilder.append(").set(");
+                    if(node.getChildren().get(1) instanceof IdentifierNode){
+                        stringBuilder.append("(int) ");
+                    }
+                    visitChild(node.getChildren().get(1));
+                    stringBuilder.append(", ");
+                }
+                else {
+                    stringBuilder.append(".get(");
+                    if(node.getChildren().get(0) instanceof IdentifierNode){
+                        stringBuilder.append("(int) ");
+                    }
+                    visitChild(node.getChildren().get(0));
+                    stringBuilder.append(").get(");
+                    if(node.getChildren().get(1) instanceof IdentifierNode){
+                        stringBuilder.append("(int) ");
+                    }
+                    visitChild(node.getChildren().get(1));
+                    stringBuilder.append(")");
+                }
             }
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append(").set(");
-            if(node.getChildren().get(1) instanceof IdentifierNode){
-                stringBuilder.append("(int) ");
+            else {
+                stringBuilder.append(".get(");
+                if(node.getChildren().get(0) instanceof IdentifierNode){
+                    stringBuilder.append("(int) ");
+                }
+                visitChild(node.getChildren().get(0));
+
             }
-            visitChild(node.getChildren().get(1));
-            stringBuilder.append(", ");
-            visit(node.getParent().getChildren().get(1));
-        }
+
+/*
+stringBuilder.append(".get(");
+                if(node.getChildren().get(0) instanceof IdentifierNode){
+                    stringBuilder.append("(int) ");
+                }
+                visitChild(node.getChildren().get(0));
+
+                if() {
+                    stringBuilder.append(").get(");
+                    if(node.getChildren().get(1) instanceof IdentifierNode){
+                        stringBuilder.append("(int) ");
+                    }
+                    visitChild(node.getChildren().get(1));
+                    stringBuilder.append(")");
+                }
 
 
+                else {
+                    stringBuilder.append(").set(");
+                    if(node.getChildren().get(1) instanceof IdentifierNode){
+                        stringBuilder.append("(int) ");
+                    }
+                    visitChild(node.getChildren().get(1));
+                    stringBuilder.append(", ");
+                }
+
+ */
+
+
+                /*
+                visitChild(node.getChildren().get(1));
+                stringBuilder.append(", ");
+                visitChild(node.getParent().getChildren().get(1));
+
+
+                 */
+
+
+        }
+    }
+    private boolean isGrandparentVarDclOrSiblingIdentifier(ArrayAccessNode node){
+        return node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode;
+
+    }
+    private void accessArrayFirstChild(ArrayAccessNode node){
+        stringBuilder.append(".get(");
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(")");
+    }
+    private void accessArraySecondChild(ArrayAccessNode node){
+        stringBuilder.append(".get(");
+        visitChild(node.getChildren().get(1));
+        stringBuilder.append(")");
+    }
+    private int accessArrayDimensions(ArrayAccessNode node){
+        if(node.getChildren().size() == 1){
+            return 1;
+        }
+        else{
+            return 2;
+        }
     }
     private void resetStringBuilder(StringBuilder sb) {
         sb.setLength(0);
@@ -206,6 +277,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(" = ");
             visitChild(rightChild);
     } else {
+
         visitChild(leftChild);
         visitChild(rightChild);
         stringBuilder.append(")");
