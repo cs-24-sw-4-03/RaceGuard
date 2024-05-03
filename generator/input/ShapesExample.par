@@ -63,7 +63,7 @@ Actor Triangle follows Shape{
 		int baseLenght;
     }
 	Knows{}
-        Spawn(int height, int baseLength){
+    Spawn(int height, int baseLength){
         State.height = height;
         State.baseLength = baseLength;
     }
@@ -137,7 +137,7 @@ Actor ShapesManager follows Shape, ShapeManager{
             State.resultsRecieved = State.resultRecieved + 1;
         }
     }
-    
+
     on printArea(){
         print("here is the managers area: " + State.area);
     }
