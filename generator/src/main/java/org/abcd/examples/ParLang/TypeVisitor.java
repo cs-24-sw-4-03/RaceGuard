@@ -234,9 +234,9 @@ public class TypeVisitor implements NodeVisitor {
                 System.out.println("Method: " + node.getMethodName() + " found");
                 node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
             }
-            symbolTable.enterScope(node.getMethodName() + symbolTable.findActorParent(node));
+            //symbolTable.enterScope(node.getMethodName() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            symbolTable.leaveScope();
+            //symbolTable.leaveScope();
         /*}
         catch (MethodCallException e) {
             exceptions.add(e);
@@ -285,8 +285,11 @@ public class TypeVisitor implements NodeVisitor {
                 checkArgTypes(node, params, actorName);
             } else if (parent instanceof SendMsgNode) {
                 //TODO Lookup correct scope for onMethod calls
-                Scope ActorScope = symbolTable.lookUpScope(parent.getType());
-                params = ActorScope.getParams();
+                String receiver = ((SendMsgNode) parent).getReceiver();
+                String methodName = ((SendMsgNode) parent).getMsgName();
+                Attributes attributes = symbolTable.lookUpSymbol(receiver);
+                Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                params = methodScope.getParams();
                 SendMsgNode sendMsgNode = (SendMsgNode) parent;
                 String msgName = sendMsgNode.getMsgName();
                 checkArgTypes(node, params, msgName);
@@ -304,7 +307,7 @@ public class TypeVisitor implements NodeVisitor {
     private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
         if (params.size() != size){
-            throw new ArgumentsException("Number of arguments does not match the number of parameters in spawn actor: " + msgName);
+            throw new ArgumentsException("Number of arguments does not match the number of parameters in : " + msgName);
         }
         for (int i = 0; i < size; i++) {
             System.out.println("Getting argTypes");
