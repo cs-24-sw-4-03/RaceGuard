@@ -355,13 +355,13 @@ public class TypeVisitor implements NodeVisitor {
         if (params.size() != size){
             throw new ArgumentsException("Number of arguments does not match the number of parameters in: " + msgName);
         }
-        for (int i = 0; i < size; i++) {
+        for (Map.Entry<String, Attributes> parameter : params.entrySet()) { //Iterates over parameters and arguments and matches them against each other
+            int index = new ArrayList<>(params.keySet()).indexOf(parameter.getKey()); //Find the index of the parameter == index of argument
             System.out.println("Getting argTypes");
-            String argType = node.getChildren().get(i).getType();
+            String argType = node.getChildren().get(index).getType(); //Type of argument
             System.out.println("argType: " + argType);
-            Map.Entry<String, Attributes> entry = params.entrySet().iterator().next();
-            System.out.println("Key: " + entry.getKey() + " Type: " + params.get(entry.getKey()).getVariableType());
-            String paramType = params.get(entry.getKey()).getVariableType();
+            System.out.println("Key: " + parameter.getKey() + " Type: " + params.get(parameter.getKey()).getVariableType());
+            String paramType = parameter.getValue().getVariableType(); //Type of parameter
             System.out.println("paramType: " + paramType);
 
             if (!canConvert(paramType, argType)){
@@ -466,7 +466,8 @@ public class TypeVisitor implements NodeVisitor {
     }
     @Override
     public void visit(SelfNode node) {
-        this.visitChildren(node);
+        //We do not visit children since this is a leaf node
+        node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
     }
 
     @Override
