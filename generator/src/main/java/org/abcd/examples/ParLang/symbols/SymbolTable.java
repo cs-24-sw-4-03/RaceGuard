@@ -114,7 +114,6 @@ public class SymbolTable {
         //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
-            System.out.println("looking in scope---------" + scope.getScopeName() + "for symbol: " + symbol);
             if(!scope.getSymbols().isEmpty() && scope.getSymbols().containsKey(symbol)){
                 return scope.getSymbols().get(symbol);
             } else if (!scope.getParams().isEmpty() && scope.getParams().containsKey(symbol)) {
@@ -133,7 +132,6 @@ public class SymbolTable {
         //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
-            System.out.println("looking in scope---------" + scope.getScopeName() + "for state symbol: " + symbol);
             System.out.println("State symbols: " + scope.getStateSymbols());
             if(!scope.getStateSymbols().isEmpty() && scope.getStateSymbols().containsKey(symbol)){
                 System.out.println("Symbol: " + symbol + " found");
@@ -152,7 +150,6 @@ public class SymbolTable {
         //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
-            System.out.println("looking in scope--" + scope.getScopeName() + " for knows symbol: " + symbol);
             if(!scope.getKnowsSymbols().isEmpty() && scope.getKnowsSymbols().containsKey(symbol)){
                 return scope.getKnowsSymbols().get(symbol);
             }
