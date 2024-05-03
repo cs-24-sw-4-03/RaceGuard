@@ -32,7 +32,7 @@ Actor House follows Shape, ShapeManager{
         }
         else{
             State.area = result;
-            State.resultsRecieved = State.resultRecieved + 1;
+            State.resultsRecieved = State.resultsRecieved + 1;
         }
     }
 
