@@ -55,6 +55,31 @@ public class TypeVisitor implements NodeVisitor {
         return null;
     }
 
+    private boolean canConvert(String assignTo, String assignFrom){
+        if (assignTo.equals(assignFrom)){
+            return true;
+        }
+        if (assignTo.equals("int") && assignFrom.equals("double")){
+            System.out.println("-------------Cannot convert double to int");
+            return false;
+        }
+        if (assignTo.equals("double") && assignFrom.equals("int")){
+            System.out.println("----------Can convert int to double");
+            return true;
+        }
+        if (symbolTable.declaredScripts.contains(assignTo)){
+            symbolTable.enterScope(assignTo);
+            ArrayList<String> types = symbolTable.getActorsFollowingScript();
+            if (types.contains(assignFrom)){
+                System.out.println("---------------Can convert " + assignFrom + " to " + assignTo);
+                symbolTable.leaveScope();
+                return true;
+            }
+            symbolTable.leaveScope();
+        }
+        return false;
+    }
+
     @Override
     public void visitChildren(AstNode node){
         for (AstNode child : node.getChildren()) {
@@ -234,9 +259,7 @@ public class TypeVisitor implements NodeVisitor {
                 System.out.println("Method: " + node.getMethodName() + " found");
                 node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
             }
-            //symbolTable.enterScope(node.getMethodName() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            //symbolTable.leaveScope();
         /*}
         catch (MethodCallException e) {
             exceptions.add(e);
@@ -307,7 +330,7 @@ public class TypeVisitor implements NodeVisitor {
     private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
         if (params.size() != size){
-            throw new ArgumentsException("Number of arguments does not match the number of parameters in : " + msgName);
+            throw new ArgumentsException("Number of arguments does not match the number of parameters in: " + msgName);
         }
         for (int i = 0; i < size; i++) {
             System.out.println("Getting argTypes");
@@ -318,7 +341,7 @@ public class TypeVisitor implements NodeVisitor {
             String paramType = params.get(entry.getKey()).getVariableType();
             System.out.println("paramType: " + paramType);
 
-            if (!argType.equals(paramType)){
+            if (!canConvert(paramType, argType)){
                 throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName);
             }
         }
@@ -330,8 +353,8 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             String identifierType = node.getChildren().get(0).getType();
             String assignType = node.getChildren().get(1).getType();
-            if (!identifierType.equals(assignType)) {
-                throw new AssignExecption("Type mismatch in assignment");
+            if (!canConvert(identifierType, assignType)) {
+                throw new AssignExecption("Type mismatch in assignment between " + identifierType + " and " + assignType);
             }
             node.setType(identifierType);
         /*}
