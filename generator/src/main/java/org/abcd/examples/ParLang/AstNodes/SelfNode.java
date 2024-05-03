@@ -6,6 +6,6 @@ public class SelfNode extends AstNode {
 
     @Override
     public void accept(NodeVisitor visitor) {
-
+        visitor.visit(this);
     }
 }
