@@ -4,6 +4,7 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.Exceptions.LocalMethodCallException;
 import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
 import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
+import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
@@ -35,37 +36,51 @@ public class MethodCallVisitor implements NodeVisitor {
     //TODO: LOOK AT THIS
     @Override
     public void visit(SendMsgNode node) {
-        //First we enter the scope of the Actor we send the message to
-        AstNode receiverNode = node.getChildren().get(0);
-        String scopeName = null;
-        String currentActorName = this.symbolTable.findActorParent(node);
-        Scope currentActorScope = this.symbolTable.lookUpScope(currentActorName);
+        try{
+            //First we check if it is either a Knows, State, Self, Sender or a normal variable
+            if(node.getReceiver().contains(".")){
+                //If it contains . then it is a Knows or State access. We therefore check which
+                String receiver = node.getReceiver().split("\\.")[1];
+                String accessModifier = node.getReceiver().split("\\.")[0];
+                if(accessModifier.equals("State")){
+                    //We then enter the scope based on the correct symbol list
+                    this.symbolTable.enterScope(this.symbolTable.lookUpStateSymbol(receiver).getVariableType());
+                } else if (accessModifier.equals("Knows")) {
+                    this.symbolTable.enterScope(this.symbolTable.lookUpKnowsSymbol(receiver).getVariableType());
+                }
 
-        if(receiverNode instanceof SelfNode) { //You can send messages to yourself
-            scopeName =  currentActorScope.getScopeName();
-        }else if(receiverNode instanceof StateAccessNode || receiverNode instanceof KnowsAccessNode){
-            String receiverName = node.getReceiver().split("\\.")[1];
-            String accessType = currentActorScope.getKnowsSymbols().get(receiverName).getVariableType();
-            if(this.symbolTable.lookUpScope(accessType) != null) {
-                scopeName = accessType;
+            } else if (node.getReceiver().equals("sender")) {
+                //We cannot enter the scope of the sender as we cannot know the actor type of the sender
+                //We can therefore not check if it has the method
+                System.out.println("Sender: " + node.getReceiver());
+            } else if (node.getReceiver().equals("self")){
+                //We check if the Actor itself has the method we call
+                this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
+            } else{
+                //Otherwise we look up the symbol in the normal symbol list
+                this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
             }
-        }else { //In other cases it should be another onMethod in an actor
-            scopeName = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
-        }
-        if(scopeName != null){
-            this.symbolTable.enterScope(scopeName);
+
+            //We do not need to search for a method if the receiver is a sender
+            if(!node.getReceiver().equals("sender")){
+                //Then we find the list of messages it can receive
+                HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+                //We then check if the message is part of the list of allowed messages
+                if (!legalOnMethods.containsKey(node.getMsgName())) {
+                    System.out.println("On method id " + node.getMsgName() + " not found");
+                    exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
+                }else{
+                    System.out.println("On method id " + node.getMsgName() + " found");
+                }
+
+                //We then leave the scope, such that we do not mess with our scope stack
+                this.symbolTable.leaveScope();
+            }
+            this.visitChildren(node);
+        } catch (NullPointerException e){
+            exceptions.add(new SymbolNotFoundException("Symbol: " + node.getReceiver() + " not found"));
         }
 
-        //Then we find the list of messages it can receive
-        HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
-        //We then check if the message is part of the list of allowed messages
-        if (!legalOnMethods.containsKey(node.getMsgName())) {
-            exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
-        }
-
-        //We then leave the scope, such that we do not mess with our scope stack
-        this.symbolTable.leaveScope();
-        this.visitChildren(node);
     }
 
 
@@ -86,14 +101,16 @@ public class MethodCallVisitor implements NodeVisitor {
         //We then check if every entry in the Scripts list also is in the Actors list
         for (String onMethod : legalOnMethodsScript.keySet()) {
             if (!legalOnMethodsActor.containsKey(onMethod)) {
+                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
                 exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
+            }else{
+                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " has on method: " + onMethod + " from Script: " + script.getName());
             }
         }
 
         this.visitChildren(node);
     }
 
-    //TODO: Find out if this needs any more implementation
     @Override
     public void visit(SenderNode node) {
         this.visitChildren(node);
@@ -104,11 +121,6 @@ public class MethodCallVisitor implements NodeVisitor {
         for(AstNode child : node.getChildren()){
             child.accept(this);
         }
-    }
-
-    @Override
-    public void visit(BoolAndExpNode node) {
-        this.visitChildren(node);
     }
 
     @Override
@@ -257,6 +269,11 @@ public class MethodCallVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(SelfNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
     }
@@ -321,7 +338,7 @@ public class MethodCallVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SelfNode node) {
+    public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
     }
 

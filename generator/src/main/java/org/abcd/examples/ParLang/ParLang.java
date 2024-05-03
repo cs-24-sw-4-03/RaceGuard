@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.abcd.examples.ParLang.AstNodes.AstNode;
 
@@ -53,18 +54,16 @@ public class ParLang {
         SymbolTable symbolTable = new SymbolTable();
 
 
-        System.out.println("\nFuncVisitor");
-        FuncVisitor funcVisitor = new FuncVisitor(symbolTable);
-        funcVisitor.visit(ast);
-
-
         System.out.println("\nSymbolTableVisitor");
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
+        printExceptions(symbolTableVisitor.getExceptions());
 
         System.out.println("\nMethodCallVisitor");
         MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
         methodCallVisitor.visit(ast);
+        printExceptions(methodCallVisitor.getExceptions());
+
        //generateCode(ast);
 
         System.out.println("\nType Checking");
@@ -104,6 +103,14 @@ public class ParLang {
     private static void printCST(ParseTree tree, ParLangParser parser) {
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // Print LISP-style tree
+    }
+
+    private static void printExceptions(List<RuntimeException> exceptions){
+        System.out.println("\nExceptions:");
+        for(RuntimeException e : exceptions){
+            System.out.println(e.toString());
+        }
+
     }
 /*
     private static void generateCode(AstNode ast) throws IOException {

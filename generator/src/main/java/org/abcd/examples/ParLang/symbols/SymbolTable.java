@@ -14,8 +14,6 @@ public class SymbolTable {
     private Scope currentScope;
     final private Scope globalScope;
     final private Stack<Scope> scopeStack = new Stack<>();
-    public ArrayList<String> declaredOnMethods = new ArrayList<>();
-    public ArrayList<String> declaredActors = new ArrayList<>();
     public ArrayList<String> declaredScripts = new ArrayList<>();
 
 
