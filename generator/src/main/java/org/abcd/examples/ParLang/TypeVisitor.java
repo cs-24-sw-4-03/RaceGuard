@@ -331,7 +331,7 @@ public class TypeVisitor implements NodeVisitor {
             String identifierType = node.getChildren().get(0).getType();
             String assignType = node.getChildren().get(1).getType();
             if (!identifierType.equals(assignType)) {
-                throw new AssignExecption("Type mismatch in assignment");
+                throw new AssignExecption("Type mismatch in assignment between " + identifierType + " and " + assignType);
             }
             node.setType(identifierType);
         /*}
