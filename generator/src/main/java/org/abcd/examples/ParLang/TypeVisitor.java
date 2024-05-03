@@ -83,14 +83,16 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
-        this.visitChildren(node);
         /*try {*/
+        symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
+        this.visitChildren(node);
             if (node.getType() == null) {
                 throw new ScriptMethodException("Type is not defined for script method node");
             }
             if (node.getMethodType() == null) {
                 throw new ScriptMethodException("(on/local) Method type is not defined for script method node");
             }
+        symbolTable.leaveScope();
        /* }
         catch (ScriptMethodException e) {
             exceptions.add(e);
@@ -150,7 +152,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        try { //should be tested but i cannot test it
+        /*try { */
             if(!(node.getParent() instanceof MethodCallNode)) {
                 System.out.println("Symbol: " + node.getName());
                 if (hasParent(node, StateNode.class)) {
@@ -168,10 +170,15 @@ public class TypeVisitor implements NodeVisitor {
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
             }
-        }
+            else {
+                String Name = node.getName();
+                Attributes attributes = symbolTable.getDeclaredLocalMethods().get(Name);
+                node.setType(attributes.getVariableType());
+            }
+        /*}
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
-        }
+        }*/
     }
 
     @Override
@@ -258,7 +265,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArgumentsNode node) {
-        try { //identifiernode problem carried over to this
+        /*try {*/
             this.visitChildren(node);
             LinkedHashMap<String, Attributes> params;
             AstNode parent = node.getParent();
@@ -286,13 +293,13 @@ public class TypeVisitor implements NodeVisitor {
             } else {
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
             }
-        }
+        /*}
         catch (ArgumentsException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ArgumentsException(e.getMessage() + " in ArgumentsNode"));
-        }
+        }*/
     }
     private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
@@ -401,6 +408,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
+            node.setType(node.getId());
             this.symbolTable.leaveScope();
         /*}
         catch (Exception e) {
@@ -453,14 +461,21 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            String childType = node.getChildren().get(0).getType();
-            String nodeType = node.getType();
-            String typeMatch = typeMatchOrConvert(nodeType, childType);
-            if (typeMatch == null ) {
-                throw new MethodDclNodeException("Return does not match returnType of method");
+            if (node.getMethodType().equals("local")){
+                String childType = node.getChildren().get(1).getType(); //getting BodyNode child
+                String nodeType = node.getType();
+                String typeMatch = typeMatchOrConvert(nodeType, childType);
+                if (typeMatch == null ) {
+                    throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
+                }
             }
-            if (!node.getMethodType().equals("local")){
-                throw new MethodCallException("Method type is not local");
+            else if (node.getMethodType().equals("on")) {
+                if (node.getType() == null) {
+                    throw new MethodDclNodeException("Return type is not defined for on method node");
+                }
+            }
+            else {
+                throw new MethodCallException("Method type is not local or on of method: " + node.getId());
             }
             this.symbolTable.leaveScope();
         /*}
