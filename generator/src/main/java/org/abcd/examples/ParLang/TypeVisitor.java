@@ -173,8 +173,8 @@ public class TypeVisitor implements NodeVisitor {
             }else{
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
             }
-            symbolTable.leaveScope();
             this.visitChildren(node);
+            symbolTable.leaveScope();
        /* }
         catch (MethodCallException e) {
             exceptions.add(e);
