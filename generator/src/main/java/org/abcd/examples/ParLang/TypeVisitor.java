@@ -172,13 +172,13 @@ public class TypeVisitor implements NodeVisitor {
                 scopeName = node.getReceiver();
                 scopeName += this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
             }
-            if(scopeName != null){
-                this.symbolTable.enterScope(scopeName);
-            }else{
-                throw new SendMsgException("Method: " + node.getMsgName() + " not found");
+            /*if(scopeName != null){
+                if (!this.symbolTable.enterScope(scopeName)) {
+                    throw new SendMsgException("Method: " + node.getMsgName() + " not found");
+                }
             }
+            symbolTable.leaveScope();*/
             this.visitChildren(node);
-            symbolTable.leaveScope();
        /* }
         catch (MethodCallException e) {
             exceptions.add(e);
@@ -203,7 +203,17 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(IdentifierNode node) {
         /*try { */
-            if(!(node.getParent() instanceof MethodCallNode)) {
+            if((node.getParent() instanceof MethodCallNode)) {
+                String Name = node.getName();
+                Attributes attributes = symbolTable.getDeclaredLocalMethods().get(Name);
+                node.setType(attributes.getVariableType());
+            }
+            else if ((node.getParent() instanceof SendMsgNode)){
+                String id = node.getName();
+                Attributes attributes = symbolTable.lookUpSymbol(id);
+                node.setType(attributes.getVariableType());
+            }
+            else {
                 System.out.println("Symbol: " + node.getName());
                 if (hasParent(node, StateNode.class)) {
                     node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
@@ -218,11 +228,6 @@ public class TypeVisitor implements NodeVisitor {
                     System.out.println("Normal Symbol: " + node.getName());
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
-            }
-            else {
-                String Name = node.getName();
-                Attributes attributes = symbolTable.getDeclaredLocalMethods().get(Name);
-                node.setType(attributes.getVariableType());
             }
         /*}
         catch (Exception e) {
