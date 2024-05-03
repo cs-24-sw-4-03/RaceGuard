@@ -67,16 +67,30 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
-        int bracketCount = node.getBracketCount();
 
-        if(bracketCount == 1){
-                stringBuilder.append(".set(");
-                if(node.getChildren().get(0) instanceof IdentifierNode){
-                    stringBuilder.append("(int) ");
-                }
-                visitChild(node.getChildren().get(0));
-                stringBuilder.append(", ");
-                visit(node.getParent().getChildren().get(1));
+        boolean isGrandparentVarDclOrSiblingIdentifier = (node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode);
+        int childrenSize = node.getChildren().size();
+
+        if(isGrandparentVarDclOrSiblingIdentifier && childrenSize == 1){
+            stringBuilder.append(".get(");
+            visitChild(node.getChildren().get(0));
+            stringBuilder.append(")");
+        }
+        else if(node.getChildren().size() == 1){
+            stringBuilder.append(".set(");
+            if(node.getChildren().get(0) instanceof IdentifierNode){
+                stringBuilder.append("(int) ");
+            }
+            visitChild(node.getChildren().get(0));
+            stringBuilder.append(", ");
+            visit(node.getParent().getChildren().get(1));
+        }
+        else if(isGrandparentVarDclOrSiblingIdentifier && childrenSize == 2){
+            stringBuilder.append(".get(");
+            visitChild(node.getChildren().get(0));
+            stringBuilder.append(").get(");
+            visitChild(node.getChildren().get(1));
+            stringBuilder.append(")");
         }
         else {
             stringBuilder.append(".get(");
@@ -189,8 +203,7 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChild(leftChild);
             stringBuilder.append(" = ");
             visitChild(rightChild);
-    }
-    else {
+    } else {
         visitChild(leftChild);
         visitChild(rightChild);
         stringBuilder.append(")");
@@ -406,6 +419,13 @@ public class CodeGenVisitor implements NodeVisitor {
         if(!(node.getChildren().get(0) instanceof ListNode)){
             stringBuilder.append(" = ");
         }
+
+        /*if(node.getChildren().get(0) instanceof ArrayAccessNode){
+            stringBuilder.append("ARRAYACCESS");
+        }
+
+         */
+
         visitChildren(node);
     }
 

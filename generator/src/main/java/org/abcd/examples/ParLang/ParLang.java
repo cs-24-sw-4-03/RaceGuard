@@ -37,8 +37,6 @@ public class ParLang {
         TypeContainer typeContainer = new TypeContainer();
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
         InitNode ast=(InitNode) tree.accept(visitor);
-
-        printAST(ast, args);
         //printCST(tree, parser);
 
         System.out.println("\nScoping");
@@ -55,7 +53,8 @@ public class ParLang {
         methodCallVisitor.visit(ast);
         printExceptions(methodCallVisitor.getExceptions());
 
-       generateCode(ast);
+        printAST(ast, args);
+        generateCode(ast);
 
     }
     private static void validateSource(Path source) throws IOException {

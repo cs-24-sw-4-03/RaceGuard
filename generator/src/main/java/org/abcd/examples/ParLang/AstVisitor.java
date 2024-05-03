@@ -297,15 +297,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         AssignNode assignNode = new AssignNode();
 
         AstNode varNode=visit(ctx.getChild(0)); //visit the variable
-        if (varNode instanceof ArrayAccessNode) { //Check if the variable is an array access and check if it is a multi-dimensional array
-            for(int i=0;i<ctx.getChild(0).getChildCount();i++){
-                String arrayIndexText=ctx.getChild(0).getChild(i).getText();
-                if(arrayIndexText.contains("[")){
-                    ((ArrayAccessNode) varNode).setBracketCount(((ArrayAccessNode) varNode).getBracketCount()+1);
-                }
-            }
-
-        }
         AstNode valueNode=visit(ctx.getChild(2)); //visit the value
 
         assignNode.addChild(varNode); //add the variable as child
