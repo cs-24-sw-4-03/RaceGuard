@@ -164,17 +164,21 @@ public class TypeVisitor implements NodeVisitor {
                 if(this.symbolTable.lookUpScope(accessType) != null) {
                     scopeName = accessType;
                 }
-            }else{ //Otherwise it is an identifier node
+            }
+            else if(receiverNode instanceof SenderNode){
+                scopeName = currentActorScope.getScopeName();
+            }
+            else{ //Otherwise it is an identifier node
                 scopeName = node.getReceiver();
                 scopeName += this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType();
             }
             if(scopeName != null){
                 this.symbolTable.enterScope(scopeName);
             }else{
-                throw new MethodCallException("Method: " + node.getMsgName() + " not found");
+                throw new SendMsgException("Method: " + node.getMsgName() + " not found");
             }
-            symbolTable.leaveScope();
             this.visitChildren(node);
+            symbolTable.leaveScope();
        /* }
         catch (MethodCallException e) {
             exceptions.add(e);
@@ -212,7 +216,6 @@ public class TypeVisitor implements NodeVisitor {
                 }
                 else {
                     System.out.println("Normal Symbol: " + node.getName());
-                    System.out.println(symbolTable.getCurrentScope().getScopeName());
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
             }
@@ -351,11 +354,13 @@ public class TypeVisitor implements NodeVisitor {
                 } else {
                     attributes = symbolTable.lookUpSymbol(receiver);
                 }
-                Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
-                params = methodScope.getParams();
-                SendMsgNode sendMsgNode = (SendMsgNode) parent;
-                String msgName = sendMsgNode.getMsgName();
-                checkArgTypes(node, params, msgName);
+                if (!receiver.equals("sender")) {
+                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                    params = methodScope.getParams();
+                    SendMsgNode sendMsgNode = (SendMsgNode) parent;
+                    String msgName = sendMsgNode.getMsgName();
+                    checkArgTypes(node, params, msgName);
+                }
             } else {
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
             }
@@ -557,7 +562,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MainDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash());
+            this.symbolTable.enterScope(node.getNodeHash() + "main");
             this.visitChildren(node);
             this.symbolTable.leaveScope();
        /* }
