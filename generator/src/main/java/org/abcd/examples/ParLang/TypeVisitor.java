@@ -81,6 +81,26 @@ public class TypeVisitor implements NodeVisitor {
         return false;
     }
 
+    private Attributes accessType(AstNode node){
+        Attributes attributes = null;
+        if (node instanceof StateAccessNode){
+            String id = ((StateAccessNode) node).getAccessIdentifier();
+            attributes = symbolTable.lookUpStateSymbol(id);
+        }
+        if (node instanceof KnowsAccessNode){
+            if (node instanceof KnowsAccessNode){
+                String id = ((KnowsAccessNode) node).getAccessIdentifier();
+                attributes = symbolTable.lookUpKnowsSymbol(id);
+            }
+        }
+        if (attributes != null){
+            return attributes;
+        }
+        else {
+            throw new AccessTypeException("Access type not found for node: " + node.getClass().getName());
+        }
+    }
+
     @Override
     public void visitChildren(AstNode node){
         for (AstNode child : node.getChildren()) {
@@ -153,8 +173,8 @@ public class TypeVisitor implements NodeVisitor {
             }else{
                 throw new MethodCallException("Method: " + node.getMsgName() + " not found");
             }
-            this.visitChildren(node);
             symbolTable.leaveScope();
+            this.visitChildren(node);
        /* }
         catch (MethodCallException e) {
             exceptions.add(e);
@@ -311,7 +331,26 @@ public class TypeVisitor implements NodeVisitor {
                 //TODO Lookup correct scope for onMethod calls
                 String receiver = ((SendMsgNode) parent).getReceiver();
                 String methodName = ((SendMsgNode) parent).getMsgName();
-                Attributes attributes = symbolTable.lookUpSymbol(receiver);
+                Attributes attributes;
+                if (receiver.contains(".")) {
+                    System.out.println("-------------Receiver: " + receiver);
+                    String accessor = receiver.split("\\.")[0];
+                    receiver = receiver.split("\\.")[1];
+                    System.out.println("-------------Receiver: " + receiver);
+                    switch (accessor) {
+                        case "State":
+                            attributes = symbolTable.lookUpStateSymbol(receiver);
+                            break;
+                        case "Knows":
+                            attributes = symbolTable.lookUpKnowsSymbol(receiver);
+                            break;
+                        default:
+                            attributes = symbolTable.lookUpSymbol(receiver);
+                            break;
+                    }
+                } else {
+                    attributes = symbolTable.lookUpSymbol(receiver);
+                }
                 Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                 params = methodScope.getParams();
                 SendMsgNode sendMsgNode = (SendMsgNode) parent;
@@ -690,13 +729,12 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(CompareExpNode node) {
         this.visitChildren(node);
         /*try {*/
-            ArithExpNode leftChild = ((ArithExpNode) node.getChildren().get(0));
-            ArithExpNode rightChild = ((ArithExpNode) node.getChildren().get(1));
-            if (Objects.equals(leftChild.getType(), rightChild.getType()) &&
-                    Objects.equals(leftChild.getType(), "Int") || Objects.equals(leftChild.getType(), "Double")) {
+            AstNode leftChild = node.getChildren().get(0);
+            AstNode rightChild = node.getChildren().get(1);
+            if (compareExpTypeMatching(leftChild.getType(), rightChild.getType())) {
                 node.setType("bool");
             } else {
-                throw new CompareTypeMatchingException("Type mismatch in comparison expression");
+                throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType());
             }
        /* }
         catch (CompareTypeMatchingException e) {
@@ -705,6 +743,15 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new CompareTypeMatchingException(e.getMessage() + " in CompareExpNode"));
         }*/
+    }
+
+    private boolean compareExpTypeMatching(String leftType, String rightType){
+        if (leftType.equals(rightType) && leftType.equals("int") || leftType.equals("double")){
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     @Override
