@@ -518,50 +518,59 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(PrintCallNode node) {
         stringBuilder.append("System.out.println(");
-        int childrenSizeOfArray = node.getChildren().get(0).getChildren().size(); //get the dimensions of the array
-        //check if the array is a 1D array or 2D array else just normal print
-        if (node.getChildren().get(0) instanceof ArrayAccessNode && childrenSizeOfArray == 1) {
-            stringBuilder.append(((ArrayAccessNode) node.getChildren().get(0)).getAccessIdentifier());
-            stringBuilder.append(".get(");
-            if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
-                stringBuilder.append("(int) ");
-            }
-            visit(node.getChildren().get(0));
-            stringBuilder.append(")");
-            //Visit all the children of the print call node.
-            visitPrintChildren(node);
-        } else if(node.getChildren().get(0) instanceof ArrayAccessNode && childrenSizeOfArray == 2) {
-            stringBuilder.append(((ArrayAccessNode) node.getChildren().get(0)).getAccessIdentifier());
-            stringBuilder.append(".get(");
-            if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
-                stringBuilder.append("(int) ");
-            }
-            visitChild(node.getChildren().get(0).getChildren().get(0));
-            stringBuilder.append(").get(");
-            if(node.getChildren().get(0).getChildren().get(1) instanceof IdentifierNode){//typecast if the child is an identifier
-                stringBuilder.append("(int) ");
-            }
-            visitChild(node.getChildren().get(0).getChildren().get(1));
-            stringBuilder.append(")");
-            //Visit all the children of the print call node.
-            visitPrintChildren(node);
-        }
-        else {
+        if (isOneDimensionalArray(node)) {
+            printOneDimensionalArray(node);
+        } else if (isTwoDimensionalArray(node)) {
+            printTwoDimensionalArray(node);
+        } else {
             visitChild(node.getChildren().get(0));
-            //Visit all the children of the print call node.
-            visitPrintChildren(node);
         }
+        visitPrintChildren(node);
         stringBuilder.append(");\n");
         codeOutput.add(getLine());
     }
 
+    private boolean isOneDimensionalArray(PrintCallNode node) {
+        return node.getChildren().get(0) instanceof ArrayAccessNode &&
+                node.getChildren().get(0).getChildren().size() == 1;
+    }
+
+    private boolean isTwoDimensionalArray(PrintCallNode node) {
+        return node.getChildren().get(0) instanceof ArrayAccessNode &&
+                node.getChildren().get(0).getChildren().size() == 2;
+    }
+
+    private void printOneDimensionalArray(PrintCallNode node) {
+        ArrayAccessNode arrayNode = (ArrayAccessNode) node.getChildren().get(0);
+        stringBuilder.append(arrayNode.getAccessIdentifier()).append(".get(");
+        if (node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode) {
+            stringBuilder.append("(int) ");
+        }
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(")");
+    }
+
+    private void printTwoDimensionalArray(PrintCallNode node) {
+        ArrayAccessNode arrayNode = (ArrayAccessNode) node.getChildren().get(0);
+        stringBuilder.append(arrayNode.getAccessIdentifier()).append(".get(");
+        if (node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode) {
+            stringBuilder.append("(int) ");
+        }
+        visitChild(node.getChildren().get(0).getChildren().get(0));
+        stringBuilder.append(").get(");
+        if (node.getChildren().get(0).getChildren().get(1) instanceof IdentifierNode) {
+            stringBuilder.append("(int) ");
+        }
+        visitChild(node.getChildren().get(0).getChildren().get(1));
+        stringBuilder.append(")");
+    }
+
     private void visitPrintChildren(PrintCallNode node) {
-        if(node.getChildren().size() > 1){
-            for(int i = 1; i < node.getChildren().size(); i++){
+        if (node.getChildren().size() > 1) {
+            for (int i = 1; i < node.getChildren().size(); i++) {
                 stringBuilder.append(" + ");
                 visitChild(node.getChildren().get(i));
             }
-
         }
     }
 
