@@ -47,7 +47,7 @@ Actor Square follows Shape{
 		int length;
     }
 	Knows{}
-        Spawn(int height, int length){
+    Spawn(int height, int length){
         State.height = height;
         State.length = length;
     }
