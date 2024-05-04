@@ -69,7 +69,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(node.getAccessIdentifier());
         //e.g: int x = a[0]; x = a[1];
         if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 1){
-           stringBuilder.append("FIRSTCHILD");
             accessArrayFirstChild(node);
         }
         //e.g: int x = a[0][0]; x = a[1][1];
@@ -78,7 +77,7 @@ public class CodeGenVisitor implements NodeVisitor {
             accessArraySecondChild(node);
         }
         //Assign values to 1D array
-        else if(accessArrayDimensions(node) == 1){
+        else if(accessArrayDimensions(node) == 1 && !(node.getParent() instanceof CompareExpNode)){
             //Set method for a index in a 1D array with a value
             //First child need a set method: .set(index, value)
             //e.g: a[0] = 1;
@@ -97,6 +96,22 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append(".get(");
                 typeCastFirstArrayAccessNode(node);
                 visitChild(node.getChildren().get(0));
+                stringBuilder.append(")");
+            }
+        }
+        //Compare an array with another array or a value
+        //e.g: a[0] == 1; a[0] == b[0];
+        else if(node.getParent() instanceof CompareExpNode){
+            if(accessArrayDimensions(node) == 1){
+                stringBuilder.append(".get(");
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append(")");
+            }
+            else{
+                stringBuilder.append(".get(");
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append(").get(");
+                visitChild(node.getChildren().get(1));
                 stringBuilder.append(")");
             }
         }
@@ -226,21 +241,16 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArithExpNode node) {
-        AstNode leftChild = node.getChildren().get(0);
-        AstNode rightChild = node.getChildren().get(1);
+            if(node.getIsParenthesized()) {
+                stringBuilder.append("(");
+            }
 
-        if(node.getIsParenthesized()){
-            stringBuilder.append("(");
-            visitChild(leftChild);
+            visitChild(node.getChildren().get(0));
             stringBuilder.append(" " + node.getOpType().getValue() + " ");
-            visitChild(rightChild);
-            stringBuilder.append(")");
-        }
-        else{
-            visitChild(leftChild);
-            stringBuilder.append(" " + node.getOpType().getValue() + " ");
-            visitChild(rightChild);
-        }
+            visitChild(node.getChildren().get(1));
+            if (node.getIsParenthesized()) {
+                stringBuilder.append(")");
+            }
 
     }
 
@@ -363,8 +373,14 @@ public class CodeGenVisitor implements NodeVisitor {
         }
 
        visitChild(node.getChildren().get(0));
-       stringBuilder.append(node.getOperator());
-       visitChild(node.getChildren().get(1));
+       if(node.getChildren().get(0) instanceof ArrayAccessNode && node.getChildren().get(1) instanceof ArrayAccessNode){
+            stringBuilder.append(".equals(");
+            visitChild(node.getChildren().get(1));
+            stringBuilder.append(")");
+       }else{
+            stringBuilder.append(node.getOperator());
+            visitChild(node.getChildren().get(1));
+       }
 
        if(node.getIsParenthesized()){
               stringBuilder.append(")");
@@ -426,10 +442,8 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
     }
 
-
-
-    @Override
-    public void visit(IdentifierNode node) {
+    //HashMap to convert the type of the array to the type of the arraylist
+    private String HashMapConverter(IdentifierNode node){
         HashMap<String, String> HashMapConverter = new HashMap<>();
         //1 dimensional arrays
         HashMapConverter.put("int[]", "ArrayList<Integer>");
@@ -441,8 +455,13 @@ public class CodeGenVisitor implements NodeVisitor {
         HashMapConverter.put("double[][]", "ArrayList<ArrayList<Double>>");
         HashMapConverter.put("bool[][]", "ArrayList<ArrayList<Boolean>>");
         HashMapConverter.put("string[][]", "ArrayList<ArrayList<String>>");
-        String arrayType = HashMapConverter.get(node.getType());
+        return HashMapConverter.get(node.getType());
+    }
 
+    @Override
+    public void visit(IdentifierNode node) {
+        String arrayType = HashMapConverter(node);
+        //
         if(node.getType()!= null && !node.getType().equals(VariableConverter(node.getType()))){
             stringBuilder.append(VariableConverter(node.getType()));
             stringBuilder.append(" ");
@@ -452,8 +471,6 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(" ");
             stringBuilder.append(node.getName());
             stringBuilder.append(" = new ArrayList<>();\n");
-
-
             //Check if the parent is a var dcl node and has more than one child, then append the name of the node which
             //is used to add elements to the arraylist in the ListNode
             if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
@@ -511,6 +528,7 @@ public class CodeGenVisitor implements NodeVisitor {
             separateElementsList(node);
         }
     }
+    //Separate the elements in the list by a comma
     private void separateElementsList(ListNode node) {
         for(int i = 0; i < node.getChildren().size(); i++){
             visitChild(node.getChildren().get(i));
@@ -641,7 +659,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     }
 
-    //DOES NOT WORK
+    //Standard selection node construction with if and else statements
     @Override
     public void visit(SelectionNode node) {
         stringBuilder.append("if(");
@@ -690,12 +708,14 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         visitChildren(node);
-        if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
+        //if the parent is not a for node, add a semicolon, else don't
+        if(!(node.getParent() instanceof ForNode)){
                 stringBuilder.append(";\n");
                 codeOutput.add(getLine());
             }
     }
 
+    //Standard while loop construction
     @Override
     public void visit(WhileNode node) {
         stringBuilder.append("while(");

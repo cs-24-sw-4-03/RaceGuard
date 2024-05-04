@@ -77,6 +77,7 @@ boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | identifier
     | negatedBool
     | methodCall
+
     ;
 negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE
     | LOGIC_NEGATION identifier
@@ -89,12 +90,12 @@ compareExp : arithExp compareOperator arithExp;
 // arithmetic expressions
 arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence of arithmetic operators
     | PARAN_OPEN arithExp PARAN_CLOSE
-    //| arrayAccess
     ;
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
     | identifier
     | stateAccess
+    | arrayAccess
     | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
     | unaryExp
     ;
