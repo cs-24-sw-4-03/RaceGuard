@@ -129,6 +129,11 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(AccessNode node) {
+        if(node instanceof StateAccessNode){
+            visit((StateAccessNode) node);
+        }else if(node instanceof KnowsAccessNode){
+            visit((KnowsAccessNode) node);
+        }
     }
 
     @Override
@@ -418,7 +423,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsAccessNode node) {
-
+        stringBuilder
+                .append(parLangE.KNOWS.getValue())
+                .append(".")
+                .append(node.getAccessIdentifier());
     }
 
     @Override
@@ -519,7 +527,7 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if (returnee instanceof AccessNode) {
             visit((AccessNode) returnee);
         } else if (returnee instanceof LiteralNode){
-            visit((LiteralNode) returnee);
+            visit((LiteralNode<?>) returnee);
         } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
@@ -528,7 +536,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
 
-     public void visit(LiteralNode node){
+     public void visit(LiteralNode<?> node){
         stringBuilder.append(node.getValue());
      }
 

@@ -1,0 +1,12 @@
+Actor someActor{
+    State{}
+    Knows{}
+    Spawn(){}
+
+    on onMethod(){
+
+    }
+}
+
+main(){
+}
