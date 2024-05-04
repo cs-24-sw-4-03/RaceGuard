@@ -1,0 +1,12 @@
+Actor a{
+    State{}
+    Knows{}
+    Spawn(){}
+    local localMethod(int i):String{
+        String s="local Method reporting";
+        print("local Method reporting");
+        return s;
+    }
+}
+
+main(){}

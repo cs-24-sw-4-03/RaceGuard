@@ -4,3 +4,4 @@ Script TestScript{
     local localMethod(String s):int;
 }
 main(){}
+

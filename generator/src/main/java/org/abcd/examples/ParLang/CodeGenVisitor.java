@@ -458,19 +458,32 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(MethodDclNode node) {
 
          if(node.getMethodType().equals(parLangE.ON.getValue())){
-            handleOnMethodDcl();
+            handleOnMethodDcl(node);
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            handleLocalMethodDcl();
+            handleLocalMethodDcl(node);
         }
 
     }
 
-    private void handleOnMethodDcl(){
+    private void handleOnMethodDcl(MethodDclNode node){
 
     }
 
-    private void handleLocalMethodDcl() {
+    private void handleLocalMethodDcl(MethodDclNode node) {
+        appendMethodDefinition("private",node.getMethodType(),node.getId());
+        appendBody(node);
 
+    }
+
+
+
+    private void appendMethodDefinition(String access, String returnType, String name){
+        stringBuilder
+                .append(access)
+                .append(" ")
+                .append(returnType)
+                .append(name)
+                .append(" ");
     }
 
     @Override
