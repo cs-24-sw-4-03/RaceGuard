@@ -7,10 +7,9 @@ public class IdentifierNode extends AstNode{
     private final String name;
     private boolean isActor=false;
 
-    public IdentifierNode(String name, String type,boolean isActor){
+    public IdentifierNode(String name, String type){
         this.name=name;
         setType(type);
-        this.isActor=isActor;
     }
 
 

@@ -1,9 +1,11 @@
 package org.abcd.examples.ParLang;
 
 public enum parLangE {
-    ON("on"),
-    LOCAL("local"),
-    ACTOR("Actor");
+    ON("on "),
+    LOCAL("local "),
+    ACTOR("Actor "),
+    KNOWS("Knows"),
+    STATE("State");
 
     private String string;
 

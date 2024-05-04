@@ -9,7 +9,8 @@ public enum javaE {
     IMPORT("import "),
     IMPLEMENTS("implements "),
     EXTENDS("extends "),
-    ACTORREF("ActorRef ");
+    ACTORREF("ActorRef "),
+    RETURN("return ");
 
     private String string;
     private javaE(String s){

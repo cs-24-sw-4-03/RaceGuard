@@ -83,9 +83,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (numOfChildren != 2){ //there are minimum 2 children, the parentheses
             //If there are more than 2 children, there are parameters
             for (int i = 1; i < numOfChildren; i+=3){ //skip the commas
-                boolean isActor=ctx.getChild(i).getChild(0) instanceof ParLangParser.IdentifierContext;
-                System.out.println("her"+isActor);
-                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText(),isActor));//add the parameters as children to the parametersNode
+                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));//add the parameters as children to the parametersNode
             }
             }
         return params; //return the parametersNode with all parameters added as children
@@ -180,7 +178,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             //If there are more than 3 children, there are known actors
 
             for (int i = 2; i < numOfChildren-1; i+=3){ //skip the commas
-                knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText(),true));
+                knowsNode.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
             } //add the known actors as children to the knowsNode
         }
         return knowsNode; //return the knowsNode with all known actors added as children
@@ -277,9 +275,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
         VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText()); //ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
-
-        boolean isActor=ctx.allTypes().getChild(0) instanceof ParLangParser.IdentifierContext;
-        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText(),isActor);//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
         dclNode.addChild(idNode); //add identifier as child
 
         ParLangParser.InitializationContext init=ctx.initialization(); //get the initialization value

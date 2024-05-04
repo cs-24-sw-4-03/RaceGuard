@@ -82,12 +82,15 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     private void appendClassDefinition(String access, String name, String superClass) {
-        stringBuilder.append(access).append(javaE.CLASS.getValue()).append(name).append(" ");
+        stringBuilder
+                .append(access)
+                .append(javaE.CLASS.getValue())
+                .append(name)
+                .append(" ");
         if(superClass!=null){
             stringBuilder
                     .append(javaE.EXTENDS.getValue())
-                    .append(superClass)
-                    .append(" ");
+                    .append(superClass);
         }
     }
 
@@ -176,7 +179,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 "Logging",
                 "LoggingAdapter"
         );
-        appendClassDefinition("public", node.getId(),"UntypedAbstractActor");
+        appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
+        System.out.println("actor declaration");
         appendBody(node);
 
         writeToFile(node.getId(), codeOutput);
@@ -381,7 +385,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        if(node.getIsActor() && node.getType()!= null){
+        if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
             stringBuilder.append(javaE.ACTORREF.getValue());
         } else if (node.getType()!= null) {
             stringBuilder.append(VariableConverter(node.getType())).append(" ");
@@ -429,7 +433,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(LocalMethodBodyNode node) {
-
+        appendBody(node);
     }
 
     @Override
@@ -456,8 +460,8 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
-
-         if(node.getMethodType().equals(parLangE.ON.getValue())){
+        System.out.println("MethodDclNode");
+        if(node.getMethodType().equals(parLangE.ON.getValue())){
             handleOnMethodDcl(node);
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             handleLocalMethodDcl(node);
@@ -470,9 +474,10 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     private void handleLocalMethodDcl(MethodDclNode node) {
-        appendMethodDefinition("private",node.getMethodType(),node.getId());
-        appendBody(node);
-
+        appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
+        visit(node.getParametersNode());//visit ParametersNode
+        AstNode bodyNode=node.getBodyNode();
+        visit((LocalMethodBodyNode) node.getBodyNode());
     }
 
 
@@ -480,10 +485,9 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendMethodDefinition(String access, String returnType, String name){
         stringBuilder
                 .append(access)
-                .append(" ")
                 .append(returnType)
-                .append(name)
-                .append(" ");
+                .append(" ")
+                .append(name);
     }
 
     @Override
@@ -504,8 +508,29 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
-
+        stringBuilder.append(javaE.RETURN.getValue());
+        AstNode returnee=node.getReturnee();//get the expression which is returned (return <returnee>;)
+        if(returnee instanceof IdentifierNode){
+            visit((IdentifierNode) returnee);
+        } else if (returnee instanceof ArithExpNode) {
+            visit((ArithExpNode) returnee);
+        } else if (returnee instanceof BoolExpNode) {
+            visit((BoolExpNode) returnee);
+        } else if (returnee instanceof AccessNode) {
+            visit((AccessNode) returnee);
+        } else if (returnee instanceof LiteralNode){
+            visit((LiteralNode) returnee);
+        } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+        stringBuilder.append(";\n");
+        codeOutput.add(getLinePlain());
     }
+
+
+     public void visit(LiteralNode node){
+        stringBuilder.append(node.getValue());
+     }
 
     @Override
     public void visit(ScriptDclNode node) {
@@ -533,7 +558,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ParametersNode node) {
-        if(node.getParent() instanceof ScriptMethodNode){
+        System.out.println(node.getParent().getClass().getSimpleName());
+        if(node.getParent() instanceof MethodDclNode) {
+            appendParameters(node);
+        }else if (node.getParent() instanceof ScriptMethodNode){
             localIndent++;
             visitChildren(node, javaE.PUBLIC.getValue(),";\n");
             localIndent--;
@@ -541,6 +569,12 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    private void appendParameters(ParametersNode node){
+        stringBuilder.append("(");
+        visitChildren(node,"",",");//appends list of parameters. There is with a surplus comma after last parameter: "int p1, int p2,"
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        stringBuilder.append(")");
+    }
 
 
 
