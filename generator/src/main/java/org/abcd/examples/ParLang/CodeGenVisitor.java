@@ -462,11 +462,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(IdentifierNode node) {
         String arrayType = HashMapConverter(node);
         //
-        if(node.getType()!= null && !node.getType().equals(VariableConverter(node.getType()))){
-            stringBuilder.append(VariableConverter(node.getType()));
-            stringBuilder.append(" ");
-            stringBuilder.append(node.getName());
-        } else if(arrayType !=null){
+         if(arrayType !=null){
             stringBuilder.append(arrayType);
             stringBuilder.append(" ");
             stringBuilder.append(node.getName());
@@ -476,6 +472,10 @@ public class CodeGenVisitor implements NodeVisitor {
             if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
                 stringBuilder.append(node.getName());
             }
+        } else if(node.getType()!= null){
+            stringBuilder.append(VariableConverter(node.getType()));
+            stringBuilder.append(" ");
+            stringBuilder.append(node.getName());
         }
         else{
             stringBuilder.append(node.getName());
