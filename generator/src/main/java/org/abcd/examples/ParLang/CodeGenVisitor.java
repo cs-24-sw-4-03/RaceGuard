@@ -1,16 +1,20 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 public class CodeGenVisitor implements NodeVisitor {
 
-    private String
-            dirPath = System.getProperty("user.dir") + "/output";
+    SymbolTable symbolTable;
+
+    public CodeGenVisitor(SymbolTable symbolTable){
+        this.symbolTable=symbolTable;
+    }
+
+    private String dirPath = System.getProperty("user.dir") + "/output";
 
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
@@ -23,10 +27,17 @@ public class CodeGenVisitor implements NodeVisitor {
         int indent = localIndent;
 
         if (line.endsWith("}\n")){
-            //indent--;
+            indent--;
         }
         line = line.indent(indent * 4);
 
+        return line;
+    }
+
+    //an alternative version to getLine() where indent is not reduced if line ends with "}\n"
+    private String getLinePlain() {
+        String line = stringBuilder.toString().indent(localIndent* 4);
+        stringBuilder.setLength(0); // Resets string builder
         return line;
     }
 
@@ -61,12 +72,56 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    //An alternative version of visitChildren where the Strings before and after is appended before and after the result of visiting the child node
     public void visitChildren(AstNode node, String before, String after){
         for (AstNode childNode : node.getChildren()) {
             stringBuilder.append(before);
             childNode.accept(this);
             stringBuilder.append(after);
         }
+    }
+
+    private void appendClassDefinition(String access, String name, String superClass) {
+        stringBuilder.append(access).append(javaE.CLASS.getValue()).append(name).append(" ");
+        if(superClass!=null){
+            stringBuilder
+                    .append(javaE.EXTENDS.getValue())
+                    .append(superClass)
+                    .append(" ");
+        }
+    }
+
+    private void resetStringBuilder(){
+        resetStringBuilder(stringBuilder);
+        resetCodeOutput(codeOutput);
+        localIndent = 0;
+    }
+
+    private void appendImports(String pack, String firstClassName, String...additionalClassNames){
+        appendImport(pack,firstClassName);
+        for(String className:additionalClassNames){
+            appendImport(pack,className);
+        }
+        stringBuilder.append("\n");
+    }
+
+    private void appendImport(String pack,String className){
+        stringBuilder
+                .append(javaE.IMPORT.getValue())
+                .append(pack)
+                .append(".")
+                .append(className)
+                .append(";\n");
+    }
+
+    private void appendBody(AstNode node){
+        stringBuilder.append( " {\n");
+        codeOutput.add(getLinePlain() );
+        localIndent++;
+        visitChildren(node);
+        localIndent--;
+        stringBuilder.append( "}\n");
+        codeOutput.add(getLinePlain() );//evt. getLine() her, men synes ikke det virker når der deklareres klasser og metoder inde i actors.
     }
 
     @Override
@@ -110,32 +165,21 @@ public class CodeGenVisitor implements NodeVisitor {
     //4. Write the file
     @Override
     public void visit(ActorDclNode node) {
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
-        localIndent = 0;
+        resetStringBuilder();
 
         //imports necessary for most akka actor classes
-        stringBuilder
-                .append("import akka.actor.ActorRef;\n")
-                .append("import akka.actor.ActorSystem;\n")
-                .append("import akka.actor.Props;\n")
-                .append("import akka.actor.UntypedAbstractActor;\n")
-                .append("import akka.event.Logging;\n")
-                .append("import akka.event.LoggingAdapter;\n");
-        stringBuilder.append("public class ")
-            .append(node.getId())
-            .append(" extends UntypedAbstractActor")
-            .append(" {\n");
-        codeOutput.add(getLine());
-        localIndent++;
-        visitChildren(node);
-
-        localIndent--;
-        stringBuilder.append("}\n");
-        codeOutput.add(getLine());
+        appendImports("akka.actor",
+                "ActorRef",
+                "ActorSystem",
+                "Props",
+                "UntypedAbstractActor",
+                "Logging",
+                "LoggingAdapter"
+        );
+        appendClassDefinition("public", node.getId(),"UntypedAbstractActor");
+        appendBody(node);
 
         writeToFile(node.getId(), codeOutput);
-
     }
 
     @Override
@@ -338,8 +382,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(IdentifierNode node) {
         if(node.getIsActor() && node.getType()!= null){
-            System.out.println("twst");
-            stringBuilder.append(java.ACTORREF.getValue()).append(" ");
+            stringBuilder.append(javaE.ACTORREF.getValue());
         } else if (node.getType()!= null) {
             stringBuilder.append(VariableConverter(node.getType())).append(" ");
         }
@@ -414,6 +457,20 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
 
+         if(node.getMethodType().equals(parLangE.ON.getValue())){
+            handleOnMethodDcl();
+        } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
+            handleLocalMethodDcl();
+        }
+
+    }
+
+    private void handleOnMethodDcl(){
+
+    }
+
+    private void handleLocalMethodDcl() {
+
     }
 
     @Override
@@ -442,7 +499,7 @@ public class CodeGenVisitor implements NodeVisitor {
         resetStringBuilder();
 
         appendImports("akka.actor","ActorRef");
-        appendClassDefinition(java.PUBLIC.getValue(),node.getId());
+        appendClassDefinition(javaE.PUBLIC.getValue(),node.getId(),null);
         appendBody(node);
 
         writeToFile(node.getId(),codeOutput);
@@ -450,82 +507,27 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
-        stringBuilder
-                .append(java.PUBLIC.getValue())
-                .append(java.STATIC.getValue())
-                .append(java.FINAL.getValue())
-                .append(java.CLASS.getValue())
-                .append(node.getId());
-        appendBody(node);
+        if(node.getMethodType().equals(parLangE.ON.getValue())){
+            stringBuilder
+                    .append(javaE.PUBLIC.getValue())
+                    .append(javaE.STATIC.getValue())
+                    .append(javaE.FINAL.getValue())
+                    .append(javaE.CLASS.getValue())
+                    .append(node.getId());
+            appendBody(node);
+        }
     }
 
     @Override
     public void visit(ParametersNode node) {
         if(node.getParent() instanceof ScriptMethodNode){
             localIndent++;
-            visitChildren(node,java.PUBLIC.getValue(),";\n");
+            visitChildren(node, javaE.PUBLIC.getValue(),";\n");
             localIndent--;
-            codeOutput.add(getLine());
+            codeOutput.add(getLinePlain() );
         }
     }
 
-
-
-
-
-    private void appendClassDefinition(String access, String name) {
-        stringBuilder.append(access).append(java.CLASS.getValue()).append(name);
-    }
-
-    private void resetStringBuilder(){
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
-        localIndent = 0;
-    }
-
-    private void appendImports(String pack, String firstClassName, String...additionalClassNames){
-        appendImport(pack,firstClassName);
-        for(String className:additionalClassNames){
-            appendImport(pack,className);
-        }
-        stringBuilder.append("\n");
-    }
-
-    private void appendImport(String pack,String className){
-        stringBuilder.append(java.IMPORT.getValue()).append(pack).append(".").append(className).append(";\n");
-    }
-
-    private void appendBody(AstNode node){
-        stringBuilder.append( " {\n");
-        codeOutput.add(getLine());
-
-        localIndent++;
-        visitChildren(node);
-        localIndent--;
-
-        stringBuilder.append( "}\n");
-        codeOutput.add(getLine());
-    }
-
-
-    private enum java{
-        CLASS("class "),
-        PUBLIC("public "),
-        PRIVATE("private "),
-        STATIC("static "),
-        FINAL("final "),
-        IMPORT("import "),
-        IMPLEMENTS("implements "),
-        EXTENDS("extends "),
-        ACTORREF("ActorRef ");
-
-        private String string;
-        private java(String s){
-            this.string=s;
-        }
-
-        public String getValue(){return string;}
-    }
 
 
 
