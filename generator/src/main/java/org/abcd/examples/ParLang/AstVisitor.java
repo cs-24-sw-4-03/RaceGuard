@@ -44,7 +44,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             main.addChild(visit(ctx.parameters())); //add parameters as children to the main node
         }
         if(ctx.body()!=null){ //If there is a body
-
             main.addChild(visit(ctx.body())); //visit the body and add it as a child to the main node
         }
         return main;
@@ -83,9 +82,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (numOfChildren != 2){ //there are minimum 2 children, the parentheses
             //If there are more than 2 children, there are parameters
             for (int i = 1; i < numOfChildren; i+=3){ //skip the commas
-                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));//add the parameters as children to the parametersNode
-            }
-            }
+                params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
+            }//add the parameters as children to the parametersNode
+        }
         return params; //return the parametersNode with all parameters added as children
     }
     @Override public AstNode visitArguments(ParLangParser.ArgumentsContext ctx){

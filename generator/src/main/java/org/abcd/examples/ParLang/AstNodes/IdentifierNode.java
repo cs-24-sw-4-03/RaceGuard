@@ -5,13 +5,11 @@ import org.abcd.examples.ParLang.NodeVisitor;
 
 public class IdentifierNode extends AstNode{
     private final String name;
-    private boolean isActor=false;
 
     public IdentifierNode(String name, String type){
         this.name=name;
         setType(type);
     }
-
 
     public IdentifierNode(String name){
         this.name=name;
@@ -21,7 +19,6 @@ public class IdentifierNode extends AstNode{
     public String getName() {
         return name;
     }
-    public boolean getIsActor(){return isActor;}
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);

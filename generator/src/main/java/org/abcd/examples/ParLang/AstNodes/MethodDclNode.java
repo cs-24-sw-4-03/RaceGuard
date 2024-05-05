@@ -7,7 +7,7 @@ public class MethodDclNode extends ScriptMethodNode{
     }
 
     public ParametersNode getParametersNode(){
-        ParametersNode node=(ParametersNode) this.getChildren().get(0);
+        ParametersNode node=(ParametersNode) this.getChildren().get(0);//First child is always the ParametersNode
         if (node !=null){
             return node;
         }else{
@@ -16,7 +16,7 @@ public class MethodDclNode extends ScriptMethodNode{
     }
 
     public AstNode getBodyNode(){
-        AstNode node= this.getChildren().get(1);//Can either be of type BodyNode or LocalMethodBodyNode
+        AstNode node= this.getChildren().get(1);//Second child is either a BodyNode or LocalMethodBodyNode
         if (node!=null){
             return node;
         }else{
