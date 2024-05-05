@@ -309,45 +309,34 @@ public class TypeVisitor implements NodeVisitor {
                 String actorName = spawnActorNode.getType();
                 checkArgTypes(node, params, actorName);
             } else if (parent instanceof SendMsgNode) {
-                //TODO Lookup correct scope for onMethod calls
-                String receiver = ((SendMsgNode) parent).getReceiver();
+                //Cast the parent to SendMsgNode
+                SendMsgNode sendMsgNode = (SendMsgNode) parent;
+                //The first child of SendMsgNode is always a receiver node
+                AstNode receiverNode = sendMsgNode.getChildren().get(0);
+                String receiverName = sendMsgNode.getReceiver();
+                //Method name is used to find the parameters to check the arguments up against
                 String methodName = ((SendMsgNode) parent).getMsgName();
-                Attributes attributes;
-                if (receiver.contains(".")) {
-                    System.out.println("-------------Receiver: " + receiver);
-                    String accessor = receiver.split("\\.")[0];
-                    receiver = receiver.split("\\.")[1];
-                    System.out.println("-------------Receiver: " + receiver);
-                    switch (accessor) {
-                        case "State":
-                            attributes = symbolTable.lookUpStateSymbol(receiver);
-                            break;
-                        case "Knows":
-                            attributes = symbolTable.lookUpKnowsSymbol(receiver);
-                            break;
-                        default:
-                            attributes = symbolTable.lookUpSymbol(receiver);
-                            break;
-                    }
+                Attributes attributes = null; //The attributes are used to get the correct method scope
+
+                //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode, SelfNode or SenderNode
+                if(receiverNode instanceof StateAccessNode){
+                    attributes = symbolTable.lookUpStateSymbol(receiverName);
+                }else if(receiverNode instanceof KnowsAccessNode){
+                    attributes = symbolTable.lookUpKnowsSymbol(receiverName);
+                }else if(receiverNode instanceof SelfNode){
+                    String actorName = symbolTable.findActorParent(receiverNode);
+                    attributes = symbolTable.lookUpSymbol(actorName);
+                }else if(receiverNode instanceof IdentifierNode){
+                    attributes = symbolTable.lookUpSymbol(receiverName);
                 }
-                else if(receiver.equals("self")){
-                    AstNode findParent = parent;
-                    while (!(findParent instanceof ActorDclNode)){
-                        findParent = findParent.getParent();
-                    }
-                    attributes = new Attributes(((ActorDclNode) findParent).getId(), "Actor");
-                }
-                else {
-                    attributes = symbolTable.lookUpSymbol(receiver);
-                }
-                if (!receiver.equals("sender")) {
+
+                //We do not type check sender as it is not possible to do statically
+                if (!(receiverNode instanceof SenderNode) && attributes != null) {
                     Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                     params = methodScope.getParams();
-                    SendMsgNode sendMsgNode = (SendMsgNode) parent;
-                    String msgName = sendMsgNode.getMsgName();
-                    checkArgTypes(node, params, msgName);
+                    checkArgTypes(node, params, methodName);
                 }
-            } else {
+            }else {
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
             }
         /*}
