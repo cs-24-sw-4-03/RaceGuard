@@ -12,7 +12,12 @@ public enum javaE {
     ACTORREF("ActorRef "),
     RETURN("return "),
     VOID("void "),
-    ONRECEIVE("onReceive(Object message) ");
+    ONRECEIVE("onReceive(Object message) "),
+    INSTANCEOF("instanceof "),
+    IF("if "),
+    IFELSE(" if else "),
+    ELSE(" else "),
+    UNHANDLED("unhandled(message);");
 
     private String string;
     private javaE(String s){

@@ -135,31 +135,86 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     private void appendOnReceive(ActorDclNode node){
+        Scope scope=symbolTable.lookUpScope(node.getId());
+        Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();
+        String methodName;
+
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.VOID.getValue())
                 .append(javaE.ONRECEIVE.getValue())
                 .append("{\n");
+        codeOutput.add(getLinePlain());
+        localIndent++;
 
-        Scope scope=symbolTable.lookUpScope(node.getId());
-        Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();
-        while (onMethods.hasNext()){
-            String method=onMethods.next();
-            stringBuilder
-                    .append("if (message instanceof ")
-                    .append(method)
-                    .append(" ")
-                    .append(method)
-                    .append("Msg")
-                    .append(") {")
-                    .append( "on")
-                    .append(method)
-                    .append("(")
-                    .append(method)
-                    .append("Msg")
-                    .append(");}\n");
+        if(onMethods.hasNext()){
+            methodName=onMethods.next();
+            appendIfElseChainLink("if",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
         }
-        codeOutput.add(getLinePlain() );
+        while (onMethods.hasNext()){
+            methodName=onMethods.next();
+            appendIfElseChainLink("if else",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+        }
+        appendElse(javaE.UNHANDLED.getValue());
+
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLinePlain());
+    }
+
+    private void appendIfElseChainLink(String type,String condition,String body){
+        String keyword;
+        if(type.equals("if")){
+            keyword=javaE.IF.getValue();
+        }else if(type.equals("if else")) {
+            keyword=javaE.IFELSE.getValue();
+        }else{
+            throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
+        }
+        stringBuilder
+                .append(keyword)
+                .append("(")
+                .append(condition)
+                .append(") {\n");
+        codeOutput.add(getLinePlain());
+        localIndent++;
+        stringBuilder.append(body);
+        codeOutput.add(getLinePlain());
+        localIndent--;
+        stringBuilder.append("}");
+    }
+
+    private void appendElse(String body){
+        stringBuilder
+                .append(javaE.ELSE.getValue())
+                .append("{\n");
+        codeOutput.add(getLinePlain());
+        localIndent++;
+        stringBuilder.append(body);
+        codeOutput.add(getLinePlain());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLinePlain());
+    }
+
+    private String getOnReceiveIfCondition(String methodName){
+        System.out.println("her");
+        System.out.println(methodName);
+        String msg= "message "+javaE.INSTANCEOF.getValue()+capitalizeFirstLetter(methodName)+" "+methodName+"Msg";
+        System.out.println(methodName);
+        return msg;
+    }
+
+    private String getOnReceiveIfBody(String methodName){
+        return "on"+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
+    }
+
+    private String capitalizeFirstLetter(String input) {
+        if (input != null && !input.isEmpty()) {
+            return input.substring(0, 1).toUpperCase() + input.substring(1);
+        } else {
+            throw new IllegalArgumentException("Input string is null or empty");
+        }
     }
 
     @Override

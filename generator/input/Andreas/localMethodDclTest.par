@@ -30,8 +30,12 @@ Actor myActor{
     }
 
 
-    on onMethod(){
-        print("on Method reporting");
+    on myOnMethod1(){
+        print("on Method1 reporting");
+    }
+
+    on myOnMethod2(){
+        print("on Method2 reporting");
     }
 }
 
