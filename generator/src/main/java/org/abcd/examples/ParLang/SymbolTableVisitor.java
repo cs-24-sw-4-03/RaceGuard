@@ -152,7 +152,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
-        this.symbolTable.addScope(node.getNodeHash());
+        this.symbolTable.addScope(node.getNodeHash() + "main");
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
         //Leaves the scope after visiting the children, as the variables in the Main node are not available outside the Main node

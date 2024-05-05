@@ -32,7 +32,7 @@ Actor House follows Shape, ShapeManager{
         }
         else{
             State.area = result;
-            State.resultsRecieved = State.resultRecieved + 1;
+            State.resultsRecieved = State.resultsRecieved + 1;
         }
     }
 
@@ -53,7 +53,7 @@ Actor Square follows Shape{
     }
 
     on getArea(){
-        sender <- areaResult( height * length );
+        sender <- areaResult( State.height * State.length );
     }
 }
 
@@ -69,7 +69,7 @@ Actor Triangle follows Shape{
     }
 
     on getArea(){
-        sender <- areaResult( height * ( 2 / baseLength ) );
+        sender <- areaResult( State.height * ( 2 / State.baseLength ) );
     }
 }
 
@@ -80,7 +80,7 @@ Actor CircleManager follows Shape, ShapeManager{
 	Knows{Shape Circle;}
     Spawn(double radius){
         State.area = 0;
-        Knows.Circle = Spawn Circle(State.radius);
+        Knows.Circle = Spawn Circle(radius);
     }
 
     on calcArea(){
@@ -106,14 +106,14 @@ Actor Circle follows Shape{
     }
 
     on getArea(){
-        sender <- areaResult( radius * radius * 3.14 );
+        sender <- areaResult( State.radius * State.radius * 3.14 );
     }
 }
 
 Actor ShapesManager follows Shape, ShapeManager{
 	State{
 		int resultsRecieved;
-        double fullArea;
+        double area;
     }
 	Knows{Shape shape1; Shape shape2; Shape shape3;}
 	Spawn(Shape shape1, Shape shape2, Shape shape3){
@@ -134,7 +134,7 @@ Actor ShapesManager follows Shape, ShapeManager{
         }
         else{
             State.area = result;
-            State.resultsRecieved = State.resultRecieved + 1;
+            State.resultsRecieved = State.resultsRecieved + 1;
         }
     }
 
