@@ -10,7 +10,9 @@ public enum javaE {
     IMPLEMENTS("implements "),
     EXTENDS("extends "),
     ACTORREF("ActorRef "),
-    RETURN("return ");
+    RETURN("return "),
+    VOID("void "),
+    ONRECEIVE("onReceive(Object message) ");
 
     private String string;
     private javaE(String s){

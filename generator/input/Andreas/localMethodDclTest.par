@@ -1,5 +1,5 @@
 Actor myActor{
-    State{}
+    State{int x=2;}
     Knows{myActor a;}
     Spawn(){}
     local localMethod(int i):String{
@@ -23,6 +23,10 @@ Actor myActor{
     }
     local localMethod6():int{
          return 2.71;
+    }
+
+    local localMethod7():int{
+        return State.x;
     }
 
 

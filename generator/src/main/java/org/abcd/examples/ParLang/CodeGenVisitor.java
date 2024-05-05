@@ -1,10 +1,14 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+import javax.swing.text.html.HTMLDocument;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.Iterator;
 
 public class CodeGenVisitor implements NodeVisitor {
 
@@ -122,9 +126,40 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLinePlain() );
         localIndent++;
         visitChildren(node);
+        if(node instanceof ActorDclNode actorDclnode){
+            appendOnReceive(actorDclnode);
+        }
         localIndent--;
         stringBuilder.append( "}\n");
         codeOutput.add(getLinePlain() );//evt. getLine() her, men synes ikke det virker når der deklareres klasser og metoder inde i actors.
+    }
+
+    private void appendOnReceive(ActorDclNode node){
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.VOID.getValue())
+                .append(javaE.ONRECEIVE.getValue())
+                .append("{\n");
+
+        Scope scope=symbolTable.lookUpScope(node.getId());
+        Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();
+        while (onMethods.hasNext()){
+            String method=onMethods.next();
+            stringBuilder
+                    .append("if (message instanceof ")
+                    .append(method)
+                    .append(" ")
+                    .append(method)
+                    .append("Msg")
+                    .append(") {")
+                    .append( "on")
+                    .append(method)
+                    .append("(")
+                    .append(method)
+                    .append("Msg")
+                    .append(");}\n");
+        }
+        codeOutput.add(getLinePlain() );
     }
 
     @Override
@@ -468,7 +503,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
-        System.out.println("MethodDclNode");
         if(node.getMethodType().equals(parLangE.ON.getValue())){
             handleOnMethodDcl(node);
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
@@ -484,7 +518,6 @@ public class CodeGenVisitor implements NodeVisitor {
     private void handleLocalMethodDcl(MethodDclNode node) {
         appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
         visit(node.getParametersNode());//visit ParametersNode
-        AstNode bodyNode=node.getBodyNode();
         visit((LocalMethodBodyNode) node.getBodyNode());
     }
 
@@ -625,7 +658,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateAccessNode node) {
-
+        stringBuilder
+                .append(parLangE.STATE.getValue())
+                .append(".")
+                .append(node.getAccessIdentifier());
     }
 
     @Override
