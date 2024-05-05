@@ -4,10 +4,8 @@ import org.abcd.examples.ParLang.AstNodes.*;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
-import javax.swing.text.html.HTMLDocument;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.Iterator;
 
 public class CodeGenVisitor implements NodeVisitor {
@@ -39,10 +37,16 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     //an alternative version to getLine() where indent is not reduced if line ends with "}\n"
-    private String getLinePlain() {
+    private String getLineBasic() {
         String line = stringBuilder.toString().indent(localIndent* 4);
         stringBuilder.setLength(0); // Resets string builder
         return line;
+    }
+
+    private void resetStringBuilder(){
+        resetStringBuilder(stringBuilder);
+        resetCodeOutput(codeOutput);
+        localIndent = 0;
     }
 
     public void visit(AstNode node) {
@@ -98,12 +102,6 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    private void resetStringBuilder(){
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
-        localIndent = 0;
-    }
-
     private void appendImports(String pack, String firstClassName, String...additionalClassNames){
         appendImport(pack,firstClassName);
         for(String className:additionalClassNames){
@@ -123,7 +121,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     private void appendBody(AstNode node){
         stringBuilder.append( " {\n");
-        codeOutput.add(getLinePlain() );
+        codeOutput.add(getLineBasic() );
         localIndent++;
         visitChildren(node);
         if(node instanceof ActorDclNode actorDclnode){
@@ -131,7 +129,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         localIndent--;
         stringBuilder.append( "}\n");
-        codeOutput.add(getLinePlain() );//evt. getLine() her, men synes ikke det virker når der deklareres klasser og metoder inde i actors.
+        codeOutput.add(getLineBasic() );//evt. getLine() her, men synes ikke det virker når der deklareres klasser og metoder inde i actors.
     }
 
     private void appendOnReceive(ActorDclNode node){
@@ -144,7 +142,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.VOID.getValue())
                 .append(javaE.ONRECEIVE.getValue())
                 .append("{\n");
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
         localIndent++;
 
         if(onMethods.hasNext()){
@@ -159,7 +157,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
     }
 
     private void appendIfElseChainLink(String type,String condition,String body){
@@ -176,10 +174,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("(")
                 .append(condition)
                 .append(") {\n");
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
         localIndent++;
         stringBuilder.append(body);
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
         localIndent--;
         stringBuilder.append("}");
     }
@@ -188,13 +186,13 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder
                 .append(javaE.ELSE.getValue())
                 .append("{\n");
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
         localIndent++;
         stringBuilder.append(body);
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
     }
 
     private String getOnReceiveIfCondition(String methodName){
@@ -620,7 +618,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append(";\n");
-        codeOutput.add(getLinePlain());
+        codeOutput.add(getLineBasic());
     }
 
 
@@ -661,7 +659,7 @@ public class CodeGenVisitor implements NodeVisitor {
             localIndent++;
             visitChildren(node, javaE.PUBLIC.getValue(),";\n");
             localIndent--;
-            codeOutput.add(getLinePlain() );
+            codeOutput.add(getLineBasic() );
         }
     }
 
