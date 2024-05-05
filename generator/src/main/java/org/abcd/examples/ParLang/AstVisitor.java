@@ -83,7 +83,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             //If there are more than 2 children, there are parameters
             for (int i = 1; i < numOfChildren; i+=3){ //skip the commas
                 params.addChild(new IdentifierNode(ctx.getChild(i+1).getText(), ctx.getChild(i).getText()));
-            }//add the parameters as children to the parametersNode
+            } //add the parameters as children to the parametersNode
         }
         return params; //return the parametersNode with all parameters added as children
     }
