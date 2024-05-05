@@ -799,6 +799,4 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("\n");
         codeOutput.add(getLine());
     }
-
-
 }
