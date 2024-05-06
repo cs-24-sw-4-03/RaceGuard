@@ -59,7 +59,7 @@ public class MethodVisitor implements NodeVisitor {
             HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
             //We then check if the message is part of the list of allowed messages
             if (!legalOnMethods.containsKey(node.getMsgName())) {
-                exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
+                exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found in actor: " + symbolTable.getCurrentScope().getScopeName()));
             }
 
             //We then leave the scope, such that we do not mess with our scope stack

@@ -13,7 +13,7 @@ Actor House follows Shape, ShapeManager{
         int resultsRecieved;
         double area;
     }
-	Knows{Shape Square; Shape Triangle;}
+	Knows{Shape Square; Shape Triangle; ShapeManager manager;}
 	Spawn(double houseWidth, double houseHeight){
 		State.resultsRecieved = 0;
 		State.area = 0.0;
@@ -41,7 +41,7 @@ Actor House follows Shape, ShapeManager{
     }
 
     on getArea(){
-        sender <- areaResult( State.area );
+        Knows.manager <- areaResult( State.area );
     }
 }
 
@@ -50,14 +50,14 @@ Actor Square follows Shape{
 		double height;
 		double length;
     }
-	Knows{}
+	Knows{Square square; ShapeManager manager;}
     Spawn(double height, double length){
         State.height = height;
         State.length = length;
     }
 
     on getArea(){
-        sender <- areaResult( State.height * State.length );
+        Knows.manager <- areaResult( State.height * State.length );
     }
 }
 
@@ -66,14 +66,14 @@ Actor Triangle follows Shape{
 		double height;
 		double baseLength;
     }
-	Knows{}
+	Knows{Triangle triangle; ShapeManager manager;}
     Spawn(double height, double baseLength){
         State.height = height;
         State.baseLength = baseLength;
     }
 
     on getArea(){
-        sender <- areaResult( State.height * ( 2 / State.baseLength ) );
+        Knows.manager <- areaResult( State.height * ( 2 / State.baseLength ) );
     }
 }
 
@@ -81,14 +81,14 @@ Actor CircleManager follows Shape, ShapeManager{
 	State{
         double area;
     }
-	Knows{Shape Circle;}
+	Knows{Shape circle; ShapeManager manager;}
     Spawn(double radius){
         State.area = 0;
-        Knows.Circle = Spawn Circle(radius);
+        Knows.circle = Spawn Circle(radius);
     }
 
     on calcArea(){
-        Knows.Circle <- getArea();
+        Knows.circle <- getArea();
     }
 
     on areaResult(double result){
@@ -100,7 +100,7 @@ Actor CircleManager follows Shape, ShapeManager{
     }
 
     on getArea(){
-        sender <- areaResult( State.area );
+        Knows.manager <- areaResult( State.area );
     }
 }
 
@@ -108,13 +108,13 @@ Actor Circle follows Shape{
 	State{
         double radius;
     }
-	Knows{}
+	Knows{ShapeManager manager;}
 	Spawn(double radius){
         State.radius = radius;
     }
 
     on getArea(){
-        sender <- areaResult( State.radius * State.radius * 3.14 );
+        Knows.manager <- areaResult( State.radius * State.radius * 3.14 );
     }
 }
 
@@ -123,7 +123,7 @@ Actor ShapesManager follows Shape, ShapeManager{
 		int resultsRecieved;
         double area;
     }
-	Knows{Shape shape1; Shape shape2; Shape shape3;}
+	Knows{Shape shape1; Shape shape2; Shape shape3; ShapesManager manager;}
 	Spawn(Shape shape1, Shape shape2, Shape shape3){
 		Knows.shape1 = shape1;
 		Knows.shape2 = shape2;
@@ -151,7 +151,7 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 
     on getArea(){
-        sender <- areaResult( State.area );
+        Knows.manager <- areaResult( State.area );
     }
 }
 main(){
