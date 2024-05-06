@@ -6,20 +6,19 @@ import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
 import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
 import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
-import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MethodCallVisitor implements NodeVisitor {
+public class MethodVisitor implements NodeVisitor {
     SymbolTable symbolTable;
     private List<RuntimeException> exceptions = new ArrayList<>();
 
     public List<RuntimeException> getExceptions() {return this.exceptions;}
 
-    public MethodCallVisitor(SymbolTable symbolTable) {
+    public MethodVisitor(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
 
