@@ -35,7 +35,7 @@ public class MethodVisitor implements NodeVisitor {
     @Override
     public void visit(SendMsgNode node) {
         try{
-            //First we check if it is either a Knows, State, Self, Sender or a normal variable
+            //First we check if it is either a Knows, State, Self or a normal variable
             if(node.getReceiver().contains(".")){
                 //If it contains . then it is a Knows or State access. We therefore check which
                 String receiver = node.getReceiver().split("\\.")[1];
@@ -55,18 +55,16 @@ public class MethodVisitor implements NodeVisitor {
                 this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
             }
 
-            //We do not need to search for a method if the receiver is a sender
-            if(!node.getReceiver().equals("sender")){
-                //Then we find the list of messages it can receive
-                HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
-                //We then check if the message is part of the list of allowed messages
-                if (!legalOnMethods.containsKey(node.getMsgName())) {
-                    exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
-                }
-
-                //We then leave the scope, such that we do not mess with our scope stack
-                this.symbolTable.leaveScope();
+            //Then we find the list of messages it can receive
+            HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
+            //We then check if the message is part of the list of allowed messages
+            if (!legalOnMethods.containsKey(node.getMsgName())) {
+                exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
             }
+
+            //We then leave the scope, such that we do not mess with our scope stack
+            this.symbolTable.leaveScope();
+
             this.visitChildren(node);
         } catch (NullPointerException e){
             exceptions.add(new SymbolNotFoundException("Symbol: " + node.getReceiver() + " not found"));
@@ -105,11 +103,6 @@ public class MethodVisitor implements NodeVisitor {
             }
         }
 
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(SenderNode node) {
         this.visitChildren(node);
     }
 
