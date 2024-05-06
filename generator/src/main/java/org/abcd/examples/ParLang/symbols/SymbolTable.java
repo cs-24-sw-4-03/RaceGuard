@@ -46,11 +46,9 @@ public class SymbolTable {
     //Pops the top scope from the stack and sets it as the currentScope
     //TODO: C* sets the name of the original currentScope, find out if there is a reason for this
     public void leaveScope(){
-        System.out.println("Leaving scope: " + this.currentScope.getScopeName());
         if(!this.scopeStack.empty()){
             this.currentScope = this.scopeStack.pop();
         } else{
-            System.out.println("No more scopes to leave");
             this.currentScope = this.globalScope;
         }
     }
@@ -84,7 +82,6 @@ public class SymbolTable {
     }
 
     public boolean enterScope(String scopeName){
-        System.out.println("Entering scope: " + scopeName);
         Scope scope = this.findScope(scopeName, this.globalScope);
 
         if(scope != null){
@@ -132,7 +129,6 @@ public class SymbolTable {
         //Iterates through the scopes starting from the currentScope moving up the scope hierarchy
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
-            System.out.println("State symbols: " + scope.getStateSymbols());
             if(!scope.getStateSymbols().isEmpty() && scope.getStateSymbols().containsKey(symbol)){
                 System.out.println("Symbol: " + symbol + " found");
                 return scope.getStateSymbols().get(symbol);

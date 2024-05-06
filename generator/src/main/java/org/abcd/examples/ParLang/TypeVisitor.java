@@ -24,7 +24,6 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private String typeMatchOrConvert(String type1, String type2){
-        System.out.println("checking type match or convert between " + type1 + " and " + type2 + " in TypeVisitor");
         if (type1.equals(type2)){
             return type1;
         }
@@ -61,18 +60,15 @@ public class TypeVisitor implements NodeVisitor {
             return true;
         }
         if (assignTo.equals("int") && assignFrom.equals("double")){
-            System.out.println("-------------Cannot convert double to int");
             return false;
         }
         if (assignTo.equals("double") && assignFrom.equals("int")){
-            System.out.println("----------Can convert int to double");
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
             symbolTable.enterScope(assignTo);
             ArrayList<String> types = symbolTable.getActorsFollowingScript();
             if (types.contains(assignFrom)){
-                System.out.println("---------------Can convert " + assignFrom + " to " + assignTo);
                 symbolTable.leaveScope();
                 return true;
             }
@@ -314,10 +310,8 @@ public class TypeVisitor implements NodeVisitor {
                 String methodName = ((SendMsgNode) parent).getMsgName();
                 Attributes attributes;
                 if (receiver.contains(".")) {
-                    System.out.println("-------------Receiver: " + receiver);
                     String accessor = receiver.split("\\.")[0];
                     receiver = receiver.split("\\.")[1];
-                    System.out.println("-------------Receiver: " + receiver);
                     switch (accessor) {
                         case "State":
                             attributes = symbolTable.lookUpStateSymbol(receiver);
@@ -365,13 +359,8 @@ public class TypeVisitor implements NodeVisitor {
         }
         for (Map.Entry<String, Attributes> parameter : params.entrySet()) { //Iterates over parameters and arguments and matches them against each other
             int index = new ArrayList<>(params.keySet()).indexOf(parameter.getKey()); //Find the index of the parameter == index of argument
-            System.out.println("Getting argTypes");
             String argType = node.getChildren().get(index).getType(); //Type of argument
-            System.out.println("argType: " + argType);
-            System.out.println("Key: " + parameter.getKey() + " Type: " + params.get(parameter.getKey()).getVariableType());
             String paramType = parameter.getValue().getVariableType(); //Type of parameter
-            System.out.println("paramType: " + paramType);
-
             if (!canConvert(paramType, argType)){
                 throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName);
             }
@@ -801,11 +790,9 @@ public class TypeVisitor implements NodeVisitor {
             Attributes attributes;
             if (hasParent(node, StateAccessNode.class)){
                 attributes = symbolTable.lookUpStateSymbol(id);
-                System.out.println("Symbol: " + node.getAccessIdentifier());
             }
             else{
                 attributes = symbolTable.lookUpSymbol(id);
-                System.out.println("Symbol: " + node.getAccessIdentifier());
             }
             if (attributes == null){
                 throw new ArrayAccessException("Array: " + id + " not found");
@@ -832,12 +819,9 @@ public class TypeVisitor implements NodeVisitor {
             }
             else {
                 String id = node.getAccessIdentifier();
-                System.out.println("StateAccess: Symbol: " + id);
                 Attributes attributes = symbolTable.lookUpStateSymbol(id);
                 if (attributes == null) {
                     throw new StateAccessException("State: " + id + " not found");
-                }else{
-                    System.out.println("Symbol: " + node.getAccessIdentifier());
                 }
                 node.setType(attributes.getVariableType());
             }
