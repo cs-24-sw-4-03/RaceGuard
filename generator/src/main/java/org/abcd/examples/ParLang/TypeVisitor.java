@@ -220,7 +220,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getType() == null) {
                 throw new SpawnActorException("Type is not defined for spawn actor node");
             }
-            if (!symbolTable.declaredScripts.contains(node.getType())) {
+            if (symbolTable.declaredScripts.contains(node.getType())) {
                 throw new SpawnActorException("scripts cannot be spawned " + node.getType());
             }
        /* }
