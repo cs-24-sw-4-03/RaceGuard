@@ -167,5 +167,4 @@ main(){
 	house <- printArea();
 	circle <- printArea();
 	manager <- printArea();
-	House house2 = Spawn Shape(5, 3);
 }
