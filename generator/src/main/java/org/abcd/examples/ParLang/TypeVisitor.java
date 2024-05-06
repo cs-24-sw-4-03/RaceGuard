@@ -529,7 +529,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(MainDclNode node) {
         /*try {*/
-            this.symbolTable.enterScope(node.getNodeHash() + "main");
+            this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
        /* }
