@@ -8,13 +8,12 @@ public class Scope {
 
     //The symbols in the scope
     private final HashMap<String, Attributes> symbols = new HashMap<>();
-    private final Map<String, Attributes> params = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Attributes> params = new LinkedHashMap<>();
     private final HashMap<String, Attributes> stateSymbols = new HashMap<>();
     private final HashMap<String, Attributes> knowsSymbols = new HashMap<>();
     private final HashMap<String, Attributes> declaredLocalMethods = new HashMap<>();
     private final HashMap<String, Attributes> declaredOnMethods = new HashMap<>();
     private final ArrayList<String> actorsFollowingScript = new ArrayList<>();
-
 
 
     //Nested scopes within the current scope
@@ -52,7 +51,7 @@ public class Scope {
         return false;
     }
 
-    public Map<String, Attributes> getParams() {
+    public LinkedHashMap<String, Attributes> getParams() {
         return this.params;
     }
 
@@ -60,7 +59,7 @@ public class Scope {
         this.stateSymbols.put(id, attributes);
     }
 
-    public Map<String, Attributes> getStateSymbols() {
+    public HashMap<String, Attributes> getStateSymbols() {
         return this.stateSymbols;
     }
 
@@ -68,7 +67,7 @@ public class Scope {
         this.knowsSymbols.put(id, attributes);
     }
 
-    public Map<String, Attributes> getKnowsSymbols() {
+    public HashMap<String, Attributes> getKnowsSymbols() {
         return this.knowsSymbols;
     }
 

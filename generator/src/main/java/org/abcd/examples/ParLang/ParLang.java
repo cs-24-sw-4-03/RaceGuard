@@ -38,7 +38,6 @@ public class ParLang {
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
         InitNode ast=(InitNode) tree.accept(visitor);
 
-        printAST(ast, args);
         //printCST(tree, parser);
 
         System.out.println("\nScoping");
@@ -50,13 +49,17 @@ public class ParLang {
         symbolTableVisitor.visit(ast);
         printExceptions(symbolTableVisitor.getExceptions());
 
-        System.out.println("\nMethodCallVisitor");
-        MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
-        methodCallVisitor.visit(ast);
-        printExceptions(methodCallVisitor.getExceptions());
+        System.out.println("\nMethodVisitor");
+        MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
+        methodVisitor.visit(ast);
+        printExceptions(methodVisitor.getExceptions());
 
+
+        System.out.println("\nType Checking");
+        TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
+        typeVisitor.visit(ast);
+        printAST(ast, args);
         generateCode(ast,symbolTable);
-
     }
     private static void validateSource(Path source) throws IOException {
         if (!Files.exists(source)) {
@@ -90,7 +93,6 @@ public class ParLang {
         System.out.println("CST:");
         System.out.println(tree.toStringTree(parser)); // Print LISP-style tree
     }
-
 
     private static void printExceptions(List<RuntimeException> exceptions){
         System.out.println("\nExceptions:");
