@@ -7,6 +7,7 @@ import org.abcd.examples.ParLang.symbols.SymbolTable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class CodeGenVisitor implements NodeVisitor {
 
@@ -110,6 +111,23 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /***
+     * Appends static final class definition string
+     * @param access access modifier
+     * @param name name of class
+     */
+
+    private void appendStaticFinalClassDef(String access, String name){
+        stringBuilder
+                .append(access)
+                .append(javaE.STATIC.getValue())
+                .append(javaE.FINAL.getValue())
+                .append(javaE.CLASS.getValue())
+                .append(name);
+    }
+
+
+
+    /***
      * Append method declaration string (e.g. "private void myMethod")
      * @param access access modifier (e.g. "private")
      * @param returnType (e.g. "void")
@@ -164,17 +182,71 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The children of this AST node constitutes all the body to be appended in the target code.
      */
     private void appendBody(AstNode node){
+        appendBodyOpen(node,"","");
+        appendBodyClose();
+    }
+
+    /***
+     * Can be used if something has to be added after visting the children.
+     * @param node the parent of the body.
+     */
+    private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
         codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
-        visitChildren(node);//append the content of the body by visiting the children of @param node.
+        visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
         if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
             appendOnReceive(actorDclnode);
         }
+    }
+
+    /**
+     * Used to finish a body after appending what is needed.
+     */
+
+    private void appendBodyClose(){
         localIndent--;
         stringBuilder.append( "}\n");
         codeOutput.add(getLineBasic() );
     }
+
+    private void appendConstructor(String className,List<IdentifierNode> params){
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(className)
+                .append("(");
+        if(params!=null){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(param.getType())
+                        .append(" ")
+                        .append(param.getName())
+                        .append(", ");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+
+        stringBuilder.append(") {\n");
+        codeOutput.add(getLineBasic());
+        localIndent++;
+        if(params!=null){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(javaE.THIS.getValue())
+                        .append(".")
+                        .append(param.getName())
+                        .append(javaE.EQUALS.getValue())
+                        .append(param.getName())
+                        .append(";\n");
+            }
+        }
+        codeOutput.add(getLineBasic());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLineBasic());
+    }
+
 
     /***
      * Appends and onReceive() method to the vody of an Actor.
@@ -626,6 +698,13 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
+            if(!isMethodInFollowedScript(node)){
+                //We create a static class. Instances of this class is send as message when the on-method is called.
+                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),node.getId());//It is important that it is public since other actors must be able to access it.
+                appendBodyOpen(node.getChildren().get(0),"",";\n");
+                appendConstructor(node.getId(),(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+                appendBodyClose();
+            }
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
@@ -634,6 +713,21 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    private boolean isMethodInFollowedScript(MethodDclNode node){
+        //MethodDclNode's parent is always an actor.
+        // If the actor follows a script, a FollowsNode is the first child of this actor
+        AstNode firstChildOfActor=node.getParent().getChildren().get(0);
+        if(firstChildOfActor instanceof FollowsNode followsNode){
+            List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
+            for(IdentifierNode script:followedScripts){
+                Scope scriptScope=symbolTable.lookUpScope(script.getName());
+                if(scriptScope.getDeclaredOnMethods().containsKey(node.getId())){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 
 
@@ -694,15 +788,18 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
-        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a scrupt does not need to be handled here.
-            //Create a static class for the on-method.
-            stringBuilder
-                    .append(javaE.PUBLIC.getValue())
-                    .append(javaE.STATIC.getValue())
-                    .append(javaE.FINAL.getValue())
-                    .append(javaE.CLASS.getValue())
-                    .append(node.getId());
-            appendBody(node);//appends the body of the static class (prublic fields for each parameter in the method)
+        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a script does not need to be handled here.
+            appendStaticFinalClassDef(javaE.PUBLIC.getValue(),node.getId());//Create a static class for the on-method.
+
+            //appends opening of the body of the static class and creates public fields for each parameter in the method.
+            appendBodyOpen(node,"",";\n");
+
+            List<IdentifierNode> params=new ArrayList<IdentifierNode>();//prepare list of parameters for constructor
+            if(!node.getChildren().isEmpty()){
+               params=(List<IdentifierNode>)(List<?>)node.getChildren().get(0).getChildren(); //set list of parameters if there are any.
+            }
+            appendConstructor(node.getId(),params);//append the constructor in the body.
+            appendBodyClose();//close the body
         }
     }
 

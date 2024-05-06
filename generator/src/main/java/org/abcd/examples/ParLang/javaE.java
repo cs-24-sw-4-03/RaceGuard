@@ -18,7 +18,9 @@ public enum javaE {
     IF("if "),
     IFELSE(" if else "),
     ELSE(" else "),
-    UNHANDLED("unhandled(message);");
+    UNHANDLED("unhandled(message);"),
+    THIS("this"),
+    EQUALS(" = ");
 
     private String string;
     private javaE(String s){
