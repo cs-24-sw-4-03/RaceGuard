@@ -44,7 +44,7 @@ stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
-printBody : (STRING | identifier ) (PLUS (STRING | identifier))*;
+printBody : (STRING | arrayAccess | identifier ) (PLUS (STRING | arrayAccess | identifier ))*;
 
 //the different control structures in the language
 controlStructure : selection
@@ -76,6 +76,7 @@ boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | identifier
     | negatedBool
     | methodCall
+
     ;
 negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE
     | LOGIC_NEGATION identifier
@@ -93,6 +94,7 @@ term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and M
 factor : number
     | identifier
     | stateAccess
+    | arrayAccess
     | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
     | unaryExp
     ;
@@ -148,7 +150,7 @@ methodCall : identifier arguments;
 // to instanziate a new actor of a defined type
 spawnActor : SPAWN identifier arguments;
 //access array
-arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE;
+arrayAccess : identifier SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
 
 //arbritatry lsit of either ints, doubles, bools, or strings
 list : CURLY_OPEN listItem (COMMA listItem)* CURLY_CLOSE;
@@ -165,6 +167,7 @@ identifier : IDENTIFIER
 // can be any type defined in language
 allTypes : primitiveType
     | primitiveType ARRAY_TYPE
+    | primitiveType ARRAY_TYPE ARRAY_TYPE
     | ACTOR_TYPE
     | VOID_TYPE
     | identifier

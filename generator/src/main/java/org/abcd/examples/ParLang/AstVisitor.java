@@ -321,6 +321,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
+
         if(ctx.getChildCount()==1){ //If there is only one child,
             return visit(ctx.term(0)); //visit the term
         }else{ //If there are more than one child
@@ -528,7 +529,14 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
         //An array access
         String accessIdentifier = ctx.identifier().getText();
-        return new ArrayAccessNode("", accessIdentifier);
+        AstNode node = new ArrayAccessNode("",accessIdentifier);//Until type-checker is implemented
+        if(ctx.arithExp(0)!=null){ //If there is an arithmetic expression
+            node.addChild(visit(ctx.arithExp(0))); //visit and add the arithmetic expression as a child
+        }
+        if(ctx.arithExp(1)!=null){ //If there is a second arithmetic expression
+            node.addChild(visit(ctx.arithExp(1))); //visit and add the second arithmetic expression as a child
+        }
+        return node;
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
