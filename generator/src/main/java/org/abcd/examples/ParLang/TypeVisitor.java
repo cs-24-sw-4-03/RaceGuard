@@ -33,16 +33,6 @@ public class TypeVisitor implements NodeVisitor {
         if (type1.equals("double") && type2.equals("int")){
             return "double";
         }
-        if (symbolTable.declaredScripts.contains(type1)){
-            symbolTable.enterScope(type1);
-            ArrayList<String> types = symbolTable.getActorsFollowingScript();
-            if (types.contains(type2)){
-                symbolTable.leaveScope();
-                return type1;
-            }
-            symbolTable.leaveScope();
-            return null;
-        }
         return null;
     }
 
@@ -418,7 +408,7 @@ public class TypeVisitor implements NodeVisitor {
                 return;
             }
             String initType = node.getChildren().get(1).getType();
-            if (!idType.equals(initType)) {
+            if (!canConvert(idType, initType)) {
                 throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
             }
             node.setType(idType);
