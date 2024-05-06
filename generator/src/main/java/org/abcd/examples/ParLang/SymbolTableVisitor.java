@@ -296,7 +296,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolCompareNode node) {
-
+        this.visitChildren(node);
     }
 
     @Override
