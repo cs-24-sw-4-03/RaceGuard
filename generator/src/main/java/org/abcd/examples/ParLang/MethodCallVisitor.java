@@ -86,25 +86,37 @@ public class MethodCallVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-        //A FollowsNode can only have 1 child. This child is allways an IdentifierNode
-        IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
-        //We get the list of on methods from the Actor we are currently within
-        HashMap<String, Attributes> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
+        for(int x = 0; x < node.getChildren().size(); x++){
+            //A FollowsNode can only IdentifierNode children
+            IdentifierNode script = (IdentifierNode) node.getChildren().get(x);
+            //We get the list of on methods from the Actor we are currently within
+            HashMap<String, Attributes> legalOnMethodsActor = this.symbolTable.getDeclaredOnMethods();
+            HashMap<String, Attributes> legalLocalMethodsActor = this.symbolTable.getDeclaredLocalMethods();
 
-        //We then enter the scope of the Script the Actor follows
-        this.symbolTable.enterScope(script.getName());
-        //We find its on methods
-        HashMap<String, Attributes> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
-        //Then we leave the scope, such that we do not mess with the scope stack
-        this.symbolTable.leaveScope();
+            //We then enter the scope of the Script the Actor follows
+            this.symbolTable.enterScope(script.getName());
+            //We find its on methods
+            HashMap<String, Attributes> legalOnMethodsScript = this.symbolTable.getDeclaredOnMethods();
+            HashMap<String, Attributes> legalLocalMethodsScript = this.symbolTable.getDeclaredLocalMethods();
+            //Then we leave the scope, such that we do not mess with the scope stack
+            this.symbolTable.leaveScope();
 
-        //We then check if every entry in the Scripts list also is in the Actors list
-        for (String onMethod : legalOnMethodsScript.keySet()) {
-            if (!legalOnMethodsActor.containsKey(onMethod)) {
-                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
-                exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
-            }else{
-                System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " has on method: " + onMethod + " from Script: " + script.getName());
+            //We then check if every entry in the Scripts list also is in the Actors list
+            for (String onMethod : legalOnMethodsScript.keySet()) {
+                if (!legalOnMethodsActor.containsKey(onMethod)) {
+                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
+                    exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
+                }else{
+                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " has on method: " + onMethod + " from Script: " + script.getName());
+                }
+            }
+            for(String localMethod : legalLocalMethodsScript.keySet()){
+                if (!legalOnMethodsActor.containsKey(localMethod)) {
+                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + localMethod + " from Script: " + script.getName());
+                    exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + localMethod + " from Script: " + script.getName()));
+                }else{
+                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " has on method: " + localMethod + " from Script: " + script.getName());
+                }
             }
         }
 
