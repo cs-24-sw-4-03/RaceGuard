@@ -227,7 +227,6 @@ INT_TYPE : 'int';
 DOUBLE_TYPE : 'double';
 BOOL_TYPE : 'bool';
 STRING_TYPE : 'string';
-NULL_TYPE : 'null';
 ARRAY_TYPE : '[]';
 ACTOR_TYPE : 'Actor';
 VOID_TYPE : 'void';
