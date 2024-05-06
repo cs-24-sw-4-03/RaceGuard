@@ -33,7 +33,6 @@ public class MethodCallVisitor implements NodeVisitor {
         }
     }
 
-    //TODO: LOOK AT THIS
     @Override
     public void visit(SendMsgNode node) {
         try{
@@ -49,11 +48,7 @@ public class MethodCallVisitor implements NodeVisitor {
                     this.symbolTable.enterScope(this.symbolTable.lookUpKnowsSymbol(receiver).getVariableType());
                 }
 
-            } else if (node.getReceiver().equals("sender")) {
-                //We cannot enter the scope of the sender as we cannot know the actor type of the sender
-                //We can therefore not check if it has the method
-                System.out.println("Sender: " + node.getReceiver());
-            } else if (node.getReceiver().equals("self")){
+            }else if (node.getReceiver().equals("self")){
                 //We check if the Actor itself has the method we call
                 this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
             } else{
@@ -67,10 +62,7 @@ public class MethodCallVisitor implements NodeVisitor {
                 HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
                 //We then check if the message is part of the list of allowed messages
                 if (!legalOnMethods.containsKey(node.getMsgName())) {
-                    System.out.println("On method id " + node.getMsgName() + " not found");
                     exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found"));
-                }else{
-                    System.out.println("On method id " + node.getMsgName() + " found");
                 }
 
                 //We then leave the scope, such that we do not mess with our scope stack
@@ -104,18 +96,12 @@ public class MethodCallVisitor implements NodeVisitor {
             //We then check if every entry in the Scripts list also is in the Actors list
             for (String onMethod : legalOnMethodsScript.keySet()) {
                 if (!legalOnMethodsActor.containsKey(onMethod)) {
-                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName());
                     exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
-                }else{
-                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " has on method: " + onMethod + " from Script: " + script.getName());
                 }
             }
             for(String localMethod : legalLocalMethodsScript.keySet()){
                 if (!legalOnMethodsActor.containsKey(localMethod)) {
-                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + localMethod + " from Script: " + script.getName());
                     exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + localMethod + " from Script: " + script.getName()));
-                }else{
-                    System.out.println("Actor: " + this.symbolTable.findActorParent(node) +  " has on method: " + localMethod + " from Script: " + script.getName());
                 }
             }
         }
