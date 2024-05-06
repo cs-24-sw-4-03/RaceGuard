@@ -44,7 +44,7 @@ stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
-printBody : (STRING | identifier | arrayAccess) (PLUS (STRING | identifier ))*;
+printBody : (STRING | arrayAccess | identifier ) (PLUS (STRING | arrayAccess | identifier ))*;
 
 //the different control structures in the language
 controlStructure : selection
