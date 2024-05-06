@@ -692,9 +692,9 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append(node.getName());
             }
         } else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
-            stringBuilder.append(javaE.ACTORREF.getValue());//appends "ActorRef ".
-            stringBuilder.append(node.getName());
-       
+             stringBuilder.append(javaE.ACTORREF.getValue());//appends "ActorRef ".
+             stringBuilder.append(node.getName());
+         }
         else if(node.getType()!= null){
             stringBuilder.append(VariableConverter(node.getType()));
             stringBuilder.append(" ");
