@@ -1,5 +1,5 @@
 Script Script1{
-    on method1();
+    on method1(int x, String y);
 }
 
 Script Script2{
@@ -10,7 +10,7 @@ Actor Sven follows Script1, Script2{
     State{}
     Knows{}
     Spawn(){}
-    on method1(){
+    on method1(int x){
         print("Store patter");
     }
     on method2(){
@@ -18,6 +18,9 @@ Actor Sven follows Script1, Script2{
     }
     on method3(int x, int y){
         print("total viking power");
+    }
+    local localm():String{
+    return "a";
     }
 }
 

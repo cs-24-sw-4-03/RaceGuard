@@ -255,7 +255,9 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
         /*try{*/
-            node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
+            if(!node.getChildren().isEmpty()){
+                node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
+            }
             if (node.getType() == null) {
                 throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
             }

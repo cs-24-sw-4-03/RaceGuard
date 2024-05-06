@@ -186,7 +186,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The children of this AST node constitutes all the body to be appended in the target code.
      */
     private void appendBody(AstNode node){
-        appendBodyOpen(node,"","");
+        appendBodyOpen(node);
         appendBodyClose();
     }
 
@@ -194,6 +194,10 @@ public class CodeGenVisitor implements NodeVisitor {
      * Can be used if something has to be added after visting the children.
      * @param node the parent of the body.
      */
+    private void appendBodyOpen(AstNode node){
+        appendBodyOpen(node,"","");
+    }
+
     private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
         codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
@@ -219,7 +223,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.PUBLIC.getValue())
                 .append(className)
                 .append("(");
-        if(params!=null){
+        if(params.size()>0){
             for(IdentifierNode param:params){
                 stringBuilder
                         .append(param.getType())
@@ -862,10 +866,11 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
             if(!isMethodInFollowedScript(node)){
-                //We create a static class. Instances of this class is send as message when the on-method is called.
-                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),node.getId());//It is important that it is public since other actors must be able to access it.
-                appendBodyOpen(node.getChildren().get(0),"",";\n");
-                appendConstructor(node.getId(),(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+                //We create a static class. Instances of this class is sent as message when the on-method is called.
+                String className=capitalizeFirstLetter(node.getId());
+                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
+                appendBodyOpen(node.getChildren().getFirst(),javaE.PUBLIC.getValue(),";\n");
+                appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
                 appendBodyClose();
             }
             //To be done
@@ -1006,16 +1011,18 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptMethodNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a script does not need to be handled here.
-            appendStaticFinalClassDef(javaE.PUBLIC.getValue(),node.getId());//Create a static class for the on-method.
+            String className=capitalizeFirstLetter(node.getId());
+            appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//Create a static class for the on-method.
 
             //appends opening of the body of the static class and creates public fields for each parameter in the method.
-            appendBodyOpen(node,"",";\n");
+            appendBodyOpen(node);
 
             List<IdentifierNode> params=new ArrayList<IdentifierNode>();//prepare list of parameters for constructor
             if(!node.getChildren().isEmpty()){
                params=(List<IdentifierNode>)(List<?>)node.getChildren().get(0).getChildren(); //set list of parameters if there are any.
             }
-            appendConstructor(node.getId(),params);//append the constructor in the body.
+            appendConstructor(className,params);//append the constructor in the body.
+
             appendBodyClose();//close the body
         }
     }
@@ -1037,7 +1044,9 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
         visitChildren(node,"",",");//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
-        stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        if(node.getChildren().size()>0){
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        }
         stringBuilder.append(")");
     }
 
