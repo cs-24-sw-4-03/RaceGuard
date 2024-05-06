@@ -476,9 +476,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             return visit(ctx.getChild(0)); // Visit the child
         }
         else { // If there are more than one child
-            System.out.println("first child: "+ctx.getChild(0).getText());
-            System.out.println("second child: "+ctx.getChild(1).getText());
-            System.out.println("third child: "+ctx.getChild(2).getText());
             boolCompareNode = new BoolCompareNode(ctx.getChild(1).getText()); // Create a new node representing the comparison operation
             // Visit the left-hand side of the comparison and add it as a child
             boolCompareNode.addChild(visit(ctx.boolTerm(0)));
