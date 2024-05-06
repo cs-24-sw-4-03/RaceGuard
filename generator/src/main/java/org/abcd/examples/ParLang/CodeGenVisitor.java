@@ -168,13 +168,29 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The children of this AST node constitutes all the body to be appended in the target code.
      */
     private void appendBody(AstNode node){
+        appendBodyOpen(node,"","");
+        appendBodyClose();
+    }
+
+    /***
+     * Can be used if something has to be added after visting the children.
+     * @param node the parent of the body.
+     */
+    private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
         codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
-        visitChildren(node);//append the content of the body by visiting the children of @param node.
+        visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
         if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
             appendOnReceive(actorDclnode);
         }
+    }
+
+    /**
+     * Used to finish a body after appending what is needed.
+     */
+
+    private void appendBodyClose(){
         localIndent--;
         stringBuilder.append( "}\n");
         codeOutput.add(getLineBasic() );
