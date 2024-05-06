@@ -62,7 +62,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         String receiver = ctx.getChild(0).getText();
         String msgName = ctx.getChild(2).getText();
         SendMsgNode sendMsgNode = new SendMsgNode(receiver, msgName);
-        if(receiver.equals("self")){
+        if(receiver.equals(parLangE.SELF.getValue())){
             sendMsgNode.addChild(new SelfNode());
         } else{
             sendMsgNode.addChild(visit(ctx.identifier(0))); //Add the receiver as a Knows or State child
