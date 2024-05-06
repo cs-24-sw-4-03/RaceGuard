@@ -1,4 +1,3 @@
-
 package org.abcd.examples.ParLang;
 
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ public class TypeContainer {
     public static void addType(String type) {
         types.add(type);
         types.add(type + "[]");
+        types.add(type + "[][]");
     }
 
     public static boolean hasType(String type) {

@@ -315,6 +315,11 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolAndExpNode node) {
+        this.visitChildren(node);
+    }
+
+    @Override
     public void visit(MethodCallNode node){
         this.visitChildren(node);
     }
@@ -411,11 +416,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
-    public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
     }
 }

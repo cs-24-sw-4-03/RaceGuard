@@ -6,6 +6,7 @@ import org.abcd.examples.ParLang.Exceptions.MissingOnMethodException;
 import org.abcd.examples.ParLang.Exceptions.OnMethodCallException;
 import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
+import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
@@ -28,13 +29,11 @@ public class MethodCallVisitor implements NodeVisitor {
         HashMap<String, Attributes> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
         //Then we check if the called method is part of that list
         if (!legalLocalMethods.containsKey(node.getMethodName())) {
-            System.out.println("Local method id " + node.getMethodName() + " not found");
             exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found"));
-        }else{
-            System.out.println("Local method id " + node.getMethodName() + " found");
         }
     }
 
+    //TODO: LOOK AT THIS
     @Override
     public void visit(SendMsgNode node) {
         try{

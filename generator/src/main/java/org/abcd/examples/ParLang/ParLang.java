@@ -66,6 +66,11 @@ public class ParLang {
 
        //generateCode(ast);
 
+        System.out.println("\nType Checking");
+        TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
+        typeVisitor.visit(ast);
+        printAST(ast, args);
+
     }
     private static void validateSource(Path source) throws IOException {
         if (!Files.exists(source)) {
