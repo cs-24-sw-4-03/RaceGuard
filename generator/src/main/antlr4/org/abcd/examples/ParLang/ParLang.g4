@@ -74,6 +74,7 @@ boolCompare : boolTerm (EQUAL | NOTEQUAL) boolTerm; // Comparing boolean values
 boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
+    | arrayAccess
     | identifier
     | negatedBool
     | methodCall

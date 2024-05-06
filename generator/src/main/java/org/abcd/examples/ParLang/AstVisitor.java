@@ -469,6 +469,25 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         return boolAndExpNode; // Return the boolAndExpNode
     }
 
+    @Override public AstNode visitBoolCompare(ParLangParser.BoolCompareContext ctx) {
+        int numOfChildren = ctx.getChildCount();
+        BoolCompareNode boolCompareNode;
+        if (numOfChildren == 1) { // If there is only one child
+            return visit(ctx.getChild(0)); // Visit the child
+        }
+        else { // If there are more than one child
+            System.out.println("first child: "+ctx.getChild(0).getText());
+            System.out.println("second child: "+ctx.getChild(1).getText());
+            System.out.println("third child: "+ctx.getChild(2).getText());
+            boolCompareNode = new BoolCompareNode(ctx.getChild(1).getText()); // Create a new node representing the comparison operation
+            // Visit the left-hand side of the comparison and add it as a child
+            boolCompareNode.addChild(visit(ctx.boolTerm(0)));
+            // Visit the right-hand side of the comparison and add it as a child
+            boolCompareNode.addChild(visit(ctx.boolTerm(1)));
+        }
+        return boolCompareNode; // Return the boolCompareNode
+    }
+
     @Override
     public AstNode visitBoolTerm(ParLangParser.BoolTermContext ctx) {
         if (ctx.negatedBool() != null) { // !
@@ -485,7 +504,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if (ctx.boolLiteral() != null) { // TRUE or FALSE
             return visit(ctx.boolLiteral()); // Visit the boolean literal
         }
-        throw new RuntimeException("Unrecognized BoolTerm"); // If the boolean term is not recognized
+        if (ctx.arrayAccess() != null) { // Array access
+            return visit(ctx.arrayAccess()); // Visit the array access
+        }
+        if (ctx.identifier() != null) { // Identifier
+            return visit(ctx.identifier()); // Visit the identifier
+        }
+        throw new RuntimeException("Unrecognized BoolTerm " + ctx.getText()); // If the boolean term is not recognized
     }
 
     @Override

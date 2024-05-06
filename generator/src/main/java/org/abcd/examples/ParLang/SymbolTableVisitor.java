@@ -295,6 +295,11 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolCompareNode node) {
+
+    }
+
+    @Override
     public void visit(ExpNode node) {
         this.visitChildren(node);
     }

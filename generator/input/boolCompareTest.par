@@ -1,0 +1,9 @@
+main(){
+    bool a = TRUE;
+    bool b = FALSE;
+
+    if (a == b){
+    }
+    else if (a == TRUE){
+    }
+}
