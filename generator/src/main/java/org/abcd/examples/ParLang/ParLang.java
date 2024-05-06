@@ -59,10 +59,10 @@ public class ParLang {
         symbolTableVisitor.visit(ast);
         printExceptions(symbolTableVisitor.getExceptions());
 
-        System.out.println("\nMethodCallVisitor");
-        MethodCallVisitor methodCallVisitor = new MethodCallVisitor(symbolTable);
-        methodCallVisitor.visit(ast);
-        printExceptions(methodCallVisitor.getExceptions());
+        System.out.println("\nMethodVisitor");
+        MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
+        methodVisitor.visit(ast);
+        printExceptions(methodVisitor.getExceptions());
 
        //generateCode(ast);
 

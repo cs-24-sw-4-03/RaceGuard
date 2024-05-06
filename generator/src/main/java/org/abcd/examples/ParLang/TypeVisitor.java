@@ -296,7 +296,7 @@ public class TypeVisitor implements NodeVisitor {
                 String methodName = ((SendMsgNode) parent).getMsgName();
                 Attributes attributes = null; //The attributes are used to get the correct method scope
 
-                //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode, SelfNode or SenderNode
+                //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode or SelfNode
                 if(receiverNode instanceof StateAccessNode){
                     attributes = symbolTable.lookUpStateSymbol(receiverName);
                 }else if(receiverNode instanceof KnowsAccessNode){
@@ -308,8 +308,7 @@ public class TypeVisitor implements NodeVisitor {
                     attributes = symbolTable.lookUpSymbol(receiverName);
                 }
 
-                //We do not type check sender as it is not possible to do statically
-                if (!(receiverNode instanceof SenderNode) && attributes != null) {
+                if (attributes != null) {
                     Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                     params = methodScope.getParams();
                     checkArgTypes(node, params, methodName);
@@ -437,11 +436,6 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(SelfNode node) {
         //We do not visit children since this is a leaf node
         node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
-    }
-
-    @Override
-    public void visit(SenderNode node) {
-        this.visitChildren(node);
     }
 
     @Override
