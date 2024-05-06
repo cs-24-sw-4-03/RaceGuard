@@ -247,7 +247,6 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLineBasic());
     }
 
-
     /***
      * Appends and onReceive() method to the vody of an Actor.
      * @param node The ActorDclNode in the AST which is used to produce the body of the actor in the target code.

@@ -16,7 +16,7 @@ public enum javaE {
     ONRECEIVE("onReceive(Object message) "),
     INSTANCEOF("instanceof "),
     IF("if "),
-    IFELSE(" if else "),
+    IFELSE(" else if "),
     ELSE(" else "),
     UNHANDLED("unhandled(message);"),
     THIS("this"),
