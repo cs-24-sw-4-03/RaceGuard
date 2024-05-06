@@ -31,7 +31,7 @@ Actor International{
 
 Actor HelloWorldMain{
     State{}
-    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter};
+    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter}
     Spawn(){
         danishGreeter=Spawn Danish();
         englishGreeter=Spawn English();

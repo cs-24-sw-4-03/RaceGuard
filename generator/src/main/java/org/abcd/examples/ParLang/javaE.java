@@ -18,7 +18,11 @@ public enum javaE {
     IF("if "),
     IFELSE(" if else "),
     ELSE(" else "),
-    UNHANDLED("unhandled(message);");
+    UNHANDLED("unhandled(message);"),
+    CURLY_OPEN("{\n"),
+    CURLY_CLOSE("\n}"),
+    ACTOR_SYSTEM_NAME("system");
+
 
     private String string;
     private javaE(String s){
