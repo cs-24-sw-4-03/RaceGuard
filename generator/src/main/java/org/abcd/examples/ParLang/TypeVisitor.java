@@ -290,23 +290,21 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             LinkedHashMap<String, Attributes> params;
             AstNode parent = node.getParent();
-            if (parent instanceof MethodCallNode) {
-                params = symbolTable.getCurrentScope().getParams();
-                MethodCallNode methodCallNode = (MethodCallNode) parent;
+            if (parent instanceof MethodCallNode methodCallNode) {
+                String actorType = symbolTable.findActorParent(node);
                 String methodName = methodCallNode.getMethodName();
+                Scope actorScope = symbolTable.lookUpScope(methodName + actorType);
+                params = actorScope.getParams();
                 checkArgTypes(node, params, methodName);
-            } else if (parent instanceof SpawnActorNode) {
+            } else if (parent instanceof SpawnActorNode spawnActorNode) {
                 //We can call SpawnActor from any scope, hence we have to find the Actor scope where the Spawn we are calling is declared
                 Scope ActorScope = symbolTable.lookUpScope(parent.getType());
                 //Within the Actor Scope we enter the spawn scope to get the parameters associated with Spawn
                 Scope SpawnScope = ActorScope.children.get(0);
                 params = SpawnScope.getParams();
-                SpawnActorNode spawnActorNode = (SpawnActorNode) parent;
                 String actorName = spawnActorNode.getType();
                 checkArgTypes(node, params, actorName);
-            } else if (parent instanceof SendMsgNode) {
-                //Cast the parent to SendMsgNode
-                SendMsgNode sendMsgNode = (SendMsgNode) parent;
+            } else if (parent instanceof SendMsgNode sendMsgNode) {
                 //The first child of SendMsgNode is always a receiver node
                 AstNode receiverNode = sendMsgNode.getChildren().get(0);
                 String receiverName = sendMsgNode.getReceiver();
