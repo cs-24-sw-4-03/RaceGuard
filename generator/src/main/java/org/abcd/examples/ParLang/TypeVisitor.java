@@ -23,7 +23,7 @@ public class TypeVisitor implements NodeVisitor {
         this.typeContainer = typeContainer;
     }
 
-    private String typeMatchOrConvert(String type1, String type2){
+    private String arithTypeConvert(String type1, String type2){
         if (type1.equals(type2)){
             return type1;
         }
@@ -229,6 +229,9 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             if (node.getType() == null) {
                 throw new SpawnActorException("Type is not defined for spawn actor node");
+            }
+            if (!symbolTable.declaredScripts.contains(node.getType())) {
+                throw new SpawnActorException("scripts cannot be spawned " + node.getType());
             }
        /* }
         catch (SpawnActorException e) {
@@ -492,8 +495,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getMethodType().equals("local")){
                 String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
-                String typeMatch = typeMatchOrConvert(nodeType, childType);
-                if (typeMatch == null ) {
+                if (canConvert(nodeType, childType)) {
                     throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
                 }
             }
@@ -639,7 +641,7 @@ public class TypeVisitor implements NodeVisitor {
             //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
             String leftType = node.getChildren().get(0).getType();
             String rightType = node.getChildren().get(1).getType();
-            String resultType = typeMatchOrConvert(leftType, rightType);
+            String resultType = arithTypeConvert(leftType, rightType);
             if (resultType == null) {
                 throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType);
             }
