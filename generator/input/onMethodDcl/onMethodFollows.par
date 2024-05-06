@@ -19,8 +19,8 @@ Actor Sven follows Script1, Script2{
     on method3(int x, int y){
         print("total viking power");
     }
-    local localm():String{
-    return "a";
+    local localm():string{
+        return "s";
     }
 }
 

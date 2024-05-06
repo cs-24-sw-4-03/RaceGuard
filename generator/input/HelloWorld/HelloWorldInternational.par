@@ -1,12 +1,12 @@
 Script GreeterScript{
-    on greet(String name);
+    on greet(string name);
 }
 
 Actor Danish follows GreeterScript{
-    State{int count=0; String name="Danish";}
+    State{int count=0; string name="Danish";}
     Knows{}
     Spawn(){}
-    on greet(String name){
+    on greet(string name){
         print("Halløj "+name+"!");
     }
 }
@@ -15,7 +15,7 @@ Actor English follows GreeterScript{
     State{}
     Knows{}
     Spawn(){}
-    on greet(String name){
+    on greet(string name){
         print("Hello "+name+"!");
     }
 }
@@ -24,20 +24,20 @@ Actor International{
     State{}
     Knows{}
     Spawn(){}
-    on internationalGreet(GreeterScript greeter,String name){
+    on internationalGreet(GreeterScript greeter,string name){
         greeter<-greet(name);
     }
 }
 
 Actor HelloWorldMain{
     State{}
-    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter};
+    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter;};
     Spawn(){
         danishGreeter=Spawn Danish();
         englishGreeter=Spawn English();
         internationalGreeter=Spawn International();
     }
-    on sayHello(String name){
+    on sayHello(string name){
         internationalGreeter<-internationalGreet(danishGreeter,name);
         internationalGreeter<-internationalGreet(englishGreeter,name);
     }

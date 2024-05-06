@@ -204,7 +204,7 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent++; //content of the body is indented
         visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
         if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
-            appendOnReceive(actorDclnode);
+
         }
     }
 
@@ -525,8 +525,11 @@ public class CodeGenVisitor implements NodeVisitor {
         );
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
-        System.out.println("actor declaration");
-        appendBody(node);//append the body of the actor class
+
+        //append the body of the actor class
+        appendBodyOpen(node);
+        appendOnReceive(node);
+        appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
     }
@@ -766,9 +769,14 @@ public class CodeGenVisitor implements NodeVisitor {
              stringBuilder.append(node.getName());
          }
         else if(node.getType()!= null){
-            stringBuilder.append(VariableConverter(node.getType()));
-            stringBuilder.append(" ");
-            stringBuilder.append(node.getName());
+             if (node.getParent() instanceof ReturnStatementNode || node.getParent() instanceof AssignNode) {
+                 stringBuilder.append(node.getName());
+             } else {
+                 stringBuilder.append(VariableConverter(node.getType()));
+                 stringBuilder.append(" ");
+                 stringBuilder.append(node.getName());
+             }
+
         }
         else{
             stringBuilder.append(node.getName());
@@ -873,12 +881,19 @@ public class CodeGenVisitor implements NodeVisitor {
                 appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
                 appendBodyClose();
             }
+            appenBehvaiour(node);
+
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
+    }
+
+    private void appenBehvaiour(MethodDclNode node){
+        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),node.getId());
+        appendBody(node.getChildren().get(1));
     }
 
     private boolean isMethodInFollowedScript(MethodDclNode node){

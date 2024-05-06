@@ -37,6 +37,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private boolean canConvert(String assignTo, String assignFrom){
+        System.out.println("bool "+assignTo.equals(assignFrom));
         if (assignTo.equals(assignFrom)){
             return true;
         }
@@ -199,11 +200,19 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
         /*try {*/
-            String returnType = node.getChildren().get(0).getType();
-            if (returnType == null) {
-                throw new ReturnNodeException("Type is not defined for return statement");
+            if(!node.getParent().getParent().getType().equals(parLangE.VOID.getValue())) {
+                if (node.getChildren().isEmpty()) {
+                    throw new ReturnNodeException("Type is not defined for return statement");
+                }
+                String returnType = node.getChildren().getFirst().getType();
+                node.setType(returnType);
+            }else{
+                if(!node.getChildren().isEmpty()){
+                    throw new ReturnNodeException("return type is not void for void-returning local method");
+                }
+                node.setType(parLangE.VOID.getValue());
             }
-            node.setType(returnType);
+
         /*}
         catch (ReturnNodeException e) {
             exceptions.add(e);
@@ -255,12 +264,16 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
         /*try{*/
-            if(!node.getChildren().isEmpty()){
-                node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
+            if(!node.getParent().getType().equals(parLangE.VOID.getValue())){
+                if(node.getChildren().isEmpty()||!(node.getChildren().getLast()instanceof ReturnStatementNode)){
+                    throw new LocalMethodBodyNodeException("Return statement missing from local method which does not return void");
+                }
+                node.setType(node.getChildren().getLast().getType());
+            }else{
+                node.setType(parLangE.VOID.getValue());//If there is a return statement, it is checked in visit(ReturnStatement node) that it is "return;". So an erro should already have been produced
             }
-            if (node.getType() == null) {
-                throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
-            }
+
+
         /*}
         catch (LocalMethodBodyNodeException e) {
         exceptions.add(e);
@@ -409,6 +422,8 @@ public class TypeVisitor implements NodeVisitor {
                 return;
             }
             String initType = node.getChildren().get(1).getType();
+        System.out.println(initType);
+        System.out.println(idType);
             if (!canConvert(idType, initType)) {
                 throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
             }
@@ -498,7 +513,9 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getMethodType().equals(parLangE.LOCAL.getValue())){
                 String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
-                if (canConvert(nodeType, childType)) {
+                System.out.println("childType "+childType);
+                System.out.println("nodeType "+nodeType);
+                if (!canConvert(nodeType, childType)) {
                     throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
                 }
             }
@@ -589,7 +606,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new StringNodeException("StringNode value is null");
             }
-            node.setType("string");
+            node.setType(parLangE.STRING.getValue());
        /* }
         catch (StringNodeException e) {
             exceptions.add(e);
@@ -844,7 +861,7 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("string")) {
+                if (!child.getType().equals(parLangE.STRING.getValue())) {
                     if (child.getType().equals("int") || child.getType().equals("double")) {
                         continue;
                     }
