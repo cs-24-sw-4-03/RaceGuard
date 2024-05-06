@@ -19,7 +19,6 @@ public class SymbolTable {
 
 
     public SymbolTable() {
-        System.out.println("Creating SymbolTable");
         this.globalScope = new Scope("global");
         this.currentScope = this.globalScope;
     }
@@ -89,7 +88,6 @@ public class SymbolTable {
             this.currentScope = scope;
             return true;
         }
-        System.out.println("Scope: " + scopeName + " not found");
         return false;
     }
 
@@ -101,7 +99,6 @@ public class SymbolTable {
         } else if (!this.currentScope.getParams().isEmpty() && this.currentScope.getParams().containsKey(symbol)) {
             return this.currentScope.getParams().get(symbol);
         }
-        System.out.println("Symbol: " + symbol + " not found");
         return null;
     }
 
@@ -119,7 +116,6 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
-        System.out.println("Symbol: " + symbol + " not found");
         return null;
     }
 
@@ -130,13 +126,11 @@ public class SymbolTable {
         //Returns the symbol if it is found or returns null if the symbol is not found
         while(scope != null){
             if(!scope.getStateSymbols().isEmpty() && scope.getStateSymbols().containsKey(symbol)){
-                System.out.println("Symbol: " + symbol + " found");
                 return scope.getStateSymbols().get(symbol);
             }
 
             scope = scope.getParent();
         }
-        System.out.println("State symbol: " + symbol + " not found");
         return null;
     }
 
@@ -152,7 +146,6 @@ public class SymbolTable {
 
             scope = scope.getParent();
         }
-        System.out.println("Knows symbol: " + symbol + " not found");
         return null;
     }
 

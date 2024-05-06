@@ -46,7 +46,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     //Declares a variable in the symbol table if it does not already exist
     @Override
     public void visit(VarDclNode node){
-        System.out.println("Symbol: " + node.getId());
         if(node.getParent() instanceof StateNode){
             if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType(), "dcl");
@@ -100,11 +99,9 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(MethodDclNode node){
         //Checks if the method is a local or on method, and inserts it into the correct list
         if(Objects.equals(node.getMethodType(), "local")){
-            System.out.println("Inserting Local Method: " + node.getId());
             Attributes attributes = new Attributes(node.getType(), "local");
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }else if(Objects.equals(node.getMethodType(), "on")){
-            System.out.println("Inserting On Method: " + node.getId());
             Attributes attributes = new Attributes(node.getType(), "on");
             this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
@@ -130,7 +127,6 @@ public class SymbolTableVisitor implements NodeVisitor {
             IdentifierNode paramNode = (IdentifierNode)child;
             Attributes attributes = new Attributes(paramNode.getType(), "param");
             attributes.setScope(scopeName);
-            System.out.println("Param: " + paramNode.getName());
             if(!this.symbolTable.insertParams(paramNode.getName(), attributes)){
                 this.exceptions.add(new DuplicateSymbolException("Param: " + paramNode.getName() + " already exists in current scope"));
             }
@@ -139,7 +135,6 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
-        System.out.println("\nActor: " + node.getId());
         if(this.symbolTable.addScope(node.getId())){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
@@ -172,18 +167,12 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(IdentifierNode node) {
         //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
         if(node.getParent().getParent() instanceof StateNode){
-            if(this.symbolTable.lookUpStateSymbol(node.getName()) != null){
-                System.out.println("Found State symbol: " + node.getName());
-            }else{
-                System.out.println("Not found State symbol: " + node.getName());
+            if(this.symbolTable.lookUpStateSymbol(node.getName()) == null){
                 this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
             }
         //Ensures that we do not search for IdentifierNodes for method calls
         }else if (!(node.getParent() instanceof MethodCallNode)){
-            if(this.symbolTable.lookUpSymbol(node.getName()) != null){
-                System.out.println("Found symbol: " + node.getName());
-            }else{
-                System.out.println("Not found symbol: " + node.getName());
+            if(this.symbolTable.lookUpSymbol(node.getName()) == null){
                 this.exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
             }
         }
@@ -191,30 +180,21 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateAccessNode node) {
-        if(this.symbolTable.lookUpStateSymbol(node.getAccessIdentifier()) != null){
-            System.out.println("Found state symbol: " + node.getAccessIdentifier());
-        }else{
-            System.out.println("Not found state symbol: " + node.getAccessIdentifier());
+        if(this.symbolTable.lookUpStateSymbol(node.getAccessIdentifier()) == null){
             this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
         }
     }
 
     @Override
     public void visit(ArrayAccessNode node) {
-        if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) != null){
-            System.out.println("Found symbol: " + node.getAccessIdentifier());
-        }else{
-            System.out.println("Not found symbol: " + node.getAccessIdentifier());
+        if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) == null){
             this.exceptions.add(new SymbolNotFoundException("Array symbol: "  + node.getAccessIdentifier() + " not found"));
         }
     }
 
     @Override
     public void visit(KnowsAccessNode node) {
-        if(this.symbolTable.lookUpKnowsSymbol(node.getAccessIdentifier()) != null){
-            System.out.println("Found Knows symbol: " + node.getAccessIdentifier());
-        }else{
-            System.out.println("Not found Knows symbol: " + node.getAccessIdentifier());
+        if(this.symbolTable.lookUpKnowsSymbol(node.getAccessIdentifier()) == null){
             this.exceptions.add(new SymbolNotFoundException("Knows symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
         }
 
@@ -239,11 +219,9 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(ScriptMethodNode node) {
         //Checks if the method is a local or on method and adds it to the appropriate list
         if(Objects.equals(node.getMethodType(), "local")){
-            System.out.println("Inserting Local Method: " + node.getId());
             Attributes attributes = new Attributes(node.getType(), "local");
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }else if(Objects.equals(node.getMethodType(), "on")){
-            System.out.println("Inserting On Method: " + node.getId());
             Attributes attributes = new Attributes(node.getType(), "on");
             this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
