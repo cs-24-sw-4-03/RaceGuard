@@ -55,7 +55,7 @@ public class ParLang {
         methodCallVisitor.visit(ast);
         printExceptions(methodCallVisitor.getExceptions());
 
-        generateCode(ast);
+        generateCode(ast,symbolTable);
 
     }
     private static void validateSource(Path source) throws IOException {
@@ -100,8 +100,8 @@ public class ParLang {
 
     }
 
-    private static void generateCode(AstNode ast) throws IOException {
-        CodeGenVisitor codeGenVisitor = new CodeGenVisitor();
+    private static void generateCode(AstNode ast, SymbolTable symbolTable) throws IOException {
+        CodeGenVisitor codeGenVisitor = new CodeGenVisitor(symbolTable);
         codeGenVisitor.visit(ast);
     }
 

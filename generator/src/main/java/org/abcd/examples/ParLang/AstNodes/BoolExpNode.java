@@ -11,5 +11,4 @@ public class BoolExpNode extends ExpNode {
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);
     }
-
 }

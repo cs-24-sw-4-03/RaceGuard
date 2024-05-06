@@ -1,11 +1,20 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.Scope;
+import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class CodeGenVisitor implements NodeVisitor {
+
+    SymbolTable symbolTable;
+
+    public CodeGenVisitor(SymbolTable symbolTable){
+        this.symbolTable=symbolTable;
+    }
 
     private String dirPath = System.getProperty("user.dir") + "/output";
 
@@ -25,6 +34,20 @@ public class CodeGenVisitor implements NodeVisitor {
         line = line.indent(indent * 4);
 
         return line;
+    }
+
+    //an alternative version to getLine() where indent is not reduced if line ends with "}\n"
+    //Gets current line with indentation given by localIndent at this moment and resets stringBuilder.
+    private String getLineBasic() {
+        String line = stringBuilder.toString().indent(localIndent* 4);
+        stringBuilder.setLength(0); // Resets string builder
+        return line;
+    }
+
+    private void resetStringBuilder(){
+        resetStringBuilder(stringBuilder);
+        resetCodeOutput(codeOutput);
+        localIndent = 0;
     }
 
     public void visit(AstNode node) {
@@ -58,8 +81,213 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    //An alternative version of visitChildren where the Strings before and after is appended before and after the result of visiting the child node
+    public void visitChildren(AstNode node, String before, String after){
+        for (AstNode childNode : node.getChildren()) {
+            stringBuilder.append(before);
+            childNode.accept(this);
+            stringBuilder.append(after);
+        }
+    }
+
+    /***
+     * Appends class definition string (e.g. "public class MyClass extends OtherClass")
+     * @param access The access modifier of the class (e.g "public")
+     * @param name The name of the class (e.g. "MyClass")
+     * @param superClassName Give null as input here unless the class extends from a superclass. If there
+     */
+    private void appendClassDefinition(String access, String name, String superClassName) {
+        stringBuilder
+                .append(access)
+                .append(javaE.CLASS.getValue())
+                .append(name)
+                .append(" ");
+        if(superClassName!=null){
+            stringBuilder
+                    .append(javaE.EXTENDS.getValue())
+                    .append(superClassName);
+        }
+    }
+
+    /***
+     * Append method declaration string (e.g. "private void myMethod")
+     * @param access access modifier (e.g. "private")
+     * @param returnType (e.g. "void")
+     * @param name (e.g. "myMethod")
+     */
+
+    private void appendMethodDefinition(String access, String returnType, String name){
+        stringBuilder
+                .append(access)
+                .append(returnType)
+                .append(" ")
+                .append(name);
+    }
+
+    /***
+     * Appends a series of imports from the same package. e.g.:
+     *
+     *      "import akka.actor.UntypedAbstractActor;
+     *       import akka.actor.ActorRef;
+     *       import akka.event.Logging;"
+     *
+     * @param pack Name of the package (e.g. "akka.actor")
+     * @param firstClassName The name of the first class imported from the package (e.g. "UntypedAbstractActor")
+     * @param additionalClassNames The names of the remaining class names (e.g. "ActorRef" and "Logging")
+     */
+    private void appendImports(String pack, String firstClassName, String...additionalClassNames){
+        appendImport(pack,firstClassName);// append import of the first class
+        for(String className:additionalClassNames){ //append imports of the remaining classes
+            appendImport(pack,className);
+        }
+        stringBuilder.append("\n");
+    }
+
+    /***2
+     * Appends a single import statement (e.g. "import akka.actor.UntypedAbstractActor;")
+     * @param pack Name of the package (e.g. "akka.actor")
+     * @param className Name of the class (e.g. "UntypedAbstractActor")
+     */
+
+    private void appendImport(String pack,String className){
+        stringBuilder
+                .append(javaE.IMPORT.getValue())
+                .append(pack)
+                .append(".")
+                .append(className)
+                .append(";\n");
+    }
+
+    /***
+     * Used to append a body of e.g. a class or a method.
+     * Can be used if all the information required to produce the content of the body is present in the children of the node parameter.
+     * @param node The children of this AST node constitutes all the body to be appended in the target code.
+     */
+    private void appendBody(AstNode node){
+        stringBuilder.append( " {\n");
+        codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
+        localIndent++; //content of the body is indented
+        visitChildren(node);//append the content of the body by visiting the children of @param node.
+        if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
+            appendOnReceive(actorDclnode);
+        }
+        localIndent--;
+        stringBuilder.append( "}\n");
+        codeOutput.add(getLineBasic() );
+    }
+
+    /***
+     * Appends and onReceive() method to the vody of an Actor.
+     * @param node The ActorDclNode in the AST which is used to produce the body of the actor in the target code.
+     */
+    private void appendOnReceive(ActorDclNode node){
+        Scope scope=symbolTable.lookUpScope(node.getId());//Get the scope of the actor.
+        Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
+        String methodName;
+
+        //append the method signature
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.VOID.getValue())
+                .append(javaE.ONRECEIVE.getValue())//has value "onReceive(Object message) "
+                .append("{\n");
+
+        codeOutput.add(getLineBasic());//get line and add to codeOutput before indentation changes.
+        localIndent++;
+
+        //The body is an if-els chain.
+        if(onMethods.hasNext()){//The first on-methods results in an if-statement.
+            methodName=onMethods.next();
+            appendIfElseChainLink("if",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+        }
+        while (onMethods.hasNext()){//The remaining on-methods results in if-else statements
+            methodName=onMethods.next();
+            appendIfElseChainLink("if else",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+        }
+        appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
+
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLineBasic()); //get line and add to codeOutput since indentation might change after calling this method.
+    }
+
+    /**
+     * Appends a single if of if-else statement in an if-else chain.
+     * @param type must have values of either "if" or "if else"
+     * @param condition The condition of the if/if-else statement
+     * @param body the body of the if/if-else statement
+     */
+    private void appendIfElseChainLink(String type,String condition,String body){
+        String keyword;
+        if(type.equals("if")){
+            keyword=javaE.IF.getValue();
+        }else if(type.equals("if else")) {
+            keyword=javaE.IFELSE.getValue();
+        }else{
+            throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
+        }
+        stringBuilder
+                .append(keyword)
+                .append("(")
+                .append(condition)
+                .append(") {\n");
+        codeOutput.add(getLineBasic());//get line before indentation changes.
+        localIndent++;
+        stringBuilder.append(body);
+        codeOutput.add(getLineBasic());//get line before indentation changes.
+        localIndent--;
+        stringBuilder.append("}");
+    }
+
+    /**
+     * Appends an else statement after an if-else chain.
+     * @param body The body of the else statement
+     */
+
+    private void appendElse(String body){
+        stringBuilder
+                .append(javaE.ELSE.getValue())
+                .append("{\n");
+        codeOutput.add(getLineBasic());
+        localIndent++;
+        stringBuilder.append(body);
+        codeOutput.add(getLineBasic());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLineBasic());//get the line since indentation might change after calling this method.
+    }
+
+    /**
+     * @param methodName Name of the on-method
+     * @return A condition for checking if incoming message is of the message type corresponding to the on-method.
+     */
+    private String getOnReceiveIfCondition(String methodName){
+        return "message "+javaE.INSTANCEOF.getValue()+capitalizeFirstLetter(methodName)+" "+methodName+"Msg";
+    }
+
+    /***
+     * @param methodName Name of the on-method
+     * @return A statement which calls a private-method in the actor. This method has the functionality to be executed when the message corresponding to the on-method is received.
+     */
+    private String getOnReceiveIfBody(String methodName){
+        return "on"+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
+    }
+
+    private String capitalizeFirstLetter(String input) {
+        if (input != null && !input.isEmpty()) {
+            return input.substring(0, 1).toUpperCase() + input.substring(1);
+        } else {
+            throw new IllegalArgumentException("Input string is null or empty");
+        }
+    }
+
     @Override
     public void visit(AccessNode node) {
+        if(node instanceof StateAccessNode){
+            visit((StateAccessNode) node);
+        }else if(node instanceof KnowsAccessNode){
+            visit((KnowsAccessNode) node);
+        }
     }
 
     @Override
@@ -99,32 +327,23 @@ public class CodeGenVisitor implements NodeVisitor {
     //4. Write the file
     @Override
     public void visit(ActorDclNode node) {
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
-        localIndent = 0;
+        resetStringBuilder();
 
         //imports necessary for most akka actor classes
-        stringBuilder
-                .append("import akka.actor.ActorRef;\n")
-                .append("import akka.actor.ActorSystem;\n")
-                .append("import akka.actor.Props;\n")
-                .append("import akka.actor.UntypedAbstractActor;\n")
-                .append("import akka.event.Logging;\n")
-                .append("import akka.event.LoggingAdapter;\n");
-        stringBuilder.append("public class ")
-            .append(node.getId())
-            .append(" extends UntypedAbstractActor")
-            .append(" {\n");
-        codeOutput.add(getLine());
-        localIndent++;
-        visitChildren(node);
+        appendImports("akka.actor",
+                "ActorRef",
+                "ActorSystem",
+                "Props",
+                "UntypedAbstractActor",
+                "Logging",
+                "LoggingAdapter"
+        );
 
-        localIndent--;
-        stringBuilder.append("}\n");
-        codeOutput.add(getLine());
+        appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
+        System.out.println("actor declaration");
+        appendBody(node);//append the body of the actor class
 
-        writeToFile(node.getId(), codeOutput);
-
+        writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
     }
 
     @Override
@@ -326,13 +545,15 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        if(node.getType()!= null){
-            stringBuilder.append(VariableConverter(node.getType()));
-            stringBuilder.append(" ");
+        if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
+            stringBuilder.append(javaE.ACTORREF.getValue());//appends "ActorRef ".
+        } else if (node.getType()!= null) {
+            stringBuilder
+                    .append(VariableConverter(node.getType()))
+                    .append(" ");
         }
         stringBuilder.append(node.getName());
     }
-
 
     @Override
     public void visit(InitializationNode node) {
@@ -359,7 +580,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsAccessNode node) {
-
+        stringBuilder
+                .append(parLangE.KNOWS.getValue())
+                .append(".")
+                .append(node.getAccessIdentifier());
     }
 
     @Override
@@ -374,7 +598,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(LocalMethodBodyNode node) {
-
+        appendBody(node);//Use the children of the LocalMethodBodyNode node to append the method's body in the target code.
     }
 
     @Override
@@ -401,8 +625,18 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
-
+        if(node.getMethodType().equals(parLangE.ON.getValue())){
+            //To be done
+        } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
+            appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
+            visit(node.getParametersNode());//append parameters in target code
+            visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
+        }
     }
+
+
+
+
 
     @Override
     public void visit(NegatedBoolNode node) {
@@ -410,10 +644,7 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChild(node.getChildren().get(0));
     }
 
-    @Override
-    public void visit(ParametersNode node) {
 
-    }
 
     @Override
     public void visit(PrintCallNode node) {
@@ -425,18 +656,78 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ReturnStatementNode node) {
-
+        stringBuilder.append(javaE.RETURN.getValue());
+        AstNode returnee=node.getReturnee();//get the expression which is returned (return <returnee>;)
+        if(returnee instanceof IdentifierNode){
+            visit((IdentifierNode) returnee);
+        } else if (returnee instanceof ArithExpNode) {
+            visit((ArithExpNode) returnee);
+        } else if (returnee instanceof BoolExpNode) {
+            visit((BoolExpNode) returnee);
+        } else if (returnee instanceof AccessNode) {
+            visit((AccessNode) returnee);
+        } else if (returnee instanceof LiteralNode){
+            visit((LiteralNode<?>) returnee);
+        } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+        stringBuilder.append(";\n");
+        codeOutput.add(getLineBasic());
     }
+
+
+     public void visit(LiteralNode<?> node){
+        stringBuilder.append(node.getValue());
+     }
 
     @Override
     public void visit(ScriptDclNode node) {
+        resetStringBuilder();
 
+        //We crate a public class for the script with the same name as the script.
+        appendImports("akka.actor","ActorRef");
+        appendClassDefinition(javaE.PUBLIC.getValue(),node.getId(),null);
+        appendBody(node);//The body of the class has a static class for each on-method declared in the script.
+
+        writeToFile(node.getId(),codeOutput); //The class is written to a separate file.
     }
 
     @Override
     public void visit(ScriptMethodNode node) {
-
+        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a scrupt does not need to be handled here.
+            //Create a static class for the on-method.
+            stringBuilder
+                    .append(javaE.PUBLIC.getValue())
+                    .append(javaE.STATIC.getValue())
+                    .append(javaE.FINAL.getValue())
+                    .append(javaE.CLASS.getValue())
+                    .append(node.getId());
+            appendBody(node);//appends the body of the static class (prublic fields for each parameter in the method)
+        }
     }
+
+    @Override
+    public void visit(ParametersNode node) {
+        if(node.getParent() instanceof MethodDclNode) {
+            //If parameters is part of method declaration in an actor we simply append them to the method declaration in the target code
+            appendParameters(node);
+        }else if (node.getParent() instanceof ScriptMethodNode){
+            //If the method is declared in a script, the parameters are mapped to fields in the static class representing the method
+            localIndent++;
+            visitChildren(node, javaE.PUBLIC.getValue(),";\n"); //Insterts the parameters ad public fields in the method's static class
+            localIndent--;
+            codeOutput.add(getLineBasic() );
+        }
+    }
+
+    private void appendParameters(ParametersNode node){
+        stringBuilder.append("(");
+        visitChildren(node,"",",");//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        stringBuilder.append(")");
+    }
+
+
 
     //DOES NOT WORK
     @Override
@@ -475,7 +766,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateAccessNode node) {
-
+        stringBuilder
+                .append(parLangE.STATE.getValue())
+                .append(".")
+                .append(node.getAccessIdentifier());
     }
 
     @Override
