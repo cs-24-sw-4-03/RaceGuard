@@ -615,7 +615,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-
     }
 
     //for loop construction, can be either of the following:
@@ -680,8 +679,15 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(IdentifierNode node) {
         String arrayType = HashMapConverter(node);
-        //
-         if(arrayType !=null){
+        if (node.getParent() instanceof KnowsNode) {
+            stringBuilder
+                    .append(javaE.PRIVATE.getValue())
+                    .append(javaE.FINAL.getValue())
+                    .append(javaE.ACTORREF.getValue())
+                    .append(node.getName())
+                    .append(";\n");
+            codeOutput.add(getLineBasic());
+        } else if(arrayType !=null){
             stringBuilder.append(arrayType);
             stringBuilder.append(" ");
             stringBuilder.append(node.getName());
@@ -694,13 +700,13 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
              stringBuilder.append(javaE.ACTORREF.getValue());//appends "ActorRef ".
              stringBuilder.append(node.getName());
-         }
-        else if(node.getType()!= null){
+
+         } else if(node.getType()!= null){
             stringBuilder.append(VariableConverter(node.getType()));
             stringBuilder.append(" ");
             stringBuilder.append(node.getName());
-        }
-        else{
+
+        } else{
             stringBuilder.append(node.getName());
         }
     }
@@ -740,7 +746,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsNode node) {
-
+        visitChildren(node);
     }
 
     @Override
