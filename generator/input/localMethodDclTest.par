@@ -1,0 +1,43 @@
+Actor myActor{
+    State{int x=2;}
+    Knows{myActor a;}
+    Spawn(){}
+    local localMethod(int i):String{
+        String s="local Method reporting";
+        myActor a;
+        print("local Method reporting");
+        return s;
+    }
+    local localMethod2(int i):void{
+         return;
+    }
+
+    local localMethod3(int i):int{
+            return i+2;
+    }
+    local localMethod4(int i):myActor{
+        return Knows.a;
+    }
+    local localMethod5():int{
+        return 2;
+    }
+    local localMethod6():int{
+         return 2.71;
+    }
+
+    local localMethod7():int{
+        return State.x;
+    }
+
+
+    on myOnMethod1(){
+        print("on Method1 reporting");
+    }
+
+    on myOnMethod2(){
+        print("on Method2 reporting");
+    }
+}
+
+main(){
+}
