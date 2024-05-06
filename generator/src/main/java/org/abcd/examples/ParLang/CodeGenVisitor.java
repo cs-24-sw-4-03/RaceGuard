@@ -516,14 +516,20 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(BodyNode node) {
-        stringBuilder.append("{\n");
-        codeOutput.add(getLine());
-        localIndent++;
-
-        this.visitChildren(node);
-
-        stringBuilder.append("}\n");
-        codeOutput.add(getLine());
+        if (node.getParent() instanceof MainDclNode) {
+            System.out.println("body node");
+            stringBuilder
+                    .append(javaE.CURLY_OPEN.getValue());
+            codeOutput.add(getLineBasic());
+            localIndent++;
+            stringBuilder
+                    .append("ActorSystem system = ActorSystem.create(\"system\");\n");
+            visitChildren(node);
+            appendBodyClose();
+        }
+        else {
+            appendBody(node);
+        }
     }
     //In FactorialHelper this is: private final int currentValue;
     @Override
@@ -794,17 +800,26 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
-        localIndent = 0;
-        stringBuilder.append("public class Main {\n");
-        codeOutput.add(getLine());
+        resetStringBuilder();
+        //public class Main {
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.CLASS.getValue())
+                .append("Main")
+                .append(" {\n");
+        codeOutput.add(getLineBasic());
         localIndent++;
-        stringBuilder.append("public static void main(String[] args)");
-        this.visitChildren(node);
-        localIndent--;
-        stringBuilder.append("\n}");
-        codeOutput.add(getLine());
+        //public static void main(String[] args) {
+        //      ActorSystem system = ActorSystem.create("system");
+        //} //end of main method
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.STATIC.getValue())
+                .append(javaE.VOID.getValue())
+                .append("main(String[] args)");
+        //codeOutput.add(getLineBasic());
+        visitChildren(node);
+        appendBodyClose();
         writeToFile(node.getId(), codeOutput);
     }
 
