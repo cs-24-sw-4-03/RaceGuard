@@ -39,6 +39,10 @@ Actor House follows Shape, ShapeManager{
     on printArea(){
         print("here is the house area: " + State.area);
     }
+
+    on getArea(){
+        sender <- areaResult( State.area );
+    }
 }
 
 Actor Square follows Shape{
@@ -94,6 +98,10 @@ Actor CircleManager follows Shape, ShapeManager{
     on printArea(){
         print("here is the circle area: " + State.area);
     }
+
+    on getArea(){
+        sender <- areaResult( State.area );
+    }
 }
 
 Actor Circle follows Shape{
@@ -140,6 +148,10 @@ Actor ShapesManager follows Shape, ShapeManager{
 
     on printArea(){
         print("here is the managers area: " + State.area);
+    }
+
+    on getArea(){
+        sender <- areaResult( State.area );
     }
 }
 main(){
