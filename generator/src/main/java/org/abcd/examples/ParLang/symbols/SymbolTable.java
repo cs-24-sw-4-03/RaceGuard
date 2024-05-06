@@ -14,8 +14,6 @@ public class SymbolTable {
     private Scope currentScope;
     final private Scope globalScope;
     final private Stack<Scope> scopeStack = new Stack<>();
-    public ArrayList<String> declaredOnMethods = new ArrayList<>();
-    public ArrayList<String> declaredActors = new ArrayList<>();
     public ArrayList<String> declaredScripts = new ArrayList<>();
 
 
@@ -91,6 +89,7 @@ public class SymbolTable {
             this.currentScope = scope;
             return true;
         }
+        System.out.println("Scope: " + scopeName + " not found");
         return false;
     }
 

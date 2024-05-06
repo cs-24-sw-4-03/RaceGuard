@@ -42,7 +42,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " : " + ((IntegerNode)node).getValue() + " with type: " + node.getType());
                     break;
                 case "ParametersNode":
-                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers() + " with type: " + node.getType());
+                    this.print(localIndent, className + " : "+  ((ParametersNode)node).getNumberOfIdentifiers());
                     break;
                 case "IdentifierNode":
                     this.print(localIndent, className + " " + ((IdentifierNode)node).getName() + " type: " + ((IdentifierNode)node).getType());

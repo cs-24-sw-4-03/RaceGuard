@@ -33,6 +33,7 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptDclNode node) {
         if(this.symbolTable.addScope(node.getId())){
+            this.symbolTable.declaredScripts.add(node.getId());
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node
@@ -151,7 +152,7 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
-        this.symbolTable.addScope(node.getNodeHash());
+        this.symbolTable.addScope(node.getNodeHash() + "main");
         //Visits the children of the node to add the symbols to the symbol table
         this.visitChildren(node);
         //Leaves the scope after visiting the children, as the variables in the Main node are not available outside the Main node
@@ -196,8 +197,6 @@ public class SymbolTableVisitor implements NodeVisitor {
             System.out.println("Not found state symbol: " + node.getAccessIdentifier());
             this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
         }
-
-        this.visitChildren(node);
     }
 
     @Override
@@ -277,9 +276,21 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    //TODO: Find out if this needs any more implementation
     @Override
     public void visit(SenderNode node) {
+        AstNode parent = node.getParent();
+        while (parent.getParent() != null) {
+            if(parent instanceof MethodDclNode){
+                if(!Objects.equals(((MethodDclNode) parent).getMethodType(), "on")){
+                    exceptions.add(new SymbolNotFoundException("sender keyword cannot be used outside of on method"));
+                    break;
+                }else{
+                    break;
+                }
+            }else{
+                parent = parent.getParent();
+            }
+        }
         this.visitChildren(node);
     }
 
