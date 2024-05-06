@@ -456,6 +456,25 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(BoolCompareNode node) {
+        this.visitChildren(node);
+        /*try {*/
+            for (AstNode child : node.getChildren()) {
+                if (!child.getType().equals("bool")) {
+                    throw new BoolCompareException("all BoolCompareNode children does not have type bool");
+                }
+            }
+            node.setType("bool");
+        /*}
+        catch (BoolCompareException e) {
+            exceptions.add(e);
+        }
+        catch (Exception e) {
+            exceptions.add(new BoolCompareException(e.getMessage() + " in BoolCompareNode"));
+        }*/
+    }
+
+    @Override
     public void visit(StateNode node) {
         //does not need types
         this.visitChildren(node);

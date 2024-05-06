@@ -113,7 +113,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className);
                     break;
                 case "BoolNode":
-                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue() + " with type: " + node.getType());
+                    this.print(localIndent, className + " with value: " + ((BoolNode)node).getValue());
                     break;
                 case "VarDclNode":
                     this.print(localIndent, className + " id: " + ((VarDclNode)node).getId() + " with type: " + node.getType());
