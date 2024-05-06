@@ -216,7 +216,6 @@ returnType : identifier
 
 //fragments used to ease other definitions
 fragment DIGIT : [0-9];
-fragment POS_DIGIT : [1-9]; //Strictly positive digit
 fragment SMALL_LETTER : [a-zæøå];
 fragment CAP_LETTER : [A-ZÆØÅ];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
