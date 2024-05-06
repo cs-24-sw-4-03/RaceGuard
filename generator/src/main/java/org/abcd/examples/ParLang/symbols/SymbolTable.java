@@ -43,7 +43,6 @@ public class SymbolTable {
     }
 
     //Pops the top scope from the stack and sets it as the currentScope
-    //TODO: C* sets the name of the original currentScope, find out if there is a reason for this
     public void leaveScope(){
         if(!this.scopeStack.empty()){
             this.currentScope = this.scopeStack.pop();
@@ -52,7 +51,6 @@ public class SymbolTable {
         }
     }
 
-    //TODO: Find better name than searchScope
     //This method searches for a scope with the given name starting from the given searchScope
     //This method is recursive, and will most often be called with the globalScope as the searchScope
     //It then calls itself with the children of the searchScope as the new searchScope

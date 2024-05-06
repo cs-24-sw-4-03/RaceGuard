@@ -97,7 +97,7 @@ public class MethodVisitor implements NodeVisitor {
                 }
             }
             for(String localMethod : legalLocalMethodsScript.keySet()){
-                if (!legalOnMethodsActor.containsKey(localMethod)) {
+                if (!legalLocalMethodsActor.containsKey(localMethod)) {
                     exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + localMethod + " from Script: " + script.getName()));
                 }
             }

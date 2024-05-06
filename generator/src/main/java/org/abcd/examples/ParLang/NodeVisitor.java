@@ -34,7 +34,6 @@ public interface NodeVisitor {
 
 
     void visit(ListNode node);
-    //void visit(ArrayDclNode node);
 
     void visit(KnowsNode node);
     void visit(MethodDclNode node);
