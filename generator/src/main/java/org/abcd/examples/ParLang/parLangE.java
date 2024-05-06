@@ -6,7 +6,8 @@ public enum parLangE {
     LOCAL("local"),
     ACTOR("Actor"),
     KNOWS("Knows"),
-    STATE("State");
+    STATE("State"),
+    SELF("self");
 
     private String string;
 

@@ -40,14 +40,14 @@ public class MethodVisitor implements NodeVisitor {
                 //If it contains . then it is a Knows or State access. We therefore check which
                 String receiver = node.getReceiver().split("\\.")[1];
                 String accessModifier = node.getReceiver().split("\\.")[0];
-                if(accessModifier.equals("State")){
+                if(accessModifier.equals(parLangE.STATE.getValue())){
                     //We then enter the scope based on the correct symbol list
                     this.symbolTable.enterScope(this.symbolTable.lookUpStateSymbol(receiver).getVariableType());
-                } else if (accessModifier.equals("Knows")) {
+                } else if (accessModifier.equals(parLangE.KNOWS.getValue())) {
                     this.symbolTable.enterScope(this.symbolTable.lookUpKnowsSymbol(receiver).getVariableType());
                 }
 
-            }else if (node.getReceiver().equals("self")){
+            }else if (node.getReceiver().equals(parLangE.SELF.getValue())){
                 //We check if the Actor itself has the method we call
                 this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
             } else{

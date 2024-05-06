@@ -98,11 +98,11 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node){
         //Checks if the method is a local or on method, and inserts it into the correct list
-        if(Objects.equals(node.getMethodType(), "local")){
-            Attributes attributes = new Attributes(node.getType(), "local");
+        if(Objects.equals(node.getMethodType(), parLangE.LOCAL.getValue())){
+            Attributes attributes = new Attributes(node.getType(), parLangE.LOCAL.getValue());
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
-        }else if(Objects.equals(node.getMethodType(), "on")){
-            Attributes attributes = new Attributes(node.getType(), "on");
+        }else if(Objects.equals(node.getMethodType(), parLangE.ON.getValue())){
+            Attributes attributes = new Attributes(node.getType(), parLangE.ON.getValue());
             this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
         //Creates a new scope, as long as there is not already a method in the actor that is named the same
@@ -218,11 +218,11 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptMethodNode node) {
         //Checks if the method is a local or on method and adds it to the appropriate list
-        if(Objects.equals(node.getMethodType(), "local")){
-            Attributes attributes = new Attributes(node.getType(), "local");
+        if(Objects.equals(node.getMethodType(), parLangE.LOCAL.getValue())){
+            Attributes attributes = new Attributes(node.getType(), parLangE.LOCAL.getValue());
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
-        }else if(Objects.equals(node.getMethodType(), "on")){
-            Attributes attributes = new Attributes(node.getType(), "on");
+        }else if(Objects.equals(node.getMethodType(), parLangE.ON.getValue())){
+            Attributes attributes = new Attributes(node.getType(), parLangE.ON.getValue());
             this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
         //Creates a scope as long as there is not another method with the same name
