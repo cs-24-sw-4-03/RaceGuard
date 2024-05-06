@@ -44,7 +44,7 @@ stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
-printBody : (STRING | arrayAccess | identifier ) (PLUS (STRING | arrayAccess | identifier ))*;
+printBody : (STRING | arrayAccess | identifier) (PLUS (STRING | arrayAccess | identifier))*;
 
 //the different control structures in the language
 controlStructure : selection
@@ -62,22 +62,24 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
 declaration: allTypes identifier (initialization)?; //array type is included in allTypes
-initialization:  ASSIGN (arithExp | primitive | list | spawnActor | methodCall | boolExp | arrayAccess | SENDER | identifier);
+initialization:  ASSIGN (arithExp | primitive | list | spawnActor | methodCall | boolExp | arrayAccess | identifier);
 
 //assignment used to assign a value to an already defined variable.
-assignment: (arrayAccess | identifier) ASSIGN (arithExp | primitive | list | spawnActor | arrayAccess | methodCall | boolExp | SENDER | identifier);
+assignment: (arrayAccess | identifier) ASSIGN (arithExp | primitive | list | spawnActor | arrayAccess | methodCall | boolExp | identifier);
 
 // Expression evaluating boolean value of a boolean expression
 boolExp : boolAndExp (LOGIC_OR boolAndExp)*; // OR have lowest logical precedence
-boolAndExp : boolTerm (LOGIC_AND boolTerm)*; //AND have higher precedence than OR
+boolAndExp : boolCompare (LOGIC_AND boolCompare)*; //AND have higher precedence than OR
+boolCompare : boolTerm ((EQUAL | NOTEQUAL) boolTerm)?; // Comparing boolean values
 boolTerm : PARAN_OPEN boolExp PARAN_CLOSE //parenthesis have highest precedence
     | compareExp
     | boolLiteral //boolTerm can be a simple boolean TRUE or FALSE
+    | arrayAccess
     | identifier
     | negatedBool
     | methodCall
-
     ;
+// negates a boolean value
 negatedBool : LOGIC_NEGATION PARAN_OPEN boolExp PARAN_CLOSE
     | LOGIC_NEGATION identifier
     | LOGIC_NEGATION boolLiteral
@@ -142,7 +144,7 @@ parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | i
 arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : (SENDER | SELF | identifier) SEND_MSG identifier arguments;
+sendMsg : (SELF | identifier) SEND_MSG identifier arguments;
 
 //way to call a method
 methodCall : identifier arguments;
@@ -180,7 +182,7 @@ primitiveType : INT_TYPE
     | BOOL_TYPE
     ;
 // values can be any type in the language
-value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | SENDER | identifier)
+value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     ;
 
 number : INT
@@ -243,7 +245,6 @@ LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
 FOLLOWS : 'follows';
-SENDER : 'sender';
 
 //Control structures
 IF : 'if';
@@ -257,7 +258,7 @@ PRINT : 'print';
 INT : DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 //strings are inside either quotation marks or double quotation marks
-STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\"\t\r\n]* QUOTATION);
+STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\'\t\r\n]* QUOTATION);
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
