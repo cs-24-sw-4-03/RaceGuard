@@ -91,7 +91,6 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
     | identifier
-    | stateAccess
     | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
     | unaryExp
     ;
@@ -134,7 +133,7 @@ localMethodBody: CURLY_OPEN statement* returnStatement? CURLY_CLOSE;
 
 
 // defines the parameters of a function
-parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
+parameters : PARAN_OPEN (allTypes identifier (COMMA allTypes identifier)*)? PARAN_CLOSE;
 // the arguments passed when calling function
 arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
