@@ -510,7 +510,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getMethodType().equals(parLangE.LOCAL.getValue())){
                 String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
-                if (canConvert(nodeType, childType)) {
+                if (!canConvert(nodeType, childType)) {
                     throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
                 }
             }
