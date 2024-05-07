@@ -55,7 +55,6 @@ public interface NodeVisitor {
     void visit(StateAccessNode node);
     void visit(KnowsAccessNode node);
 
-
     void visit(PrintCallNode node);
     void visit(BoolAndExpNode node);
     void visit(BoolExpNode node);

@@ -149,8 +149,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("\n");
     }
 
-
-
     /***2
      * Appends a single import statement (e.g. "import akka.actor.UntypedAbstractActor;")
      * @param pack Name of the package (e.g. "akka.actor")
@@ -368,12 +366,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(AccessNode node) {
-        if(node instanceof StateAccessNode){
-            visit((StateAccessNode) node);
-        }else if(node instanceof KnowsAccessNode){
-            visit((KnowsAccessNode) node);
-        }
+        //abstract class, should not be called.
     }
+
 
     @Override
     public void visit(ArrayAccessNode node) {
@@ -775,7 +770,6 @@ public class CodeGenVisitor implements NodeVisitor {
         if (node.getParent() instanceof KnowsNode) {
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
-                    .append(javaE.FINAL.getValue())
                     .append(javaE.ACTORREF.getValue())
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
@@ -840,6 +834,8 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(KnowsAccessNode node) {
         stringBuilder
+                .append(javaE.THIS.getValue())
+                .append(".")
                 .append(node.getAccessIdentifier());
     }
 
@@ -1164,14 +1160,14 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ExpNode node) {
+    public void visit(ExpNode node) {//abstract
 
     }
 
     @Override
     public void visit(StateAccessNode node) {
         stringBuilder
-                .append(parLangE.STATE.getValue())
+                .append(javaE.THIS.getValue())
                 .append(".")
                 .append(node.getAccessIdentifier());
     }
@@ -1185,7 +1181,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         if (node.getParent() instanceof StateNode) {
-            stringBuilder.append(javaE.PRIVATE.getValue()).append(javaE.FINAL.getValue());
+            stringBuilder.append(javaE.PRIVATE.getValue());
         }
         visitChildren(node);
 
