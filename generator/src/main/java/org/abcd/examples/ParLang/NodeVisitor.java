@@ -52,7 +52,7 @@ public interface NodeVisitor {
     void visit(ArrayAccessNode node);
     void visit(StateAccessNode node);
     void visit(KnowsAccessNode node);
-
+    void visit(AccessNode node);
 
     void visit(PrintCallNode node);
     void visit(BoolAndExpNode node);
