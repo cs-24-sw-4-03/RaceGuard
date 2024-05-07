@@ -299,6 +299,11 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(ArrayAccessNode node){
+
+    }
+    /*
+    @Override
     public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
         //e.g: int x = a[0]; x = a[1];
@@ -374,6 +379,8 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+     */
+
     private void typeCastFirstArrayAccessNode(ArrayAccessNode node){
         if(node.getChildren().get(0) instanceof IdentifierNode){
             stringBuilder.append("(int) ");
@@ -400,8 +407,8 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")");
     }
     //Check if the array access node is a 1D array or 2D array
-    private int accessArrayDimensions(ArrayAccessNode node){
-        if(node.getChildren().size() == 1){
+    private int accessArrayDimensions(AstNode node){
+        if(node.getParent().getChildren().size() == 1){
             return 1;
         }
         else{
@@ -595,17 +602,9 @@ public class CodeGenVisitor implements NodeVisitor {
         if(node.getIsParenthesized()){
             stringBuilder.append("(");
         }
-
-       visitChild(node.getChildren().get(0));
-       if(node.getChildren().get(0) instanceof ArrayAccessNode && node.getChildren().get(1) instanceof ArrayAccessNode){
-            stringBuilder.append(".equals(");
-            visitChild(node.getChildren().get(1));
-            stringBuilder.append(")");
-       }else{
-            stringBuilder.append(node.getOperator());
-            visitChild(node.getChildren().get(1));
-       }
-
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(node.getOperator());
+        visitChild(node.getChildren().get(1));
        if(node.getIsParenthesized()){
               stringBuilder.append(")");
          }
@@ -683,7 +682,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        String arrayType = HashMapConverter(node);
+        //String arrayType = HashMapConverter(node);
         if (node.getParent() instanceof KnowsNode) {
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
@@ -692,7 +691,8 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLineBasic());
-        } else if(arrayType !=null){
+        }
+        /*else if(arrayType !=null){
             stringBuilder
                     .append(arrayType)
                     .append(" ")
@@ -704,12 +704,23 @@ public class CodeGenVisitor implements NodeVisitor {
             if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
                 stringBuilder.append(node.getName());
             }
-        } else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
+        } */
+        else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
              stringBuilder
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
 
-         } else if(node.getType()!= null){
+         } else if (node.getType().contains("[]") && node.getParent().getChildren().size() == 1) {
+            stringBuilder.append(VariableConverter(node.getType()))
+                    .append(" ")
+                    .append(node.getName())
+                    .append(" = new ");
+
+            if(node.getType().contains("[][]")){
+
+            }
+
+        } else if(node.getType()!= null){
             stringBuilder
                     .append(VariableConverter(node.getType()))
                     .append(" ")
@@ -722,9 +733,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitializationNode node) {
-        if(!(node.getChildren().get(0) instanceof ListNode)){
-            stringBuilder.append(" = ");
-        }
+        stringBuilder.append(" = ");
         visitChildren(node);
     }
 
@@ -760,14 +769,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
-        if (!(node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode)) {
-            if (node.getChildren() != null && !(node.getParent() instanceof ListNode)) {
-                stringBuilder.append(".addAll(Arrays.asList(");
-            } else {
-                stringBuilder.append("new ArrayList<>(Arrays.asList(");
-            }
+            stringBuilder.append("{");
             separateElementsList(node);
-        }
+            stringBuilder.append("}");
     }
     //Separate the elements in the list by a comma
     private void separateElementsList(ListNode node) {
@@ -777,7 +781,6 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append(", ");
             }
         }
-        stringBuilder.append("))");
     }
 
     @Override
