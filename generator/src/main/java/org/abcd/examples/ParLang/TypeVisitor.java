@@ -40,13 +40,13 @@ public class TypeVisitor implements NodeVisitor {
         if (assignTo.equals(assignFrom)){
             return true;
         }
-        if (assignTo.equals("double") && assignFrom.equals("int")){
+        if (assignTo.equals(parLangE.DOUBLE.getValue()) && assignFrom.equals(parLangE.INT.getValue())){
             return true;
         }
-        if (assignTo.equals("double[]") && assignFrom.equals("int[]")){
+        if (assignTo.equals(parLangE.DOUBLE_ARRAY.getValue()) && assignFrom.equals(parLangE.INT_ARRAY.getValue())){
             return true;
         }
-        if (assignTo.equals("double[][]") && assignFrom.equals("int[][]")){
+        if (assignTo.equals(parLangE.DOUBLE_ARRAY_2D.getValue()) && assignFrom.equals(parLangE.INT_ARRAY_2D.getValue())){
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
