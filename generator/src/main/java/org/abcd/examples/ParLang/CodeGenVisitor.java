@@ -262,8 +262,6 @@ public class CodeGenVisitor implements NodeVisitor {
         if(onMethods.hasNext()){//The first on-methods results in an if-statement.
             methodName=onMethods.next();
             className=getclassName(node,methodName);
-
-
             appendIfElseChainLink("if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
         }
         while (onMethods.hasNext()){//The remaining on-methods results in if-else statements
