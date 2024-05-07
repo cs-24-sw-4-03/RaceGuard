@@ -14,9 +14,4 @@ public abstract class AccessNode extends AstNode{
     public String getAccessIdentifier() {
         return accessIdentifier;
     }
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visit(this);
-    }
 }

@@ -260,11 +260,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(AccessNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
     }

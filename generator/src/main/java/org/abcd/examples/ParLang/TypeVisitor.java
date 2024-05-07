@@ -767,12 +767,6 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(AccessNode node) {
-        //abstract class
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(SelectionNode node) {
         /*try {*/
             this.symbolTable.enterScope(node.getNodeHash());
