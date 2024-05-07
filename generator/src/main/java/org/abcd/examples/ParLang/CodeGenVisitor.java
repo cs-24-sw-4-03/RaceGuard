@@ -8,7 +8,6 @@ import java.io.*;
 import java.util.ArrayList;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class CodeGenVisitor implements NodeVisitor {
     /**
      * @return the current line with the correct indentation.
      */
-    private String getLineBasic() {
+    private String getLine() {
         String line = stringBuilder.toString().indent(localIndent* 4);
         stringBuilder.setLength(0); // Resets string builder
         return line;
@@ -154,6 +153,8 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("\n");
     }
 
+
+
     /***2
      * Appends a single import statement (e.g. "import akka.actor.UntypedAbstractActor;")
      * @param pack Name of the package (e.g. "akka.actor")
@@ -189,7 +190,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
-        codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
+        codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
         visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
     }
@@ -201,7 +202,7 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendBodyClose(){
         localIndent--;
         stringBuilder.append( "}\n");
-        codeOutput.add(getLineBasic() );
+        codeOutput.add(getLine() );
     }
 
     private void appendConstructor(String className,List<IdentifierNode> params){
@@ -222,7 +223,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }
 
         stringBuilder.append(") {\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent++;
         if(params!=null){
             for(IdentifierNode param:params){
@@ -235,10 +236,10 @@ public class CodeGenVisitor implements NodeVisitor {
                         .append(";\n");
             }
         }
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     /***
@@ -257,7 +258,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.ONRECEIVE.getValue())//has value "onReceive(Object message) "
                 .append("{\n");
 
-        codeOutput.add(getLineBasic());//get line and add to codeOutput before indentation changes.
+        codeOutput.add(getLine());//get line and add to codeOutput before indentation changes.
         localIndent++;
 
         //The body is an if-els chain.
@@ -273,7 +274,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLineBasic()); //get line and add to codeOutput since indentation might change after calling this method.
+        codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
     }
 
     /**
@@ -296,10 +297,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("(")
                 .append(condition)
                 .append(") {\n");
-        codeOutput.add(getLineBasic());//get line before indentation changes.
+        codeOutput.add(getLine());//get line before indentation changes.
         localIndent++;
         stringBuilder.append(body);
-        codeOutput.add(getLineBasic());//get line before indentation changes.
+        codeOutput.add(getLine());//get line before indentation changes.
         localIndent--;
         stringBuilder.append("}");
     }
@@ -313,13 +314,13 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder
                 .append(javaE.ELSE.getValue())
                 .append("{\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append(body);
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLineBasic());//get the line since indentation might change after calling this method.
+        codeOutput.add(getLine());//get the line since indentation might change after calling this method.
     }
 
     /**
@@ -559,7 +560,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
     if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
         stringBuilder.append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         }
 
     }
@@ -569,7 +570,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if (node.getParent() instanceof MainDclNode) {
             stringBuilder
                     .append(javaE.CURLY_OPEN.getValue());
-            codeOutput.add(getLineBasic());
+            codeOutput.add(getLine());
             localIndent++;
             stringBuilder
                     .append("ActorSystem system = ActorSystem.create(\"system\")")
@@ -730,7 +731,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 visitChild(node.getChildren().get(2));
             }
         }
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     //HashMap to convert the type of the array to the type of the arraylist
@@ -759,7 +760,7 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(javaE.ACTORREF.getValue())
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
-            codeOutput.add(getLineBasic());
+            codeOutput.add(getLine());
         } else if(arrayType !=null){
             stringBuilder
                     .append(arrayType)
@@ -869,7 +870,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.CLASS.getValue())
                 .append("Main")
                 .append(" {\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent++;
         //public static void main(String[] args) {
         //      ActorSystem system = ActorSystem.create("system");
@@ -958,7 +959,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         visitPrintChildrenFromChildOne(node);
         stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     //Check if the print call node is a one dimensional array
@@ -1024,7 +1025,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
 
@@ -1073,7 +1074,7 @@ public class CodeGenVisitor implements NodeVisitor {
             localIndent++;
             visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue()); //Insterts the parameters ad public fields in the method's static class
             localIndent--;
-            codeOutput.add(getLineBasic() );
+            codeOutput.add(getLine() );
         }
     }
 
@@ -1170,7 +1171,7 @@ public class CodeGenVisitor implements NodeVisitor {
         //if the parent is not a for node, add a semicolon, else don't
         if(!(node.getParent() instanceof ForNode)){
                 stringBuilder.append(javaE.SEMICOLON.getValue());
-                codeOutput.add(getLineBasic());
+                codeOutput.add(getLine());
             }
 
     }
@@ -1183,7 +1184,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
         stringBuilder.append("\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     @Override
