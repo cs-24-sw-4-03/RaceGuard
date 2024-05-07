@@ -1,0 +1,13 @@
+main(){
+    bool a = TRUE;
+    bool b = FALSE;
+    int x = 1;
+    int y = 2;
+
+    if (a == b){
+    }
+    else if (a == TRUE){
+    }
+    else if (x+y > 1){
+    }
+}

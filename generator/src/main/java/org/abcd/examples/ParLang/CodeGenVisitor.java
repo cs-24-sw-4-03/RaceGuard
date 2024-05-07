@@ -591,11 +591,6 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(SenderNode node) {
-
-    }
-
-    @Override
     public void visit(CompareExpNode node) {
         if(node.getIsParenthesized()){
             stringBuilder.append("(");
@@ -1054,5 +1049,10 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChild(node.getChildren().get(1));
         stringBuilder.append("\n");
         codeOutput.add(getLineBasic());
+    }
+
+    @Override
+    public void visit(BoolCompareNode node){
+
     }
 }

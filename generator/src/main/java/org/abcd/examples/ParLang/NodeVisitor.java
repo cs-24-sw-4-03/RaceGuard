@@ -31,7 +31,6 @@ public interface NodeVisitor {
     void visit(InitializationNode node);
 
     void visit(ListNode node);
-    //void visit(ArrayDclNode node);
 
     void visit(KnowsNode node);
     void visit(MethodDclNode node);
@@ -61,5 +60,6 @@ public interface NodeVisitor {
     void visit(BoolAndExpNode node);
     void visit(BoolExpNode node);
     void visit(SelfNode node);
-    void visit(SenderNode node);
+
+    void visit(BoolCompareNode node);
 }
