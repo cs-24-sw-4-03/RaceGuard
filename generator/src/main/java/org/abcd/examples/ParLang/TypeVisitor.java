@@ -37,7 +37,6 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private boolean canConvert(String assignTo, String assignFrom){
-        System.out.println("bool "+assignTo.equals(assignFrom));
         if (assignTo.equals(assignFrom)){
             return true;
         }
