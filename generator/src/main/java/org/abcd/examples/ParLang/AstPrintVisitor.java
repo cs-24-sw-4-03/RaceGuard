@@ -118,6 +118,12 @@ public class AstPrintVisitor {
                 case "VarDclNode":
                     this.print(localIndent, className + " id: " + ((VarDclNode)node).getId() + " with type: " + node.getType());
                     break;
+                case "InitializationNode":
+                    this.print(localIndent, className + " with type: " + node.getType());
+                    break;
+                case "ListNode":
+                    this.print(localIndent, className + " with type: " + node.getType());
+                    break;
                 default:
                     this.print(localIndent, className);
                     break;

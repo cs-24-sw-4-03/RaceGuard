@@ -40,10 +40,13 @@ public class TypeVisitor implements NodeVisitor {
         if (assignTo.equals(assignFrom)){
             return true;
         }
-        if (assignTo.equals(parLangE.INT.getValue()) && assignFrom.equals(parLangE.DOUBLE.getValue())){
-            return false;
+        if (assignTo.equals("double") && assignFrom.equals("int")){
+            return true;
         }
-        if (assignTo.equals(parLangE.DOUBLE.getValue()) && assignFrom.equals(parLangE.INT.getValue())){
+        if (assignTo.equals("double[]") && assignFrom.equals("int[]")){
+            return true;
+        }
+        if (assignTo.equals("double[][]") && assignFrom.equals("int[][]")){
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
@@ -396,7 +399,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try{*/
             String listType = node.getChildren().get(0).getType();
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals(listType)) {
+                if (!canConvert(listType, child.getType())) {
                     throw new ListNodeException("List elements must be of the same type");
                 }
             }
@@ -416,7 +419,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
-            if (size == 1) {
+            if (!node.isInitialized()) {
                 node.setType(idType);
                 return;
             }
