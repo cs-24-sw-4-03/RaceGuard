@@ -7,7 +7,11 @@ public enum parLangE {
     ACTOR("Actor"),
     KNOWS("Knows"),
     STATE("State"),
-    SELF("self");
+    SELF("self"),
+    VOID("void"),
+    INT("int"),
+    DOUBLE("double"),
+    STRING("string");
 
     private String string;
 

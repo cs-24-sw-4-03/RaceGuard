@@ -48,14 +48,14 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(VarDclNode node){
         if(node.getParent() instanceof StateNode){
             if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
-                Attributes attributes = new Attributes(node.getType(), "dcl");
+                Attributes attributes = new Attributes(node.getType());
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
             }else{
                 this.exceptions.add(new DuplicateSymbolException("State symbol: " + node.getId() + " already exists in Actor: " + this.symbolTable.findActorParent(node)));
             }
         }else{
             if(this.symbolTable.lookUpSymbolCurrentScope(node.getId()) == null){
-                Attributes attributes = new Attributes(node.getType(), "dcl");
+                Attributes attributes = new Attributes(node.getType());
                 this.symbolTable.insertSymbol(node.getId(), attributes);
             }else{
                 this.exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope"));
@@ -99,10 +99,10 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(MethodDclNode node){
         //Checks if the method is a local or on method, and inserts it into the correct list
         if(Objects.equals(node.getMethodType(), parLangE.LOCAL.getValue())){
-            Attributes attributes = new Attributes(node.getType(), parLangE.LOCAL.getValue());
+            Attributes attributes = new Attributes(node.getType());
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }else if(Objects.equals(node.getMethodType(), parLangE.ON.getValue())){
-            Attributes attributes = new Attributes(node.getType(), parLangE.ON.getValue());
+            Attributes attributes = new Attributes(node.getType());
             this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
         //Creates a new scope, as long as there is not already a method in the actor that is named the same
@@ -125,7 +125,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         //Iterates through the children of the node and adds them to the symbol table
         for(AstNode child: node.getChildren()){
             IdentifierNode paramNode = (IdentifierNode)child;
-            Attributes attributes = new Attributes(paramNode.getType(), "param");
+            Attributes attributes = new Attributes(paramNode.getType());
             attributes.setScope(scopeName);
             if(!this.symbolTable.insertParams(paramNode.getName(), attributes)){
                 this.exceptions.add(new DuplicateSymbolException("Param: " + paramNode.getName() + " already exists in current scope"));
@@ -207,7 +207,7 @@ public class SymbolTableVisitor implements NodeVisitor {
         for(AstNode child: node.getChildren()){
             IdentifierNode idChildNode = (IdentifierNode)child;
             if (this.symbolTable.lookUpKnowsSymbol(idChildNode.getName()) == null) {
-                Attributes attributes = new Attributes(idChildNode.getType(), "dcl");
+                Attributes attributes = new Attributes(idChildNode.getType());
                 this.symbolTable.insertKnowsSymbol(idChildNode.getName(), attributes);
             }else{
                 this.exceptions.add(new DuplicateScopeException("Duplicate Knows symbol: " + idChildNode.getName() + " found in Actor: " + this.symbolTable.findActorParent(node)));
@@ -219,10 +219,10 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(ScriptMethodNode node) {
         //Checks if the method is a local or on method and adds it to the appropriate list
         if(Objects.equals(node.getMethodType(), parLangE.LOCAL.getValue())){
-            Attributes attributes = new Attributes(node.getType(), parLangE.LOCAL.getValue());
+            Attributes attributes = new Attributes(node.getType());
             this.symbolTable.insertLocalMethod(node.getId(), attributes);
         }else if(Objects.equals(node.getMethodType(), parLangE.ON.getValue())){
-            Attributes attributes = new Attributes(node.getType(), parLangE.ON.getValue());
+            Attributes attributes = new Attributes(node.getType());
             this.symbolTable.insertOnMethod(node.getId(), attributes);
         }
         //Creates a scope as long as there is not another method with the same name

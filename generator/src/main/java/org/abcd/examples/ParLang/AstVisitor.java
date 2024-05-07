@@ -268,16 +268,43 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override
     public AstNode visitDeclaration(ParLangParser.DeclarationContext ctx) {
-        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),ctx.allTypes().getText()); //ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
-        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),ctx.allTypes().getText());//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
+        String type = getTypeFromDclTypes(ctx.dclTypes());
+        VarDclNode dclNode=new VarDclNode(ctx.identifier().getText(),type); //ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
+        IdentifierNode idNode=new IdentifierNode(ctx.identifier().getText(),type);//ctx.allTypes().getText() is e.g. "int[]" if int[] a={2,2} is visited
         dclNode.addChild(idNode); //add identifier as child
         ParLangParser.InitializationContext init=ctx.initialization(); //get the initialization value
         if(init!=null){//variable is initialized
+            dclNode.setInitialized(true); //set the variable as initialized
             InitializationNode initializationNode=new InitializationNode();
             initializationNode.addChild(visit(init.getChild(1)));//child with index 1 is the initialization value (value can also be a list).
             dclNode.addChild(initializationNode); //add initializationNode as child
         }
+        if (ctx.dclTypes().arrayDcl() != null){
+            if (ctx.dclTypes().arrayDcl().arithExp(1) != null){
+                dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(0)));
+                dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(1)));
+            }
+            else {
+                dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(0)));
+            }
+        }
         return dclNode; //return the dclNode with identifier and initialization added as children
+    }
+    private String getTypeFromDclTypes(ParLangParser.DclTypesContext ctx){
+        String[] arraysplit =ctx.getChild(0).getText().split("\\[");
+        String arrayType = arraysplit[0]; //get the type of the variable
+        if (arraysplit.length == 1) {
+            return ctx.getChild(0).getText(); //return the type of the variable
+        }
+        else if (arraysplit.length == 2) { //if there are 2 splits one-dimensional array
+            return arrayType + "[]"; //return the type of the array
+        }
+        else if (arraysplit.length == 3){ //If there are 3 splits two-dimensional array
+            return arrayType + "[][]"; //return the type of the array
+        }
+        else {
+            throw new UnsupportedOperationException("Unsupported array declaration: " + ctx.getText());
+        }
     }
 
     @Override

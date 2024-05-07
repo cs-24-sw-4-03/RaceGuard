@@ -40,10 +40,13 @@ public class TypeVisitor implements NodeVisitor {
         if (assignTo.equals(assignFrom)){
             return true;
         }
-        if (assignTo.equals("int") && assignFrom.equals("double")){
-            return false;
-        }
         if (assignTo.equals("double") && assignFrom.equals("int")){
+            return true;
+        }
+        if (assignTo.equals("double[]") && assignFrom.equals("int[]")){
+            return true;
+        }
+        if (assignTo.equals("double[][]") && assignFrom.equals("int[][]")){
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
@@ -199,11 +202,20 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
         /*try {*/
-            String returnType = node.getChildren().get(0).getType();
-            if (returnType == null) {
+        if(!node.getParent().getParent().getType().equals(parLangE.VOID.getValue())) {
+            if (!node.getChildren().isEmpty()) {
+                String returnType = node.getChildren().getFirst().getType();
+                node.setType(returnType);
+            }else {
                 throw new ReturnNodeException("Type is not defined for return statement");
             }
-            node.setType(returnType);
+        }else{
+            if(node.getChildren().isEmpty()){
+                node.setType(parLangE.VOID.getValue());
+            }else {
+                throw new ReturnNodeException("return type is not void for void-returning local method");
+            }
+        }
         /*}
         catch (ReturnNodeException e) {
             exceptions.add(e);
@@ -255,10 +267,15 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
         /*try{*/
-            node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
-            if (node.getType() == null) {
-                throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
+        if(!node.getParent().getType().equals(parLangE.VOID.getValue())){
+            if(!node.getChildren().isEmpty()&&(node.getChildren().getLast()instanceof ReturnStatementNode)){
+                node.setType(node.getChildren().getLast().getType());
+            }else{
+                throw new LocalMethodBodyNodeException("Return statement missing from local method which does not return void");
             }
+        }else{
+            node.setType(parLangE.VOID.getValue());//If there is a return statement, it is checked in visit(ReturnStatement node) that it is "return;". So an erro should already have been produced
+        }
         /*}
         catch (LocalMethodBodyNodeException e) {
         exceptions.add(e);
@@ -382,7 +399,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try{*/
             String listType = node.getChildren().get(0).getType();
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals(listType)) {
+                if (!canConvert(listType, child.getType())) {
                     throw new ListNodeException("List elements must be of the same type");
                 }
             }
@@ -402,7 +419,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
-            if (size == 1) {
+            if (!node.isInitialized()) {
                 node.setType(idType);
                 return;
             }
@@ -496,7 +513,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getMethodType().equals(parLangE.LOCAL.getValue())){
                 String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
-                if (canConvert(nodeType, childType)) {
+                if (!canConvert(nodeType, childType)) {
                     throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
                 }
             }
@@ -587,7 +604,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new StringNodeException("StringNode value is null");
             }
-            node.setType("string");
+            node.setType(parLangE.STRING.getValue());
        /* }
         catch (StringNodeException e) {
             exceptions.add(e);
@@ -770,6 +787,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         /*try{*/
+            this.visitChildren(node);
             String id = node.getAccessIdentifier();
             Attributes attributes;
             if (hasParent(node, StateAccessNode.class)){
@@ -848,8 +866,8 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("string")) {
-                    if (child.getType().equals("int") || child.getType().equals("double")) {
+                if (!child.getType().equals(parLangE.STRING.getValue())) {
+                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue())) {
                         continue;
                     }
                     throw new PrintException("Print statement only accepts string arguments");

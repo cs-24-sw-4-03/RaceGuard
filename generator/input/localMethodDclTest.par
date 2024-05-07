@@ -2,8 +2,9 @@ Actor myActor{
     State{int x=2;}
     Knows{myActor a;}
     Spawn(){}
-    local localMethod(int i):String{
-        String s="local Method reporting";
+
+    local localMethod(int i):string{
+        string s="local Method reporting";
         myActor a;
         print("local Method reporting");
         return s;
@@ -21,7 +22,8 @@ Actor myActor{
     local localMethod5():int{
         return 2;
     }
-    local localMethod6():int{
+
+    local localMethod6():double{
          return 2.71;
     }
 
