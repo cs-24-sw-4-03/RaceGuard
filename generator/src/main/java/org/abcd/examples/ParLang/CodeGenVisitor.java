@@ -765,7 +765,6 @@ public class CodeGenVisitor implements NodeVisitor {
         if (node.getParent() instanceof KnowsNode) {
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
-                    .append(javaE.FINAL.getValue())
                     .append(javaE.ACTORREF.getValue())
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
@@ -1177,7 +1176,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         if (node.getParent() instanceof StateNode) {
-            stringBuilder.append(javaE.PRIVATE.getValue()).append(javaE.FINAL.getValue());
+            stringBuilder.append(javaE.PRIVATE.getValue());
         }
         visitChildren(node);
 
