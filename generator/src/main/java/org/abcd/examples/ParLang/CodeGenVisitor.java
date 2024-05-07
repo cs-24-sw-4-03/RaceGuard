@@ -1155,7 +1155,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ExpNode node) {
+    public void visit(ExpNode node) {//abstract
 
     }
 
