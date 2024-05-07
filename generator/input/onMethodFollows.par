@@ -10,9 +10,6 @@ Actor Sven follows Script1, Script2{
     State{}
     Knows{}
     Spawn(){}
-    on method1(int x){
-        print("ragout");
-    }
     on method2(){
         print("hej");
     }
