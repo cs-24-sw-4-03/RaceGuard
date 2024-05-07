@@ -57,7 +57,7 @@ public class AstPrintVisitor {
                     this.print(localIndent, className + " id: " + ((ActorDclNode)node).getId() + " with type: " + node.getType());
                     break;
                 case "MethodDclNode":
-                    if (((MethodDclNode)node).getMethodType().equals("on")){
+                    if (((MethodDclNode)node).getMethodType().equals(parLangE.ON.getValue())){
                         this.print(localIndent, className + " " + ((MethodDclNode)node).getMethodType() + " id: " + ((MethodDclNode)node).getId());
                     }
                     else {
@@ -65,7 +65,7 @@ public class AstPrintVisitor {
                     }
                     break;
                 case "ScriptMethodNode":
-                    if (((ScriptMethodNode)node).getMethodType().equals("on")) {
+                    if (((ScriptMethodNode)node).getMethodType().equals(parLangE.ON.getValue())) {
                         this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId());
                     }else{
                         this.print(localIndent, className + " " + ((ScriptMethodNode) node).getMethodType() + " with id: " + ((ScriptMethodNode) node).getId() + " return type: " + ((ScriptMethodNode) node).getType());

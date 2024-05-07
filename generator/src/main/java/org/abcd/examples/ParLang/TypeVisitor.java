@@ -27,11 +27,11 @@ public class TypeVisitor implements NodeVisitor {
         if (type1.equals(type2)){
             return type1;
         }
-        if (type1.equals("int") && type2.equals("double")){
-            return "double";
+        if (type1.equals(parLangE.INT.getValue()) && type2.equals(parLangE.DOUBLE.getValue())){
+            return parLangE.DOUBLE.getValue();
         }
-        if (type1.equals("double") && type2.equals("int")){
-            return "double";
+        if (type1.equals(parLangE.DOUBLE.getValue()) && type2.equals(parLangE.INT.getValue())){
+            return parLangE.DOUBLE.getValue();
         }
         return null;
     }
@@ -40,10 +40,10 @@ public class TypeVisitor implements NodeVisitor {
         if (assignTo.equals(assignFrom)){
             return true;
         }
-        if (assignTo.equals("int") && assignFrom.equals("double")){
+        if (assignTo.equals(parLangE.INT.getValue()) && assignFrom.equals(parLangE.DOUBLE.getValue())){
             return false;
         }
-        if (assignTo.equals("double") && assignFrom.equals("int")){
+        if (assignTo.equals(parLangE.DOUBLE.getValue()) && assignFrom.equals(parLangE.INT.getValue())){
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
@@ -457,11 +457,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("bool")) {
+                if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolCompareException("all BoolCompareNode children does not have type bool");
                 }
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
         /*}
         catch (BoolCompareException e) {
             exceptions.add(e);
@@ -569,7 +569,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new IntegerNodeException("IntegerNode value is null");
             }
-            node.setType("int");
+            node.setType(parLangE.INT.getValue());
         /*}
         catch (IntegerNodeException e) {
             exceptions.add(e);
@@ -585,7 +585,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new DoubleNodeException("DoubleNode value is null");
             }
-            node.setType("double");
+            node.setType(parLangE.DOUBLE.getValue());
         /*}
         catch (DoubleNodeException e) {
             exceptions.add(e);
@@ -616,11 +616,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("bool")) {
+                if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolExpException("all BoolAndExpNode children does not have type bool");
                 }
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
         /*}
         catch (BoolExpException e) {
             exceptions.add(e);
@@ -635,11 +635,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("bool")) {
+                if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolExpException("all BoolExpNode children does not have type bool");
                 }
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
         /*}
         catch (BoolExpException e) {
             exceptions.add(e);
@@ -674,8 +674,8 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(NegatedBoolNode node) {
         this.visitChildren(node);
         /*try {*/
-            if (node.getChildren().get(0).getType().equals("bool")) {
-                node.setType("bool");
+            if (node.getChildren().get(0).getType().equals(parLangE.BOOL.getValue())) {
+                node.setType(parLangE.BOOL.getValue());
             } else {
                 throw new BoolNodeException("NegatedBoolNode does not have type bool");
             }
@@ -694,7 +694,7 @@ public class TypeVisitor implements NodeVisitor {
             if (((BoolNode) node).getValue() == null) {
                 throw new BoolNodeException("BoolNode does not have type bool");
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
        /* }
         catch (BoolNodeException e) {
             exceptions.add(e);
@@ -711,7 +711,7 @@ public class TypeVisitor implements NodeVisitor {
             AstNode leftChild = node.getChildren().get(0);
             AstNode rightChild = node.getChildren().get(1);
             if (compareExpTypeMatching(leftChild.getType(), rightChild.getType())) {
-                node.setType("bool");
+                node.setType(parLangE.BOOL.getValue());
             } else {
                 throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType());
             }
@@ -725,7 +725,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private boolean compareExpTypeMatching(String leftType, String rightType){
-        if (leftType.equals(rightType) && leftType.equals("int") || leftType.equals("double")){
+        if (leftType.equals(rightType) && leftType.equals(parLangE.INT.getValue()) || leftType.equals(parLangE.DOUBLE.getValue())){
             return true;
         }
         else {
