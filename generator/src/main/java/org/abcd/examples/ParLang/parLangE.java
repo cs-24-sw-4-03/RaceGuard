@@ -5,13 +5,23 @@ public enum parLangE {
     ON("on"),
     LOCAL("local"),
     ACTOR("Actor"),
+    SCRIPT("Script"),
     KNOWS("Knows"),
     STATE("State"),
     SELF("self"),
     VOID("void"),
     INT("int"),
+    INT_ARRAY("int[]"),
+    INT_ARRAY_2D("int[][]"),
     DOUBLE("double"),
-    STRING("string");
+    DOUBLE_ARRAY("double[]"),
+    DOUBLE_ARRAY_2D("double[][]"),
+    STRING("string"),
+    STRING_ARRAY("string[]"),
+    STRING_ARRAY_2D("string[][]"),
+    BOOL("bool"),
+    BOOL_ARRAY("bool[]"),
+    BOOL_ARRAY_2D("bool[][]");
 
     private String string;
 
