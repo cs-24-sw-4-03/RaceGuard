@@ -553,7 +553,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             node.addChild(visit(ctx.arithExp(1))); //visit and add the arithmetic expression as a child
         }
 
-        return new ArrayAccessNode("", accessIdentifier);
+        return node;
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();

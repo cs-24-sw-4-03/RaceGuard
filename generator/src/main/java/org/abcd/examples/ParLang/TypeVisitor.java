@@ -770,6 +770,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         /*try{*/
+            this.visitChildren(node);
             String id = node.getAccessIdentifier();
             Attributes attributes;
             if (hasParent(node, StateAccessNode.class)){
