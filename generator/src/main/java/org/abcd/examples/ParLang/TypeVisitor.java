@@ -199,11 +199,20 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
         /*try {*/
-            String returnType = node.getChildren().get(0).getType();
-            if (returnType == null) {
+        if(!node.getParent().getParent().getType().equals(parLangE.VOID.getValue())) {
+            if (!node.getChildren().isEmpty()) {
+                String returnType = node.getChildren().getFirst().getType();
+                node.setType(returnType);
+            }else {
                 throw new ReturnNodeException("Type is not defined for return statement");
             }
-            node.setType(returnType);
+        }else{
+            if(node.getChildren().isEmpty()){
+                node.setType(parLangE.VOID.getValue());
+            }else {
+                throw new ReturnNodeException("return type is not void for void-returning local method");
+            }
+        }
         /*}
         catch (ReturnNodeException e) {
             exceptions.add(e);
