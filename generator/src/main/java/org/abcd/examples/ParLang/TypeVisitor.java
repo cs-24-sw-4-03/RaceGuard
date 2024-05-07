@@ -781,7 +781,8 @@ public class TypeVisitor implements NodeVisitor {
             if (attributes == null){
                 throw new ArrayAccessException("Array: " + id + " not found");
             }
-            node.setType(attributes.getVariableType());
+            String accessType = removeBrackets(attributes.getVariableType());
+            node.setType(accessType);
         /*}
         catch (ArrayAccessException e) {
             exceptions.add(e);
@@ -789,6 +790,11 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new ArrayAccessException(e.getMessage() + " in ArrayAccessNode"));
         }*/
+    }
+
+    private String removeBrackets(String arrayType){
+        //Remove all trailing brackets after access type
+        return arrayType.split("\\[")[0];
     }
 
     @Override
