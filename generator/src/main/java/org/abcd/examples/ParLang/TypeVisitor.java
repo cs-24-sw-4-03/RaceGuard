@@ -601,7 +601,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new StringNodeException("StringNode value is null");
             }
-            node.setType("string");
+            node.setType(parLangE.STRING.getValue());
        /* }
         catch (StringNodeException e) {
             exceptions.add(e);
@@ -856,8 +856,8 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("string")) {
-                    if (child.getType().equals("int") || child.getType().equals("double")) {
+                if (!child.getType().equals(parLangE.STRING.getValue())) {
+                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue())) {
                         continue;
                     }
                     throw new PrintException("Print statement only accepts string arguments");

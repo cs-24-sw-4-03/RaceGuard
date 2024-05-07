@@ -8,7 +8,10 @@ public enum parLangE {
     KNOWS("Knows"),
     STATE("State"),
     SELF("self"),
-    VOID("void");
+    VOID("void"),
+    INT("int"),
+    DOUBLE("double"),
+    STRING("string");
 
     private String string;
 
