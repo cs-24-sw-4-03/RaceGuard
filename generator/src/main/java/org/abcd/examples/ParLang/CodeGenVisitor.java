@@ -1,15 +1,12 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.io.*;
-import java.util.ArrayList;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 public class CodeGenVisitor implements NodeVisitor {
@@ -328,6 +325,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @return A condition for checking if incoming message is of the message type corresponding to the on-method.
      */
     private String getOnReceiveIfCondition(String methodName){
+
         return "message "+javaE.INSTANCEOF.getValue()+capitalizeFirstLetter(methodName)+" "+methodName+"Msg";
     }
 
@@ -895,7 +893,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
-            if(!isMethodInFollowedScript(node)){
+            if(getMethodInFollowedScript(node)==null){
                 //We create a static class. Instances of this class is sent as message when the on-method is called.
                 String className=capitalizeFirstLetter(node.getId());
                 appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
@@ -903,7 +901,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
                 appendBodyClose();
             }
-            appenBehvaiour(node);
+            appendBehvaiour(node);
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
@@ -913,25 +911,26 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    private void appenBehvaiour(MethodDclNode node){
-        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),node.getId());
+    private void appendBehvaiour(MethodDclNode node){
+        String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
+        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),name);
         appendBody(node.getChildren().get(1));
     }
 
-    private boolean isMethodInFollowedScript(MethodDclNode node){
+    private String getMethodInFollowedScript(MethodDclNode node){
         //MethodDclNode's parent is always an actor.
         // If the actor follows a script, a FollowsNode is the first child of this actor
         AstNode firstChildOfActor=node.getParent().getChildren().get(0);
         if(firstChildOfActor instanceof FollowsNode followsNode){
             List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
             for(IdentifierNode script:followedScripts){
-                Scope scriptScope=symbolTable.lookUpScope(script.getName());
-                if(scriptScope.getDeclaredOnMethods().containsKey(node.getId())){
-                    return true;
+                HashMap<String, Attributes> scriptOnMethods=symbolTable.lookUpScope(script.getName()).getDeclaredOnMethods();
+                if(scriptOnMethods.containsKey(node.getId())){
+                    return script.getName();
                 }
             }
         }
-        return false;
+        return null;
     }
 
 
