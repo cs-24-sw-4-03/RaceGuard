@@ -24,27 +24,27 @@ Actor International{
     State{}
     Knows{}
     Spawn(){}
-    on internationalGreet(GreeterScript greeter,string name){
+    on internationalGreet(GreeterScript greeter, string name){
         greeter<-greet(name);
     }
 }
 
 Actor HelloWorldMain{
     State{}
-    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter;};
+    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter;}
     Spawn(){
-        danishGreeter=Spawn Danish();
-        englishGreeter=Spawn English();
-        internationalGreeter=Spawn International();
+        Knows.danishGreeter=Spawn Danish();
+        Knows.englishGreeter=Spawn English();
+        Knows.internationalGreeter=Spawn International();
     }
     on sayHello(string name){
-        internationalGreeter<-internationalGreet(danishGreeter,name);
-        internationalGreeter<-internationalGreet(englishGreeter,name);
+        Knows.internationalGreeter<-internationalGreet(Knows.danishGreeter,name);
+        Knows.internationalGreeter<-internationalGreet(Knows.englishGreeter,name);
     }
 }
 
 main(){
-    HelloWorldMain mainActor=new HelloWorldMain();
+    HelloWorldMain mainActor = Spawn HelloWorldMain();
     mainActor<-sayHello("World");
     mainActor<-sayHello("Untyped Akka");
 }
