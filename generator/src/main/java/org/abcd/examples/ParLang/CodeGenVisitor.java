@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class CodeGenVisitor implements NodeVisitor {
@@ -102,6 +103,23 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /***
+     * Appends static final class definition string
+     * @param access access modifier
+     * @param name name of class
+     */
+
+    private void appendStaticFinalClassDef(String access, String name){
+        stringBuilder
+                .append(access)
+                .append(javaE.STATIC.getValue())
+                .append(javaE.FINAL.getValue())
+                .append(javaE.CLASS.getValue())
+                .append(name);
+    }
+
+
+
+    /***
      * Append method declaration string (e.g. "private void myMethod")
      * @param access access modifier (e.g. "private")
      * @param returnType (e.g. "void")
@@ -156,7 +174,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The children of this AST node constitutes all the body to be appended in the target code.
      */
     private void appendBody(AstNode node){
-        appendBodyOpen(node,"","");
+        appendBodyOpen(node);
         appendBodyClose();
     }
 
@@ -164,14 +182,15 @@ public class CodeGenVisitor implements NodeVisitor {
      * Can be used if something has to be added after visting the children.
      * @param node the parent of the body.
      */
+    private void appendBodyOpen(AstNode node){
+        appendBodyOpen(node,"","");
+    }
+
     private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
         codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
         visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
-        if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
-            appendOnReceive(actorDclnode);
-        }
     }
 
     /**
@@ -182,6 +201,43 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent--;
         stringBuilder.append( "}\n");
         codeOutput.add(getLineBasic() );
+    }
+
+    private void appendConstructor(String className,List<IdentifierNode> params){
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(className)
+                .append("(");
+        if(params.size()>0){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(param.getType())
+                        .append(" ")
+                        .append(param.getName())
+                        .append(", ");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+
+        stringBuilder.append(") {\n");
+        codeOutput.add(getLineBasic());
+        localIndent++;
+        if(params!=null){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(javaE.THIS.getValue())
+                        .append(".")
+                        .append(param.getName())
+                        .append(javaE.EQUALS.getValue())
+                        .append(param.getName())
+                        .append(";\n");
+            }
+        }
+        codeOutput.add(getLineBasic());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLineBasic());
     }
 
     /***
@@ -230,7 +286,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(type.equals("if")){
             keyword=javaE.IF.getValue();
         }else if(type.equals("if else")) {
-            keyword=javaE.IFELSE.getValue();
+            keyword=javaE.ELSEIF.getValue();
         }else{
             throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
         }
@@ -454,8 +510,11 @@ public class CodeGenVisitor implements NodeVisitor {
         );
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
-        //System.out.println("actor declaration");
-        appendBody(node);//append the body of the actor class
+
+        //append the body of the actor class
+        appendBodyOpen(node);
+        appendOnReceive(node);
+        appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
     }
@@ -708,14 +767,18 @@ public class CodeGenVisitor implements NodeVisitor {
              stringBuilder
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
+         }
+        else if(node.getType()!= null){
+             if (node.getParent() instanceof ReturnStatementNode || node.getParent() instanceof AssignNode) {
+                 stringBuilder.append(node.getName());
+             } else {
+                 stringBuilder.append(VariableConverter(node.getType()));
+                 stringBuilder.append(" ");
+                 stringBuilder.append(node.getName());
+             }
 
-         } else if(node.getType()!= null){
-            stringBuilder
-                    .append(VariableConverter(node.getType()))
-                    .append(" ")
-                    .append(node.getName());
-
-        } else{
+        }
+        else{
             stringBuilder.append(node.getName());
         }
     }
@@ -819,6 +882,16 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
+            if(!isMethodInFollowedScript(node)){
+                //We create a static class. Instances of this class is sent as message when the on-method is called.
+                String className=capitalizeFirstLetter(node.getId());
+                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
+                appendBodyOpen(node.getChildren().getFirst(),javaE.PUBLIC.getValue(),";\n");
+                appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+                appendBodyClose();
+            }
+            appenBehvaiour(node);
+
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
@@ -827,6 +900,26 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    private void appenBehvaiour(MethodDclNode node){
+        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),node.getId());
+        appendBody(node.getChildren().get(1));
+    }
+
+    private boolean isMethodInFollowedScript(MethodDclNode node){
+        //MethodDclNode's parent is always an actor.
+        // If the actor follows a script, a FollowsNode is the first child of this actor
+        AstNode firstChildOfActor=node.getParent().getChildren().get(0);
+        if(firstChildOfActor instanceof FollowsNode followsNode){
+            List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
+            for(IdentifierNode script:followedScripts){
+                Scope scriptScope=symbolTable.lookUpScope(script.getName());
+                if(scriptScope.getDeclaredOnMethods().containsKey(node.getId())){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 
 
@@ -941,15 +1034,20 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
-        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a scrupt does not need to be handled here.
-            //Create a static class for the on-method.
-            stringBuilder
-                    .append(javaE.PUBLIC.getValue())
-                    .append(javaE.STATIC.getValue())
-                    .append(javaE.FINAL.getValue())
-                    .append(javaE.CLASS.getValue())
-                    .append(node.getId());
-            appendBody(node);//appends the body of the static class (prublic fields for each parameter in the method)
+        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a script does not need to be handled here.
+            String className=capitalizeFirstLetter(node.getId());
+            appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//Create a static class for the on-method.
+
+            //appends opening of the body of the static class and creates public fields for each parameter in the method.
+            appendBodyOpen(node);
+
+            List<IdentifierNode> params=new ArrayList<IdentifierNode>();//prepare list of parameters for constructor
+            if(!node.getChildren().isEmpty()){
+               params=(List<IdentifierNode>)(List<?>)node.getChildren().get(0).getChildren(); //set list of parameters if there are any.
+            }
+            appendConstructor(className,params);//append the constructor in the body.
+
+            appendBodyClose();//close the body
         }
     }
 
@@ -970,7 +1068,9 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
         visitChildren(node,"",",");//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
-        stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        if(node.getChildren().size()>0){
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        }
         stringBuilder.append(")");
     }
 

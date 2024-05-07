@@ -315,7 +315,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
-
         if(ctx.getChildCount()==1){ //If there is only one child,
             return visit(ctx.term(0)); //visit the term
         }else{ //If there are more than one child

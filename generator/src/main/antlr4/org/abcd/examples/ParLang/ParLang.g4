@@ -9,10 +9,6 @@ grammar ParLang;
 // init used as start non-terminal for parser
 init : script* actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
-/** TO DO !!!!!!!!!!!!!!!!
-
-*/
-
 //main function, here the program should start
 mainFunc : MAIN parameters body;
 
@@ -139,7 +135,7 @@ localMethodBody: CURLY_OPEN statement* returnStatement? CURLY_CLOSE;
 
 
 // defines the parameters of a function
-parameters : PARAN_OPEN ((allTypes | identifier) identifier (COMMA (allTypes | identifier) identifier)*)? PARAN_CLOSE;
+parameters : PARAN_OPEN (allTypes identifier (COMMA allTypes identifier)*)? PARAN_CLOSE;
 // the arguments passed when calling function
 arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
@@ -218,7 +214,6 @@ returnType : identifier
 
 //fragments used to ease other definitions
 fragment DIGIT : [0-9];
-fragment POS_DIGIT : [1-9]; //Strictly positive digit
 fragment SMALL_LETTER : [a-zæøå];
 fragment CAP_LETTER : [A-ZÆØÅ];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
@@ -230,7 +225,6 @@ INT_TYPE : 'int';
 DOUBLE_TYPE : 'double';
 BOOL_TYPE : 'bool';
 STRING_TYPE : 'string';
-NULL_TYPE : 'null';
 ARRAY_TYPE : '[]';
 ACTOR_TYPE : 'Actor';
 VOID_TYPE : 'void';
