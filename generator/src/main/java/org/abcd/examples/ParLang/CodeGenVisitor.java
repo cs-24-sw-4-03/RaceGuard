@@ -24,8 +24,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
+    private int localIndent = 0; // indent for file generated. 4 spaces per indent
 
-    int localIndent = 0; // indent for file generated. 4 spaces per indent
+    private int uniqueActorsCounter = 0; // Stores the amount of spawned actors
 
     /**
      * @return the current line with the correct indentation.
@@ -185,7 +186,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /***
-     * Appends and onReceive() method to the vody of an Actor.
+     * Appends and onReceive() method to the body of an Actor.
      * @param node The ActorDclNode in the AST which is used to produce the body of the actor in the target code.
      */
     private void appendOnReceive(ActorDclNode node){
@@ -448,7 +449,9 @@ public class CodeGenVisitor implements NodeVisitor {
                 "ActorRef",
                 "ActorSystem",
                 "Props",
-                "UntypedAbstractActor",
+                "UntypedAbstractActor"
+        );
+        appendImports("akka.event",
                 "Logging",
                 "LoggingAdapter"
         );
@@ -514,8 +517,14 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(javaE.SEMICOLON.getValue());
             visitChildren(node);
             appendBodyClose();
-        }
-        else {
+        } else if (node.getParent() instanceof SpawnDclNode) { //No curly brackets needed
+            String outerScopeName = symbolTable.findActorParent(node);
+            stringBuilder
+                    .append(javaE.PUBLIC.getValue())
+                    .append(outerScopeName)
+                    .append("() ");
+            appendBody(node);
+        } else {
             appendBody(node);
         }
     }
@@ -748,8 +757,6 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(KnowsAccessNode node) {
         stringBuilder
-                .append(parLangE.KNOWS.getValue())
-                .append(".")
                 .append(node.getAccessIdentifier());
     }
 
@@ -789,6 +796,11 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(MainDclNode node) {
         resetStringBuilder();
         //public class Main {
+        appendImports("akka.actor",
+                "ActorSystem",
+                "ActorRef",
+                "Props",
+                "UntypedAbstractActor");
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.CLASS.getValue())
@@ -996,13 +1008,44 @@ public class CodeGenVisitor implements NodeVisitor {
 
     }
 
+
+    //Maybe Symboltable can be used here.
+    //system is used when actor is created in main.
+    //ActorRef mainActor = system.actorOf(Props.create(HelloWorldMain.class), "0")
+    //getContext is used when actor is created in another actor.
+    //danishGreeter = getContext().actorOf(Props.create(Danish.class), "1");
+
+    //Assign a new Actor to a new unique value that counts from 0 using the Hashmap
+    private int getNextUniqueActor() {
+        return uniqueActorsCounter++;
+    }
     @Override
     public void visit(SpawnActorNode node) {
+        String outerScopeName = symbolTable.findActorParent(node);
+        if (outerScopeName != null) { //Actor or Script
+            stringBuilder
+                    .append("getContext().actorOf(Props.create(")
+                    .append(node.getType())
+                    .append(".class")
+                    .append("), \"")
+                    .append(getNextUniqueActor())
+                    .append("\")");
+        }
+        else { //null means it's main
+            stringBuilder
+                    .append("system.actorOf(Props.create(")
+                    .append(node.getType())
+                    .append(".class")
+                    .append("), \"")
+                    .append(getNextUniqueActor())
+                    .append("\")");
 
+        }
     }
 
     @Override
     public void visit(SpawnDclNode node) {
+        visitChildren(node);
 
     }
 
