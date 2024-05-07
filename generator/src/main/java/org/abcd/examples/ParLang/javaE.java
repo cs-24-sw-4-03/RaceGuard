@@ -26,7 +26,12 @@ public enum javaE {
     SEMICOLON(";\n"),
     ACTOR_SYSTEM_NAME("system"),
     THIS("this"),
-    EQUALS(" = ");
+    EQUALS(" = "),
+    LONG("long"),
+    STRING("String"),
+    DOUBLE("double"),
+    BOOLEAN("boolean");
+
 
 
 
