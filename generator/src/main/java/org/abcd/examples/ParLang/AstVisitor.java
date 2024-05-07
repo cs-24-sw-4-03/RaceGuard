@@ -544,6 +544,15 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     @Override public AstNode visitArrayAccess(ParLangParser.ArrayAccessContext ctx){
         //An array access
         String accessIdentifier = ctx.identifier().getText();
+        ArrayAccessNode node = new ArrayAccessNode("", accessIdentifier);
+
+        if(ctx.arithExp(0) !=null){ //If there is an arithmetic expression
+            node.addChild(visit(ctx.arithExp(0))); //visit and add the arithmetic expression as a child
+        }
+        if(ctx.arithExp(1) !=null){ //If there is an arithmetic expression
+            node.addChild(visit(ctx.arithExp(1))); //visit and add the arithmetic expression as a child
+        }
+
         return new ArrayAccessNode("", accessIdentifier);
     }
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
