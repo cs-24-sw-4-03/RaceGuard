@@ -1,15 +1,12 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.io.*;
-import java.util.ArrayList;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 public class CodeGenVisitor implements NodeVisitor {
@@ -52,13 +49,13 @@ public class CodeGenVisitor implements NodeVisitor {
     private String VariableConverter(String type){
         switch (type) {
             case "int":
-                return "long";
+                return javaE.LONG.getValue();
             case "double":
-                return "double";
+                return javaE.DOUBLE.getValue();
             case "bool":
-                return "boolean";
+                return javaE.BOOLEAN.getValue();
             case "string":
-                return "String";
+                return javaE.STRING.getValue();
             default:
                 return type;
         }
@@ -130,7 +127,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder
                 .append(access)
                 .append(returnType)
-                .append(" ")
                 .append(name);
     }
 
@@ -211,7 +207,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(params.size()>0){
             for(IdentifierNode param:params){
                 stringBuilder
-                        .append(param.getType())
+                        .append(VariableConverter(param.getType()))
                         .append(" ")
                         .append(param.getName())
                         .append(", ");
@@ -248,6 +244,7 @@ public class CodeGenVisitor implements NodeVisitor {
         Scope scope=symbolTable.lookUpScope(node.getId());//Get the scope of the actor.
         Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
         String methodName;
+        String className;
 
         //append the method signature
         stringBuilder
@@ -262,17 +259,38 @@ public class CodeGenVisitor implements NodeVisitor {
         //The body is an if-els chain.
         if(onMethods.hasNext()){//The first on-methods results in an if-statement.
             methodName=onMethods.next();
-            appendIfElseChainLink("if",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+            className=getclassName(node,methodName);
+            appendIfElseChainLink("if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
         }
         while (onMethods.hasNext()){//The remaining on-methods results in if-else statements
             methodName=onMethods.next();
-            appendIfElseChainLink("if else",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+            className=getclassName(node,methodName);
+            appendIfElseChainLink("else if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
         }
         appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
 
         localIndent--;
         stringBuilder.append("}\n");
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
+    }
+
+    private String getclassName(ActorDclNode node,String methodName){
+        MethodDclNode methodNode=null;
+        String className=capitalizeFirstLetter(methodName);
+
+        for (AstNode childNode: node.getChildren()){
+            if(childNode instanceof MethodDclNode && ((MethodDclNode) childNode).getId().equals(methodName)){
+                methodNode=(MethodDclNode) childNode;
+                break;
+            }
+        }
+        if( methodNode!=null){
+            String scriptName=getMethodInFollowedScript(methodNode);
+            if(scriptName!=null){
+                className=scriptName+"."+className;
+            }
+        }
+        return className;
     }
 
     /**
@@ -285,7 +303,7 @@ public class CodeGenVisitor implements NodeVisitor {
         String keyword;
         if(type.equals("if")){
             keyword=javaE.IF.getValue();
-        }else if(type.equals("if else")) {
+        }else if(type.equals("else if")) {
             keyword=javaE.ELSEIF.getValue();
         }else{
             throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
@@ -323,10 +341,11 @@ public class CodeGenVisitor implements NodeVisitor {
 
     /**
      * @param methodName Name of the on-method
+     * @param className class name of the protocol class corresponding to the on-method.
      * @return A condition for checking if incoming message is of the message type corresponding to the on-method.
      */
-    private String getOnReceiveIfCondition(String methodName){
-        return "message "+javaE.INSTANCEOF.getValue()+capitalizeFirstLetter(methodName)+" "+methodName+"Msg";
+    private String getOnReceiveIfCondition(String className,String methodName){
+        return "message "+javaE.INSTANCEOF.getValue()+className+" "+methodName+"Msg";
     }
 
     /***
@@ -334,7 +353,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @return A statement which calls a private-method in the actor. This method has the functionality to be executed when the message corresponding to the on-method is received.
      */
     private String getOnReceiveIfBody(String methodName){
-        return "on"+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
+        return parLangE.ON.getValue()+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
     }
 
     private String capitalizeFirstLetter(String input) {
@@ -769,11 +788,11 @@ public class CodeGenVisitor implements NodeVisitor {
                      .append(node.getName());
          }
         else if(node.getType()!= null){
-             if (node.getParent() instanceof ReturnStatementNode || node.getParent() instanceof AssignNode) {
-                 stringBuilder.append(node.getName());
-             } else {
+             if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
                  stringBuilder.append(VariableConverter(node.getType()));
                  stringBuilder.append(" ");
+                 stringBuilder.append(node.getName());
+             } else {
                  stringBuilder.append(node.getName());
              }
 
@@ -823,7 +842,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ListNode node) {
-        if (!(node.getParent() instanceof AssignNode && node.getParent().getChildren().get(0) instanceof ArrayAccessNode)) {
+        if (!(node.getParent() instanceof AssignNode && node.getParent().getChildren().getFirst() instanceof ArrayAccessNode)) {
             if (node.getChildren() != null && !(node.getParent() instanceof ListNode)) {
                 stringBuilder.append(".addAll(Arrays.asList(");
             } else {
@@ -887,7 +906,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
-            if(!isMethodInFollowedScript(node)){
+            if(getMethodInFollowedScript(node)==null){
                 //We create a static class. Instances of this class is sent as message when the on-method is called.
                 String className=capitalizeFirstLetter(node.getId());
                 appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
@@ -895,7 +914,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
                 appendBodyClose();
             }
-            appenBehvaiour(node);
+            appendBehvaiour(node);
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
@@ -905,25 +924,27 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    private void appenBehvaiour(MethodDclNode node){
-        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),node.getId());
+    private void appendBehvaiour(MethodDclNode node){
+        String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
+        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),name);
+        appendParameters((ParametersNode) node.getChildren().getFirst());
         appendBody(node.getChildren().get(1));
     }
 
-    private boolean isMethodInFollowedScript(MethodDclNode node){
+    private String getMethodInFollowedScript(MethodDclNode node){
         //MethodDclNode's parent is always an actor.
         // If the actor follows a script, a FollowsNode is the first child of this actor
-        AstNode firstChildOfActor=node.getParent().getChildren().get(0);
+        AstNode firstChildOfActor=node.getParent().getChildren().getFirst();
         if(firstChildOfActor instanceof FollowsNode followsNode){
             List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
             for(IdentifierNode script:followedScripts){
-                Scope scriptScope=symbolTable.lookUpScope(script.getName());
-                if(scriptScope.getDeclaredOnMethods().containsKey(node.getId())){
-                    return true;
+                HashMap<String, Attributes> scriptOnMethods=symbolTable.lookUpScope(script.getName()).getDeclaredOnMethods();
+                if(scriptOnMethods.containsKey(node.getId())){
+                    return script.getName();
                 }
             }
         }
-        return false;
+        return null;
     }
 
 

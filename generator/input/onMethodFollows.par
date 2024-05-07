@@ -11,10 +11,10 @@ Actor Sven follows Script1, Script2{
     Knows{}
     Spawn(){}
     on method1(int x){
-        print("Store patter");
+        print("ragout");
     }
     on method2(){
-        print("hej");
+        int x=2+2;
     }
     on method3(int x, int y){
         print("total viking power");
