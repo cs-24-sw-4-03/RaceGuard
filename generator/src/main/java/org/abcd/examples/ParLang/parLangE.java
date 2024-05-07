@@ -17,7 +17,6 @@ public enum parLangE {
     DOUBLE("double"),
     DOUBLE_ARRAY("double[]"),
     DOUBLE_ARRAY_2D("double[][]"),
-    STRING("string"),
     STRING_ARRAY("string[]"),
     STRING_ARRAY_2D("string[][]"),
     BOOL("bool"),

@@ -1,6 +1,8 @@
 package org.abcd.examples.ParLang;
 // import ANTLR's runtime libraries
 import org.abcd.examples.ParLang.AstNodes.InitNode;
+import org.abcd.examples.ParLang.CodeGen.CodeGenUtils;
+import org.abcd.examples.ParLang.CodeGen.CodeGenVisitor;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
@@ -103,8 +105,8 @@ public class ParLang {
     }
 
     private static void generateCode(AstNode ast, SymbolTable symbolTable) throws IOException {
-        CodeGenVisitor codeGenVisitor = new CodeGenVisitor(symbolTable);
-        codeGenVisitor.visit(ast);
+        CodeGenUtils cgu=new CodeGenUtils(symbolTable);
+        cgu.getVisitor().visit(ast);
     }
 
 }
