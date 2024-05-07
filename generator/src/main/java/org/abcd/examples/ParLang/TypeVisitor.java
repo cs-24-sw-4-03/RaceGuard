@@ -264,10 +264,15 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
         /*try{*/
-            node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
-            if (node.getType() == null) {
-                throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
+        if(!node.getParent().getType().equals(parLangE.VOID.getValue())){
+            if(!node.getChildren().isEmpty()&&(node.getChildren().getLast()instanceof ReturnStatementNode)){
+                node.setType(node.getChildren().getLast().getType());
+            }else{
+                throw new LocalMethodBodyNodeException("Return statement missing from local method which does not return void");
             }
+        }else{
+            node.setType(parLangE.VOID.getValue());//If there is a return statement, it is checked in visit(ReturnStatement node) that it is "return;". So an erro should already have been produced
+        }
         /*}
         catch (LocalMethodBodyNodeException e) {
         exceptions.add(e);
