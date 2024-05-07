@@ -27,21 +27,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     int localIndent = 0; // indent for file generated. 4 spaces per indent
 
-    private String getLine() {
-        String line = stringBuilder.toString();
-        stringBuilder.setLength(0); // Resets string builder
-        int indent = localIndent;
-
-        if (line.endsWith("}\n")){
-            indent--;
-        }
-        line = line.indent(indent * 4);
-
-        return line;
-    }
-
-    //an alternative version to getLine() where indent is not reduced if line ends with "}\n"
-    //Gets current line with indentation given by localIndent at this moment and resets stringBuilder.
+    /**
+     * @return the current line with the correct indentation.
+     */
     private String getLineBasic() {
         String line = stringBuilder.toString().indent(localIndent* 4);
         stringBuilder.setLength(0); // Resets string builder
@@ -159,7 +147,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(pack)
                 .append(".")
                 .append(className)
-                .append(";\n");
+                .append(javaE.SEMICOLON.getValue());
     }
 
     /***
@@ -168,13 +156,29 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The children of this AST node constitutes all the body to be appended in the target code.
      */
     private void appendBody(AstNode node){
+        appendBodyOpen(node,"","");
+        appendBodyClose();
+    }
+
+    /***
+     * Can be used if something has to be added after visting the children.
+     * @param node the parent of the body.
+     */
+    private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
         codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
-        visitChildren(node);//append the content of the body by visiting the children of @param node.
+        visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
         if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
             appendOnReceive(actorDclnode);
         }
+    }
+
+    /**
+     * Used to finish a body after appending what is needed.
+     */
+
+    private void appendBodyClose(){
         localIndent--;
         stringBuilder.append( "}\n");
         codeOutput.add(getLineBasic() );
@@ -450,7 +454,7 @@ public class CodeGenVisitor implements NodeVisitor {
         );
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
-        System.out.println("actor declaration");
+        //System.out.println("actor declaration");
         appendBody(node);//append the body of the actor class
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
@@ -492,22 +496,28 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")");
     }
     if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
-        stringBuilder.append(";\n");
-        codeOutput.add(getLine());
+        stringBuilder.append(javaE.SEMICOLON.getValue());
+        codeOutput.add(getLineBasic());
         }
 
     }
 
     @Override
     public void visit(BodyNode node) {
-        stringBuilder.append("{\n");
-        codeOutput.add(getLine());
-        localIndent++;
-
-        this.visitChildren(node);
-
-        stringBuilder.append("}\n");
-        codeOutput.add(getLine());
+        if (node.getParent() instanceof MainDclNode) {
+            stringBuilder
+                    .append(javaE.CURLY_OPEN.getValue());
+            codeOutput.add(getLineBasic());
+            localIndent++;
+            stringBuilder
+                    .append("ActorSystem system = ActorSystem.create(\"system\")")
+                    .append(javaE.SEMICOLON.getValue());
+            visitChildren(node);
+            appendBodyClose();
+        }
+        else {
+            appendBody(node);
+        }
     }
     //In FactorialHelper this is: private final int currentValue;
     @Override
@@ -610,7 +620,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-
     }
 
     //for loop construction, can be either of the following:
@@ -620,7 +629,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //for (Empty;CompareExpNode;Empty) {BodyNode}
     @Override
     public void visit(ForNode node) {
-        stringBuilder.append("for(");
+        stringBuilder.append(javaE.FOR.getValue()).append("(");
         //check if the second child is a compare expression and the third child is an assign node
         if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
             visitChild(node.getChildren().get(0));
@@ -653,7 +662,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 visitChild(node.getChildren().get(2));
             }
         }
-        codeOutput.add(getLine());
+        codeOutput.add(getLineBasic());
     }
 
     //HashMap to convert the type of the array to the type of the arraylist
@@ -675,27 +684,38 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(IdentifierNode node) {
         String arrayType = HashMapConverter(node);
-        //
-         if(arrayType !=null){
-            stringBuilder.append(arrayType);
-            stringBuilder.append(" ");
-            stringBuilder.append(node.getName());
-            stringBuilder.append(" = new ArrayList<>();\n");
+        if (node.getParent() instanceof KnowsNode) {
+            stringBuilder
+                    .append(javaE.PRIVATE.getValue())
+                    .append(javaE.FINAL.getValue())
+                    .append(javaE.ACTORREF.getValue())
+                    .append(node.getName())
+                    .append(javaE.SEMICOLON.getValue());
+            codeOutput.add(getLineBasic());
+        } else if(arrayType !=null){
+            stringBuilder
+                    .append(arrayType)
+                    .append(" ")
+                    .append(node.getName())
+                    .append(" = new ArrayList<>()")
+                    .append(javaE.SEMICOLON.getValue());
             //Check if the parent is a var dcl node and has more than one child, then append the name of the node which
             //is used to add elements to the arraylist in the ListNode
             if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
                 stringBuilder.append(node.getName());
             }
         } else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
-             stringBuilder.append(javaE.ACTORREF.getValue());//appends "ActorRef ".
-             stringBuilder.append(node.getName());
-         }
-        else if(node.getType()!= null){
-            stringBuilder.append(VariableConverter(node.getType()));
-            stringBuilder.append(" ");
-            stringBuilder.append(node.getName());
-        }
-        else{
+             stringBuilder
+                     .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
+                     .append(node.getName());
+
+         } else if(node.getType()!= null){
+            stringBuilder
+                    .append(VariableConverter(node.getType()))
+                    .append(" ")
+                    .append(node.getName());
+
+        } else{
             stringBuilder.append(node.getName());
         }
     }
@@ -735,7 +755,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(KnowsNode node) {
-
+        visitChildren(node);
     }
 
     @Override
@@ -767,17 +787,26 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
-        localIndent = 0;
-        stringBuilder.append("public class Main {\n");
-        codeOutput.add(getLine());
+        resetStringBuilder();
+        //public class Main {
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.CLASS.getValue())
+                .append("Main")
+                .append(" {\n");
+        codeOutput.add(getLineBasic());
         localIndent++;
-        stringBuilder.append("public static void main(String[] args)");
-        this.visitChildren(node);
-        localIndent--;
-        stringBuilder.append("\n}");
-        codeOutput.add(getLine());
+        //public static void main(String[] args) {
+        //      ActorSystem system = ActorSystem.create("system");
+        //} //end of main method
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.STATIC.getValue())
+                .append(javaE.VOID.getValue())
+                .append("main(String[] args)");
+        //codeOutput.add(getLineBasic());
+        visitChildren(node);
+        appendBodyClose();
         writeToFile(node.getId(), codeOutput);
     }
 
@@ -823,8 +852,8 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChild(node.getChildren().get(0));
         }
         visitPrintChildrenFromChildOne(node);
-        stringBuilder.append(");\n");
-        codeOutput.add(getLine());
+        stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
+        codeOutput.add(getLineBasic());
     }
 
     //Check if the print call node is a one dimensional array
@@ -889,7 +918,7 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
-        stringBuilder.append(";\n");
+        stringBuilder.append(javaE.SEMICOLON.getValue());
         codeOutput.add(getLineBasic());
     }
 
@@ -932,7 +961,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }else if (node.getParent() instanceof ScriptMethodNode){
             //If the method is declared in a script, the parameters are mapped to fields in the static class representing the method
             localIndent++;
-            visitChildren(node, javaE.PUBLIC.getValue(),";\n"); //Insterts the parameters ad public fields in the method's static class
+            visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue()); //Insterts the parameters ad public fields in the method's static class
             localIndent--;
             codeOutput.add(getLineBasic() );
         }
@@ -950,14 +979,14 @@ public class CodeGenVisitor implements NodeVisitor {
     //Standard selection node construction with if and else statements
     @Override
     public void visit(SelectionNode node) {
-        stringBuilder.append("if(");
+        stringBuilder.append(javaE.IF.getValue()).append("(");
         visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
 
         //check if there is an else statement
         if(node.getChildren().size() > 2){
-            stringBuilder.append("else ");
+            stringBuilder.append(javaE.ELSE.getValue());
             visitChild(node.getChildren().get(2));
         }
     }
@@ -999,14 +1028,14 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         if (node.getParent() instanceof StateNode) {
-            stringBuilder.append("private final ");
+            stringBuilder.append(javaE.PRIVATE.getValue()).append(javaE.FINAL.getValue());
         }
         visitChildren(node);
 
         //if the parent is not a for node, add a semicolon, else don't
         if(!(node.getParent() instanceof ForNode)){
-                stringBuilder.append(";\n");
-                codeOutput.add(getLine());
+                stringBuilder.append(javaE.SEMICOLON.getValue());
+                codeOutput.add(getLineBasic());
             }
 
     }
@@ -1014,12 +1043,12 @@ public class CodeGenVisitor implements NodeVisitor {
     //Standard while loop construction
     @Override
     public void visit(WhileNode node) {
-        stringBuilder.append("while(");
+        stringBuilder.append(javaE.WHILE.getValue()).append("(");
         visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
         stringBuilder.append("\n");
-        codeOutput.add(getLine());
+        codeOutput.add(getLineBasic());
     }
 
     @Override

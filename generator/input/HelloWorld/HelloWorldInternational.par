@@ -31,7 +31,7 @@ Actor International{
 
 Actor HelloWorldMain{
     State{}
-    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter};
+    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter;}
     Spawn(){
         danishGreeter=Spawn Danish();
         englishGreeter=Spawn English();
@@ -44,7 +44,7 @@ Actor HelloWorldMain{
 }
 
 main(){
-    HelloWorldMain mainActor=new HelloWorldMain();
+    HelloWorldMain mainActor = Spawn HelloWorldMain();
     mainActor<-sayHello("World");
     mainActor<-sayHello("Untyped Akka");
 }

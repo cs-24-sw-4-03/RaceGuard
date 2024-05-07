@@ -18,7 +18,14 @@ public enum javaE {
     IF("if "),
     IFELSE(" if else "),
     ELSE(" else "),
-    UNHANDLED("unhandled(message);");
+    FOR("for "),
+    WHILE("while "),
+    UNHANDLED("unhandled(message);"),
+    CURLY_OPEN("{\n"),
+    CURLY_CLOSE("\n}"),
+    SEMICOLON(";\n"),
+    ACTOR_SYSTEM_NAME("system");
+
 
     private String string;
     private javaE(String s){
