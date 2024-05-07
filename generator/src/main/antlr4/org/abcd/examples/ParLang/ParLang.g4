@@ -9,10 +9,6 @@ grammar ParLang;
 // init used as start non-terminal for parser
 init : script* actor* mainFunc actor* EOF;  // must have a main function end on an end of file character
 
-/** TO DO !!!!!!!!!!!!!!!!
-
-*/
-
 //main function, here the program should start
 mainFunc : MAIN parameters body;
 
