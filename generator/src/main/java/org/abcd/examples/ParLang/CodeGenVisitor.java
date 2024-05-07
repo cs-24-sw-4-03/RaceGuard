@@ -286,7 +286,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(type.equals("if")){
             keyword=javaE.IF.getValue();
         }else if(type.equals("if else")) {
-            keyword=javaE.IFELSE.getValue();
+            keyword=javaE.ELSEIF.getValue();
         }else{
             throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
         }
