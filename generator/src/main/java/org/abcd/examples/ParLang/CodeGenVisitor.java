@@ -1007,15 +1007,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(SendMsgNode node) {
 
     }
-
-
-    //Maybe Symboltable can be used here.
-    //system is used when actor is created in main.
-    //ActorRef mainActor = system.actorOf(Props.create(HelloWorldMain.class), "0")
-    //getContext is used when actor is created in another actor.
-    //danishGreeter = getContext().actorOf(Props.create(Danish.class), "1");
-
-    //Assign a new Actor to a new unique value that counts from 0 using the Hashmap
+    
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
     }
