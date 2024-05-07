@@ -1111,28 +1111,40 @@ public class CodeGenVisitor implements NodeVisitor {
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
     }
+    private void appendArguments(String nodeName, List<ArgumentsNode> params) {
+
+    }
+    //if(params!=null){
+    //            for(IdentifierNode param:params){
+    //                stringBuilder
+    //                        .append(javaE.THIS.getValue())
+    //                        .append(".")
+    //                        .append(param.getName())
+    //                        .append(javaE.EQUALS.getValue())
+    //                        .append(param.getName())
+    //                        .append(";\n");
+    //            }
+    //className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+
     @Override
     public void visit(SpawnActorNode node) {
         String outerScopeName = symbolTable.findActorParent(node);
         if (outerScopeName != null) { //Actor or Script
-            stringBuilder
-                    .append("getContext().actorOf(Props.create(")
-                    .append(node.getType())
-                    .append(".class")
-                    .append("), \"")
-                    .append(getNextUniqueActor())
-                    .append("\")");
+            stringBuilder.append("getContext().actorOf(Props.create(");
         }
         else { //null means it's main
-            stringBuilder
-                    .append("system.actorOf(Props.create(")
-                    .append(node.getType())
-                    .append(".class")
-                    .append("), \"")
-                    .append(getNextUniqueActor())
-                    .append("\")");
+            stringBuilder.append("system.actorOf(Props.create(");
+
 
         }
+
+
+        stringBuilder
+                .append(node.getType())
+                .append(".class")
+                .append("), \"")
+                .append(getNextUniqueActor())
+                .append("\")");
     }
 
     @Override
