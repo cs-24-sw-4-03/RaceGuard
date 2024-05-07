@@ -57,7 +57,7 @@ whileLoop : WHILE PARAN_OPEN (boolExp) PARAN_CLOSE body;
 selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 
 // Declaration used to declare variables
-declaration: allTypes identifier (initialization)?; //array type is included in allTypes
+declaration: dclTypes identifier (initialization)?;
 initialization:  ASSIGN (arithExp | primitive | list | spawnActor | methodCall | boolExp | arrayAccess | identifier);
 
 //assignment used to assign a value to an already defined variable.
@@ -170,6 +170,15 @@ allTypes : primitiveType
     | VOID_TYPE
     | identifier
     ;
+
+dclTypes : primitiveType
+    | arrayDcl
+    | ACTOR_TYPE
+    | VOID_TYPE
+    | identifier
+    ;
+
+arrayDcl : primitiveType SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
 
 //can be any primitive type in language
 primitiveType : INT_TYPE
