@@ -364,6 +364,11 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    @Override
+    public void visit(AccessNode node) {
+        //abstract class, should not be called.
+    }
+
 
     @Override
     public void visit(ArrayAccessNode node) {
