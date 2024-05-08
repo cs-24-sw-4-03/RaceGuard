@@ -28,6 +28,7 @@ Actor myActor1{
         State.SELF = SELF;
         State.identifier = identifier;
         State.String = String;
+        print("HEJ MED DIG");
     }
 }
 Actor myActor2{
