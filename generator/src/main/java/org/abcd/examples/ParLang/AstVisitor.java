@@ -569,11 +569,12 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         //An array access
         String accessIdentifier = ctx.identifier().getText();
         ArrayAccessNode node = new ArrayAccessNode("", accessIdentifier);
+        node.setDimensions(ctx.arithExp().size()); //Set the dimensions to number of arithExp children
 
-        if(ctx.arithExp(0) !=null){ //If there is an arithmetic expression
+        if(ctx.arithExp(0) !=null){ //Access first child - One dimension so far
             node.addChild(visit(ctx.arithExp(0))); //visit and add the arithmetic expression as a child
         }
-        if(ctx.arithExp(1) !=null){ //If there is an arithmetic expression
+        if(ctx.arithExp(1) !=null){ //Access second child - Two dimensions
             node.addChild(visit(ctx.arithExp(1))); //visit and add the arithmetic expression as a child
         }
 

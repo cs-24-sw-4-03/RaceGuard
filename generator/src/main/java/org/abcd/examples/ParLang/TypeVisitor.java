@@ -841,7 +841,12 @@ public class TypeVisitor implements NodeVisitor {
             if (attributes == null){
                 throw new ArrayAccessException("Array: " + id + " not found");
             }
-            String accessType = removeBrackets(attributes.getVariableType());
+            String identifierType = attributes.getVariableType();
+            int identifierDimensions = countBracketPairs(identifierType);
+            if(identifierDimensions != node.getDimensions()){
+                throw new ArrayAccessException("Dimensions of type " + identifierType + "(" + identifierDimensions + ")" + " do not match " + node.getAccessIdentifier() + printBrackets(node.getDimensions()));
+            }
+            String accessType = removeBrackets(identifierType);
             node.setType(accessType);
         /*}
         catch (ArrayAccessException e) {
@@ -852,9 +857,23 @@ public class TypeVisitor implements NodeVisitor {
         }*/
     }
 
+    private int countBracketPairs(String arrayType){
+        String bracketString = arrayType.replaceAll("[a-zA-Z]","").trim();
+        //We are left with a string only containing brackets: Two cases: "[]" or "[][]"
+        return bracketString.length()/2;
+    }
+
     private String removeBrackets(String arrayType){
         //Remove all trailing brackets after access type
         return arrayType.split("\\[")[0];
+    }
+
+    private String printBrackets(int numberOfBrackets){
+        StringBuilder bracketString = new StringBuilder();
+        for(int i = 0; i < numberOfBrackets; i++){
+            bracketString.append("[]");
+        }
+        return bracketString.toString();
     }
 
     @Override
