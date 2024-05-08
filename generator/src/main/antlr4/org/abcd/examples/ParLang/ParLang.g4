@@ -170,8 +170,8 @@ allTypes : primitiveType
     | identifier
     ;
 
-dclTypes : primitiveType
-    | arrayDcl
+dclTypes : arrayDcl
+    | primitiveType
     | ACTOR_TYPE
     | VOID_TYPE
     | identifier

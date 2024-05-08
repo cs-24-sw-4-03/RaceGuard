@@ -679,6 +679,9 @@ public class CodeGenVisitor implements NodeVisitor {
         HashMapConverter.put("string[][]", "ArrayList<ArrayList<String>>");
         return HashMapConverter.get(node.getType());
     }
+    private boolean isArray(IdentifierNode node){
+        return node.getType().contains("[]") || node.getType().contains("[][]");
+    }
 
     @Override
     public void visit(IdentifierNode node) {
@@ -710,15 +713,22 @@ public class CodeGenVisitor implements NodeVisitor {
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
 
-         } else if (node.getType().contains("[]") && node.getParent().getChildren().size() == 1) {
-            stringBuilder.append(VariableConverter(node.getType()))
-                    .append(" ")
-                    .append(node.getName())
-                    .append(" = new ");
+         } else if (isArray(node)) {
+            if(node.getParent().getChildren().get(1) instanceof InitializationNode){
+                stringBuilder.append(VariableConverter(node.getType()))
+                        .append(" ")
+                        .append(node.getName());
 
-            if(node.getType().contains("[][]")){
-
+            } else if(node.getParent().getChildren().size() == 2){
+                stringBuilder.append(VariableConverter(node.getType()))
+                        .append(" ")
+                        .append(node.getName())
+                        .append(" = new ");
+            }   else if(node.getParent().getChildren().size() == 3){
+                stringBuilder.append(VariableConverter(node.getType()))
+                        .append(" ");
             }
+
 
         } else if(node.getType()!= null){
             stringBuilder
@@ -745,7 +755,14 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        stringBuilder.append(node.getValue());
+        if((node.getParent().getType().contains("[]") || node.getParent().getType().contains("[][]")) && node.getParent() instanceof VarDclNode){
+            stringBuilder.append("[")
+                    .append(node.getValue())
+                    .append("]");
+        }
+        else{
+            stringBuilder.append(node.getValue());
+        }
 
     }
 
