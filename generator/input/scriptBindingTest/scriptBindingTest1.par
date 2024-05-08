@@ -3,7 +3,7 @@ Script Vaagen{
 }
 
 Script Dvale{
-    on sove(string s);
+    on sove(int x, int y);
 }
 
 Actor Gorm follows Vaagen, Dvale{
@@ -26,9 +26,14 @@ Actor Gorm follows Vaagen, Dvale{
     }
     on sove(int x, int y){
         print("Gorm sover");
-        int seepCount=x+7;
+        int sheepCount=x+7;
     }
 }
 
 main(){
+    Gorm gorm=Spawn Gorm("Hvid");
+    Vaagen kampendeGorm=Spawn Gorm("Rød");
+    gorm<-sove(100,200);
+    kampendeGorm<-slaas("arrrh");
+    gorm<-gaaIDvale("Zzzz");
 }

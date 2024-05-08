@@ -910,7 +910,12 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodCallNode node) {
-        visitChildren(node);
+        visit((IdentifierNode) node.getChildren().getFirst());
+        stringBuilder.append("(");
+        if(node.getChildren().size()>1){
+            visit(node.getChildren().get(1));
+        }
+        stringBuilder.append(")");
         stringBuilder.append(javaE.SEMICOLON.getValue());
         codeOutput.add(getLine());
     }
@@ -918,16 +923,8 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
-            if(getMethodInFollowedScript(node)==null){
-                //We create a static class. Instances of this class is sent as message when the on-method is called.
-                String className=capitalizeFirstLetter(node.getId());
-                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
-
-                String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
-                appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
-                appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
-                appendBodyClose();
-            }
+            appendInlineComment(parLangE.ON.getValue()," method:"," ",node.getId());
+            appendProtocolClass(node);
             appendBehvaiour(node);
 
             //To be done
@@ -937,6 +934,25 @@ public class CodeGenVisitor implements NodeVisitor {
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
     }
+
+    private void appendInlineComment(String... strings){
+        stringBuilder.append(javaE.INLINE_COMMENT.getValue());
+        for(String s:strings){
+            stringBuilder.append(s);
+        }
+        stringBuilder.append("\n");
+
+    }
+
+    private void appendProtocolClass(MethodDclNode node){
+        String className=capitalizeFirstLetter(node.getId());
+        appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
+        String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
+        appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
+        appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+        appendBodyClose();
+    }
+
 
     private void appendBehvaiour(MethodDclNode node){
         String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());

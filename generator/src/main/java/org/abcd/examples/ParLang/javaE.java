@@ -33,7 +33,8 @@ public enum javaE {
     BOOLEAN("boolean"),
     TELL("tell"),
     NEW("new "),
-    GET_SELF("getSelf()");
+    GET_SELF("getSelf()"),
+    INLINE_COMMENT("//");
 
 
 
