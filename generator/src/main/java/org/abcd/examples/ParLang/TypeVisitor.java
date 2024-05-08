@@ -27,11 +27,11 @@ public class TypeVisitor implements NodeVisitor {
         if (type1.equals(type2)){
             return type1;
         }
-        if (type1.equals("int") && type2.equals("double")){
-            return "double";
+        if (type1.equals(parLangE.INT.getValue()) && type2.equals(parLangE.DOUBLE.getValue())){
+            return parLangE.DOUBLE.getValue();
         }
-        if (type1.equals("double") && type2.equals("int")){
-            return "double";
+        if (type1.equals(parLangE.DOUBLE.getValue()) && type2.equals(parLangE.INT.getValue())){
+            return parLangE.DOUBLE.getValue();
         }
         return null;
     }
@@ -40,10 +40,13 @@ public class TypeVisitor implements NodeVisitor {
         if (assignTo.equals(assignFrom)){
             return true;
         }
-        if (assignTo.equals("int") && assignFrom.equals("double")){
-            return false;
+        if (assignTo.equals(parLangE.DOUBLE.getValue()) && assignFrom.equals(parLangE.INT.getValue())){
+            return true;
         }
-        if (assignTo.equals("double") && assignFrom.equals("int")){
+        if (assignTo.equals(parLangE.DOUBLE_ARRAY.getValue()) && assignFrom.equals(parLangE.INT_ARRAY.getValue())){
+            return true;
+        }
+        if (assignTo.equals(parLangE.DOUBLE_ARRAY_2D.getValue()) && assignFrom.equals(parLangE.INT_ARRAY_2D.getValue())){
             return true;
         }
         if (symbolTable.declaredScripts.contains(assignTo)){
@@ -199,11 +202,20 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
         /*try {*/
-            String returnType = node.getChildren().get(0).getType();
-            if (returnType == null) {
+        if(!node.getParent().getParent().getType().equals(parLangE.VOID.getValue())) {
+            if (!node.getChildren().isEmpty()) {
+                String returnType = node.getChildren().getFirst().getType();
+                node.setType(returnType);
+            }else {
                 throw new ReturnNodeException("Type is not defined for return statement");
             }
-            node.setType(returnType);
+        }else{
+            if(node.getChildren().isEmpty()){
+                node.setType(parLangE.VOID.getValue());
+            }else {
+                throw new ReturnNodeException("return type is not void for void-returning local method");
+            }
+        }
         /*}
         catch (ReturnNodeException e) {
             exceptions.add(e);
@@ -255,10 +267,15 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
         /*try{*/
-            node.setType(node.getChildren().get(node.getChildren().size()-1).getType());
-            if (node.getType() == null) {
-                throw new LocalMethodBodyNodeException("Return type is not defined for local method body node");
+        if(!node.getParent().getType().equals(parLangE.VOID.getValue())){
+            if(!node.getChildren().isEmpty()&&(node.getChildren().getLast()instanceof ReturnStatementNode)){
+                node.setType(node.getChildren().getLast().getType());
+            }else{
+                throw new LocalMethodBodyNodeException("Return statement missing from local method which does not return void");
             }
+        }else{
+            node.setType(parLangE.VOID.getValue());//If there is a return statement, it is checked in visit(ReturnStatement node) that it is "return;". So an erro should already have been produced
+        }
         /*}
         catch (LocalMethodBodyNodeException e) {
         exceptions.add(e);
@@ -382,7 +399,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try{*/
             String listType = node.getChildren().get(0).getType();
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals(listType)) {
+                if (!canConvert(listType, child.getType())) {
                     throw new ListNodeException("List elements must be of the same type");
                 }
             }
@@ -402,7 +419,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
-            if (size == 1) {
+            if (!node.isInitialized()) {
                 node.setType(idType);
                 return;
             }
@@ -443,11 +460,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("bool")) {
+                if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolCompareException("all BoolCompareNode children does not have type bool");
                 }
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
         /*}
         catch (BoolCompareException e) {
             exceptions.add(e);
@@ -496,7 +513,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getMethodType().equals(parLangE.LOCAL.getValue())){
                 String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
-                if (canConvert(nodeType, childType)) {
+                if (!canConvert(nodeType, childType)) {
                     throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
                 }
             }
@@ -555,7 +572,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new IntegerNodeException("IntegerNode value is null");
             }
-            node.setType("int");
+            node.setType(parLangE.INT.getValue());
         /*}
         catch (IntegerNodeException e) {
             exceptions.add(e);
@@ -571,7 +588,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new DoubleNodeException("DoubleNode value is null");
             }
-            node.setType("double");
+            node.setType(parLangE.DOUBLE.getValue());
         /*}
         catch (DoubleNodeException e) {
             exceptions.add(e);
@@ -587,7 +604,7 @@ public class TypeVisitor implements NodeVisitor {
             if (node.getValue() == null) {
                 throw new StringNodeException("StringNode value is null");
             }
-            node.setType("string");
+            node.setType(parLangE.STRING.getValue());
        /* }
         catch (StringNodeException e) {
             exceptions.add(e);
@@ -602,11 +619,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("bool")) {
+                if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolExpException("all BoolAndExpNode children does not have type bool");
                 }
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
         /*}
         catch (BoolExpException e) {
             exceptions.add(e);
@@ -621,11 +638,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("bool")) {
+                if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolExpException("all BoolExpNode children does not have type bool");
                 }
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
         /*}
         catch (BoolExpException e) {
             exceptions.add(e);
@@ -660,8 +677,8 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(NegatedBoolNode node) {
         this.visitChildren(node);
         /*try {*/
-            if (node.getChildren().get(0).getType().equals("bool")) {
-                node.setType("bool");
+            if (node.getChildren().get(0).getType().equals(parLangE.BOOL.getValue())) {
+                node.setType(parLangE.BOOL.getValue());
             } else {
                 throw new BoolNodeException("NegatedBoolNode does not have type bool");
             }
@@ -680,7 +697,7 @@ public class TypeVisitor implements NodeVisitor {
             if (((BoolNode) node).getValue() == null) {
                 throw new BoolNodeException("BoolNode does not have type bool");
             }
-            node.setType("bool");
+            node.setType(parLangE.BOOL.getValue());
        /* }
         catch (BoolNodeException e) {
             exceptions.add(e);
@@ -697,7 +714,7 @@ public class TypeVisitor implements NodeVisitor {
             AstNode leftChild = node.getChildren().get(0);
             AstNode rightChild = node.getChildren().get(1);
             if (compareExpTypeMatching(leftChild.getType(), rightChild.getType())) {
-                node.setType("bool");
+                node.setType(parLangE.BOOL.getValue());
             } else {
                 throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType());
             }
@@ -711,7 +728,7 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private boolean compareExpTypeMatching(String leftType, String rightType){
-        if (leftType.equals(rightType) && leftType.equals("int") || leftType.equals("double")){
+        if (leftType.equals(rightType) && leftType.equals(parLangE.INT.getValue()) || leftType.equals(parLangE.DOUBLE.getValue())){
             return true;
         }
         else {
@@ -770,6 +787,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node) {
         /*try{*/
+            this.visitChildren(node);
             String id = node.getAccessIdentifier();
             Attributes attributes;
             if (hasParent(node, StateAccessNode.class)){
@@ -848,8 +866,8 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals("string")) {
-                    if (child.getType().equals("int") || child.getType().equals("double")) {
+                if (!child.getType().equals(parLangE.STRING.getValue())) {
+                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue())) {
                         continue;
                     }
                     throw new PrintException("Print statement only accepts string arguments");

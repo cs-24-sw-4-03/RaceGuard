@@ -16,7 +16,7 @@ public enum javaE {
     ONRECEIVE("onReceive(Object message) "),
     INSTANCEOF("instanceof "),
     IF("if "),
-    IFELSE(" if else "),
+    ELSEIF(" else if "),
     ELSE(" else "),
     FOR("for "),
     WHILE("while "),
@@ -24,7 +24,15 @@ public enum javaE {
     CURLY_OPEN("{\n"),
     CURLY_CLOSE("\n}"),
     SEMICOLON(";\n"),
-    ACTOR_SYSTEM_NAME("system");
+    ACTOR_SYSTEM_NAME("system"),
+    THIS("this"),
+    EQUALS(" = "),
+    LONG("long"),
+    STRING("String"),
+    DOUBLE("double"),
+    BOOLEAN("boolean");
+
+
 
 
     private String string;
