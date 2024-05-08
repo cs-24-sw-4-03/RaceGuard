@@ -206,7 +206,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.PUBLIC.getValue())
                 .append(className)
                 .append("(");
-        if(params.size()>0){
+        if(!params.isEmpty()){
             for(IdentifierNode param:params){
                 stringBuilder
                         .append(VariableConverter(param.getType()))
@@ -536,8 +536,20 @@ public class CodeGenVisitor implements NodeVisitor {
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
     }
 
+    //Can either be:
+    //value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     @Override
     public void visit(ArgumentsNode node) {
+        if (node.getParent() instanceof SpawnActorNode) {
+            visitChildren(node, ", ", "");
+        }
+        if (node.getParent() instanceof MethodCallNode) {
+            visitChildren(node, " ", ",");
+            if (node.getChildren().size() > 1) {
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            }
+        }
+        //if instance is method call
 
     }
 
@@ -609,8 +621,12 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolNode node) {
-
-        visitChild(node.getChildren().get(0));
+        if (!node.getChildren().isEmpty()) {
+            visitChild(node.getChildren().get(0));
+        }
+        else {
+            stringBuilder.append(node.getValue());
+        }
     }
 
     @Override
@@ -669,7 +685,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelfNode node) {
-
+        stringBuilder.append(javaE.THIS.getValue());
     }
 
     @Override
@@ -1129,28 +1145,27 @@ public class CodeGenVisitor implements NodeVisitor {
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
     }
+
+
+    //					SpawnActorNode : HelloWorldMain with type: HelloWorldMain
+    //						ArgumentsNode
+    //							IntegerNode : 10 with type: int
     @Override
     public void visit(SpawnActorNode node) {
         String outerScopeName = symbolTable.findActorParent(node);
         if (outerScopeName != null) { //Actor or Script
-            stringBuilder
-                    .append("getContext().actorOf(Props.create(")
-                    .append(node.getType())
-                    .append(".class")
-                    .append("), \"")
-                    .append(getNextUniqueActor())
-                    .append("\")");
+            stringBuilder.append("getContext().actorOf(Props.create(");
         }
         else { //null means it's main
-            stringBuilder
-                    .append("system.actorOf(Props.create(")
-                    .append(node.getType())
-                    .append(".class")
-                    .append("), \"")
-                    .append(getNextUniqueActor())
-                    .append("\")");
-
+            stringBuilder.append("system.actorOf(Props.create(");
         }
+        stringBuilder
+                .append(node.getType())
+                .append(".class");
+        visitChildren(node);
+        stringBuilder.append("), \"")
+                .append(getNextUniqueActor())
+                .append("\")");
     }
 
     @Override
