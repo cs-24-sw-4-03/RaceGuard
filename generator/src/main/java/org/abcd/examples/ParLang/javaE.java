@@ -30,7 +30,8 @@ public enum javaE {
     LONG("long"),
     STRING("String"),
     DOUBLE("double"),
-    BOOLEAN("boolean");
+    BOOLEAN("boolean"),
+    TELL("tell");
 
 
 

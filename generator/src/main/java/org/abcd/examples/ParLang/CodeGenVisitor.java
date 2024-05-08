@@ -902,7 +902,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodCallNode node) {
-
+        visitChildren(node);
+        stringBuilder.append(javaE.SEMICOLON.getValue());
+        codeOutput.add(getLine());
     }
 
     @Override
@@ -1123,7 +1125,13 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SendMsgNode node) {
+        stringBuilder
+                .append(node.getReceiver())
+                .append(".")
+                .append(javaE.TELL.getValue())
+        String receiver=;
 
+        visitChildren(node);
     }
     
     private int getNextUniqueActor() {
@@ -1190,7 +1198,6 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append(javaE.SEMICOLON.getValue());
                 codeOutput.add(getLine());
             }
-
     }
 
     //Standard while loop construction
