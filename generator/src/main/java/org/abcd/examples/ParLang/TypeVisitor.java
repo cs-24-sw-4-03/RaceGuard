@@ -455,7 +455,7 @@ public class TypeVisitor implements NodeVisitor {
             }
             String initType = node.getChildren().get(1).getType();
             if (!canConvert(idType, initType)) {
-                throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
+                throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId() + " of type " + idType + " and " + initType);
             }
             node.setType(idType);
        /* }
@@ -752,7 +752,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             AstNode leftChild = node.getChildren().get(0);
             AstNode rightChild = node.getChildren().get(1);
-            if (compareExpTypeMatching(leftChild.getType(), rightChild.getType())) {
+            if (compareExpTypeMatching(node.getOperator(), leftChild.getType(), rightChild.getType())) {
                 node.setType(parLangE.BOOL.getValue());
             } else {
                 throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType());
@@ -766,8 +766,11 @@ public class TypeVisitor implements NodeVisitor {
         }*/
     }
 
-    private boolean compareExpTypeMatching(String leftType, String rightType){
+    private boolean compareExpTypeMatching(String operator, String leftType, String rightType){
         if (leftType.equals(rightType) && leftType.equals(parLangE.INT.getValue()) || leftType.equals(parLangE.DOUBLE.getValue())){
+            return true;
+        }
+        else if (operator.equals("==") && leftType.equals(rightType) && leftType.equals(parLangE.BOOL.getValue())){
             return true;
         }
         else {
