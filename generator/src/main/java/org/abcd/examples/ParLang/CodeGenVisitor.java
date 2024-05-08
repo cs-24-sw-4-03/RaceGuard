@@ -40,11 +40,6 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent = 0;
     }
 
-    public void visit(AstNode node) {
-        for (AstNode childNode : node.getChildren()) {
-            childNode.accept(this);
-        }
-    }
 
     private String VariableConverter(String type){
         switch (type) {
@@ -540,17 +535,17 @@ public class CodeGenVisitor implements NodeVisitor {
     //value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     @Override
     public void visit(ArgumentsNode node) {
-        if (node.getParent() instanceof SpawnActorNode) {
+        if (node.getParent() instanceof SpawnActorNode ) {
             visitChildren(node, ", ", "");
-        }
-        if (node.getParent() instanceof MethodCallNode) {
-            visitChildren(node, " ", ",");
-            if (node.getChildren().size() > 1) {
+        }else if(node.getParent() instanceof MethodCallNode || node.getParent() instanceof SendMsgNode ) {
+            visitChildren(node, "", ",");
+            if (node.getChildren().size() > 0) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             }
+        }else {
+            throw  new RuntimeException("Parent of ArgumentsNode is not SpawnActorNode, MethodCallNode or SendMsgNode");
         }
         //if instance is method call
-
     }
 
     @Override
@@ -811,10 +806,18 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append(type)
                     .append(node.getName());
+        } else if (node.getParent()instanceof SendMsgNode) {
+            stringBuilder.append(node.getType());
         } else{
             stringBuilder.append(node.getName());
         }
     }
+
+    /***
+     *
+     * @param node parent must be SendMsgNode
+     */
+
 
     private boolean isChildOfVarDclOrParameters(IdentifierNode node){
         return (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode);
@@ -831,13 +834,11 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(InitNode node) {
 
-
     }
 
     @Override
     public void visit(IntegerNode node) {
         stringBuilder.append(node.getValue());
-
     }
 
     @Override
@@ -918,22 +919,22 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodCallNode node) {
-
+        visit((IdentifierNode) node.getChildren().getFirst());
+        stringBuilder.append("(");
+        System.out.println(node.getChildren().size());
+        if(node.getChildren().size()>1){
+            visit((ArgumentsNode) node.getChildren().get(1));//ArgumentdNode
+        }
+        stringBuilder.append(")");
+        stringBuilder.append(javaE.SEMICOLON.getValue());
+        codeOutput.add(getLine());
     }
 
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
-            if(getMethodInFollowedScript(node)==null){
-                //We create a static class. Instances of this class is sent as message when the on-method is called.
-                String className=capitalizeFirstLetter(node.getId());
-                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
-
-                String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
-                appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
-                appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
-                appendBodyClose();
-            }
+            appendInlineComment(parLangE.ON.getValue()," method:"," ",node.getId());
+            appendProtocolClass(node);
             appendBehvaiour(node);
 
             //To be done
@@ -943,6 +944,25 @@ public class CodeGenVisitor implements NodeVisitor {
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
     }
+
+    private void appendInlineComment(String... strings){
+        stringBuilder.append(javaE.INLINE_COMMENT.getValue());
+        for(String s:strings){
+            stringBuilder.append(s);
+        }
+        stringBuilder.append("\n");
+
+    }
+
+    private void appendProtocolClass(MethodDclNode node){
+        String className=capitalizeFirstLetter(node.getId());
+        appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
+        String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
+        appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
+        appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+        appendBodyClose();
+    }
+
 
     private void appendBehvaiour(MethodDclNode node){
         String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
@@ -1012,7 +1032,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
             stringBuilder.append("(int) ");
         }
-        visit(node.getChildren().get(0));
+        visitChildren(node.getChildren().get(0));
         stringBuilder.append(")");
     }
     //Print the two dimensional array
@@ -1050,10 +1070,12 @@ public class CodeGenVisitor implements NodeVisitor {
             visit((ArithExpNode) returnee);
         } else if (returnee instanceof BoolExpNode) {
             visit((BoolExpNode) returnee);
-        } else if (returnee instanceof AccessNode) {
-            visit((AccessNode) returnee);
+        } else if (returnee instanceof StateAccessNode) {
+            visit((StateAccessNode) returnee);
+        } else if(returnee instanceof KnowsAccessNode){
+            visit((KnowsAccessNode) returnee);
         } else if (returnee instanceof LiteralNode){
-            visit((LiteralNode<?>) returnee);
+            stringBuilder.append(((LiteralNode<?>) returnee).getValue());
         } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
@@ -1062,9 +1084,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
 
-     public void visit(LiteralNode<?> node){
-        stringBuilder.append(node.getValue());
-     }
+
 
     @Override
     public void visit(ScriptDclNode node) {
@@ -1139,8 +1159,40 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SendMsgNode node) {
+        appendTellOpen(node);
+        appendProtocolArg(node);
+        appendTellClose();
 
     }
+
+    private void appendTellOpen(SendMsgNode node){
+        stringBuilder
+                .append(node.getReceiver())
+                .append(".")
+                .append(javaE.TELL.getValue())
+                .append("(");
+    }
+
+    private void appendTellClose(){
+        stringBuilder.append(javaE.GET_SELF.getValue());
+        stringBuilder.append(");");
+        codeOutput.add(getLine());
+    }
+
+    private void appendProtocolArg(SendMsgNode node){
+        String protocolClass=capitalizeFirstLetter(node.getMsgName());
+        stringBuilder.append(javaE.NEW.getValue());
+        visit((IdentifierNode) node.getChildren().getFirst());//visit the IdentifierNode
+        stringBuilder
+                .append(".")
+                .append(protocolClass)
+                .append("(");
+        visit((ArgumentsNode) node.getChildren().getLast());//visit the ArgumentsNode
+        stringBuilder.append("),");
+
+    }
+
+
     
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
@@ -1189,7 +1241,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(StringNode node) {
-    stringBuilder.append(node.getValue());
+        stringBuilder.append(node.getValue());
     }
 
 
@@ -1205,7 +1257,6 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append(javaE.SEMICOLON.getValue());
                 codeOutput.add(getLine());
             }
-
     }
 
     //Standard while loop construction

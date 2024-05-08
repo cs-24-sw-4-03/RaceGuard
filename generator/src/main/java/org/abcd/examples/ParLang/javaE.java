@@ -30,7 +30,11 @@ public enum javaE {
     LONG("long"),
     STRING("String"),
     DOUBLE("double"),
-    BOOLEAN("boolean");
+    BOOLEAN("boolean"),
+    TELL("tell"),
+    NEW("new "),
+    GET_SELF("getSelf()"),
+    INLINE_COMMENT("//");
 
 
 
