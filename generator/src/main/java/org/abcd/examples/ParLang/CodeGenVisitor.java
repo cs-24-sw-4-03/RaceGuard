@@ -48,13 +48,13 @@ public class CodeGenVisitor implements NodeVisitor {
 
     private String VariableConverter(String type){
         switch (type) {
-            case "int":
+            case "int": case "int[]" : case "int[][]":
                 return javaE.LONG.getValue();
-            case "double":
+            case "double": case "double[]" : case "double[][]":
                 return javaE.DOUBLE.getValue();
-            case "bool":
+            case "bool": case "bool[]" : case "bool[][]":
                 return javaE.BOOLEAN.getValue();
-            case "string":
+            case "string": case "string[]" : case "string[][]":
                 return javaE.STRING.getValue();
             default:
                 return type;
@@ -748,27 +748,30 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     //HashMap to convert the type of the array to the type of the arraylist
-    private String HashMapConverter(IdentifierNode node){
+    private String arrayVarDcl(IdentifierNode node){
         HashMap<String, String> HashMapConverter = new HashMap<>();
         //1 dimensional arrays
-        HashMapConverter.put("int[]", "ArrayList<Integer>");
-        HashMapConverter.put("double[]", "ArrayList<Double>");
-        HashMapConverter.put("bool[]", "ArrayList<Boolean>");
-        HashMapConverter.put("string[]", "ArrayList<String>");
+        HashMapConverter.put("int[]", "long[]");
+        HashMapConverter.put("double[]", "double[]");
+        HashMapConverter.put("bool[]", "boolean[]");
+        HashMapConverter.put("string[]", "String[]");
         //2 dimensional arrays
-        HashMapConverter.put("int[][]", "ArrayList<ArrayList<Integer>>");
-        HashMapConverter.put("double[][]", "ArrayList<ArrayList<Double>>");
-        HashMapConverter.put("bool[][]", "ArrayList<ArrayList<Boolean>>");
-        HashMapConverter.put("string[][]", "ArrayList<ArrayList<String>>");
+        HashMapConverter.put("int[][]", "long[][]");
+        HashMapConverter.put("double[][]", "double[][]");
+        HashMapConverter.put("bool[][]", "boolean[][]");
+        HashMapConverter.put("string[][]", "String[][]");
         return HashMapConverter.get(node.getType());
     }
-    private boolean isArray(IdentifierNode node){
+    private boolean isArray(AstNode node){
         return node.getType().contains("[]") || node.getType().contains("[][]");
+    }
+    private boolean isParrentArray(AstNode node) {
+        return node.getParent().getType().contains("[]") || node.getParent().getType().contains("[][]");
     }
 
     @Override
     public void visit(IdentifierNode node) {
-        //String arrayType = HashMapConverter(node);
+        String arrayType = arrayVarDcl(node);
         if (node.getParent() instanceof KnowsNode) {
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
@@ -777,27 +780,24 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
         }
-        /*else if(arrayType !=null){
-
-            codeOutput.add(getLine());
-        } else if(arrayType !=null){
-            stringBuilder
-                    .append(arrayType)
-                    .append(" ")
-                    .append(node.getName())
-                    .append(" = new ArrayList<>()")
-                    .append(javaE.SEMICOLON.getValue());
-            //Check if the parent is a var dcl node and has more than one child, then append the name of the node which
-            //is used to add elements to the arraylist in the ListNode
-            if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
-                stringBuilder.append(node.getName());
-            }
-        } */
         else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
              stringBuilder
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
          }
+        else if (isArray(node)) {
+            if(node.getParent().getChildren().get(1) instanceof InitializationNode){
+                stringBuilder.append(arrayVarDcl(node))
+                        .append(" ")
+                        .append(node.getName());
+
+            } else {
+                stringBuilder.append(arrayVarDcl(node))
+                        .append(" ")
+                        .append(node.getName())
+                        .append(" = new ").append(VariableConverter(node.getType()));
+            }
+        }
         else if(node.getType()!= null){
              if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
                  stringBuilder.append(VariableConverter(node.getType()));
@@ -807,24 +807,7 @@ public class CodeGenVisitor implements NodeVisitor {
                  stringBuilder.append(node.getName());
              }
 
-         } else if (isArray(node)) {
-            if(node.getParent().getChildren().get(1) instanceof InitializationNode){
-                stringBuilder.append(VariableConverter(node.getType()))
-                        .append(" ")
-                        .append(node.getName());
-
-            } else if(node.getParent().getChildren().size() == 2){
-                stringBuilder.append(VariableConverter(node.getType()))
-                        .append(" ")
-                        .append(node.getName())
-                        .append(" = new ");
-            }   else if(node.getParent().getChildren().size() == 3){
-                stringBuilder.append(VariableConverter(node.getType()))
-                        .append(" ");
-            }
-
-
-        } else if(node.getType()!= null){
+         }  else if(node.getType()!= null){
             stringBuilder
                     .append(VariableConverter(node.getType()))
                     .append(" ")
@@ -849,7 +832,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        if((node.getParent().getType().contains("[]") || node.getParent().getType().contains("[][]")) && node.getParent() instanceof VarDclNode){
+        if((isParrentArray(node) && node.getParent() instanceof VarDclNode)){
             stringBuilder.append("[")
                     .append(node.getValue())
                     .append("]");
@@ -1211,7 +1194,15 @@ public class CodeGenVisitor implements NodeVisitor {
         if (node.getParent() instanceof StateNode) {
             stringBuilder.append(javaE.PRIVATE.getValue());
         }
-        visitChildren(node);
+        if(isArray(node) && node.getChildren().get(1) instanceof InitializationNode) {
+            visitChild(node.getChildren().get(0));
+            visitChild(node.getChildren().get(1));
+
+        } else{
+            visitChildren(node);
+
+        }
+
 
         //if the parent is not a for node, add a semicolon, else don't
         if(!(node.getParent() instanceof ForNode)){
