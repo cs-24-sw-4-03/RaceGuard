@@ -846,7 +846,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        stringBuilder.append(node.getValue());
+        stringBuilder
+                .append(node.getValue())
+                .append("L"); //java interprets integer literals as int by default. This converts it to long in the target code.
     }
 
     @Override
