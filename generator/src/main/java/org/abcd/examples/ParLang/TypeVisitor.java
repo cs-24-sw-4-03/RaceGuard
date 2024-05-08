@@ -188,6 +188,44 @@ public class TypeVisitor implements NodeVisitor {
         }*/
     }
 
+    private boolean hasCorrectScriptMethods(List<String> scriptNames, String actorName){
+        Scope actorScope = symbolTable.lookUpScope(actorName);
+        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods();
+        actorMethods.putAll(actorScope.getDeclaredLocalMethods());
+        for (String scriptName : scriptNames){
+            Scope scope = symbolTable.lookUpScope(scriptName);
+            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods();
+            scriptMethods.putAll(scope.getDeclaredLocalMethods());
+            for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){
+                String method = scriptMethod.getKey();
+                if (!actorMethods.containsKey(scriptMethod.getKey())){
+                    return false;
+                }
+                LinkedHashMap<String, Attributes> actorParams = symbolTable.lookUpScope(method+actorName).getParams();
+                LinkedHashMap<String, Attributes> scriptParams = symbolTable.lookUpScope(method+scriptName).getParams();
+                if (actorParams.size() != scriptParams.size()){
+                    return false;
+                }
+                int i = 0;
+                int j = 0;
+                for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){
+                    for (Map.Entry<String, Attributes> scriptParam : scriptParams.entrySet()){
+                        if (i == j){
+                            if (!actorParam.getValue().getVariableType().equals(scriptParam.getValue().getVariableType())){
+                                return false;
+                            }
+                            j = 0;
+                            continue;
+                        }
+                        j++;
+                    }
+                    i++;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     public void visit(ParametersNode node) {
         /*try {*/
@@ -488,6 +526,15 @@ public class TypeVisitor implements NodeVisitor {
                 if (child.getType() == null) {
                     throw new FollowsNodeException("FollowsNode children does not have type defined");
                 }
+            }
+            List<String> scripts = new ArrayList<>();
+            String errorMessage = "";
+            for(AstNode child : node.getChildren()) {
+                scripts.add(child.getType());
+                errorMessage += child.getType() + ", ";
+            }
+            if (!hasCorrectScriptMethods(scripts, ((ActorDclNode) node.getParent()).getId())) {
+                throw new FollowsNodeException("Actor " + ((ActorDclNode) node.getParent()).getId() + " do not have the correct methods according to the scripts followed: " + errorMessage);
             }
             node.setType("follows");
        /* }
