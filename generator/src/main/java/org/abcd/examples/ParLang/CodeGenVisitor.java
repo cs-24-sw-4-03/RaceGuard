@@ -783,24 +783,24 @@ public class CodeGenVisitor implements NodeVisitor {
             if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
                 stringBuilder.append(node.getName());
             }
-        } else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
-             stringBuilder
-                     .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
-                     .append(node.getName());
-         }
-        else if(node.getType()!= null){
-             if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
-                 stringBuilder.append(VariableConverter(node.getType()));
-                 stringBuilder.append(" ");
-                 stringBuilder.append(node.getName());
-             } else {
-                 stringBuilder.append(node.getName());
-             }
-
-        }
-        else{
+        } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
+            String type;
+            if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
+                type=javaE.ACTORREF.getValue();
+            }else{
+                type=VariableConverter(node.getType());
+            }
+            stringBuilder
+                    .append(type)
+                    .append(" ")
+                    .append(node.getName());
+        } else{
             stringBuilder.append(node.getName());
         }
+    }
+
+    private boolean isChildOfVarDclOrParameters(IdentifierNode node){
+        return (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode);
     }
 
     @Override
