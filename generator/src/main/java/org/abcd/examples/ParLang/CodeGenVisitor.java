@@ -372,112 +372,37 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArrayAccessNode node){
-
-    }
-    /*
-    @Override
-    public void visit(ArrayAccessNode node) {
         stringBuilder.append(node.getAccessIdentifier());
-        //e.g: int x = a[0]; x = a[1];
-        if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 1){
-            accessArrayFirstChild(node);
-        }
-        //e.g: int x = a[0][0]; x = a[1][1];
-        else if(isGrandparentVarDclOrSiblingIdentifier(node) && accessArrayDimensions(node) == 2){
-            accessArrayFirstChild(node);
-            accessArraySecondChild(node);
-        }
-        //Assign values to 1D array
-        else if(accessArrayDimensions(node) == 1 && !(node.getParent() instanceof CompareExpNode)){
-            //Set method for a index in a 1D array with a value
-            //First child need a set method: .set(index, value)
-            //e.g: a[0] = 1;
-            //if trying to assign a 1D array with another 1D array
-            //First child need a set method: .set(index, secondChild)
-            //e.g: a[0] = b[0];
-            if (node.getParent().getChildren().getFirst() == node) {
-                stringBuilder.append(".set(");
-                typeCastFirstArrayAccessNode(node);
-                visitChild(node.getChildren().get(0));
-                stringBuilder.append(", ");
+        if(accessArrayDimensions(node) == 1){
+            stringBuilder.append("[");
+            if(node.getChildren().get(0) instanceof IdentifierNode){
+                typeCastArrayAccessNode(node,0);
             }
-            //Get method for a index in a 1D array when assigning to another 1D array
-            //Second child need a get method: .get(index)
-            else {
-                stringBuilder.append(".get(");
-                typeCastFirstArrayAccessNode(node);
-                visitChild(node.getChildren().get(0));
-                stringBuilder.append(")");
-            }
+            visitChild(node.getChildren().get(0));
+            stringBuilder.append("]");
         }
-        //Compare an array with another array or a value
-        //e.g: a[0] == 1; a[0] == b[0];
-        else if(node.getParent() instanceof CompareExpNode){
-            if(accessArrayDimensions(node) == 1){
-                stringBuilder.append(".get(");
-                visitChild(node.getChildren().get(0));
-                stringBuilder.append(")");
+        else{
+            stringBuilder.append("[");
+            if(node.getChildren().get(0) instanceof IdentifierNode){
+                typeCastArrayAccessNode(node,0);
             }
-            else{
-                stringBuilder.append(".get(");
-                visitChild(node.getChildren().get(0));
-                stringBuilder.append(").get(");
-                visitChild(node.getChildren().get(1));
-                stringBuilder.append(")");
+            visitChild(node.getChildren().get(0));
+            stringBuilder.append("]");
+            stringBuilder.append("[");
+            if(node.getChildren().get(1) instanceof IdentifierNode){
+                typeCastArrayAccessNode(node,1);
             }
+            visitChild(node.getChildren().get(1));
+            stringBuilder.append("]");
         }
-        //Assign a 2D array with another 2D array
-        else {
-                //First child of the assign node need a get and set method: .get(index).set(index, secondChild)
-                if (node.getParent().getChildren().getFirst() == node) {
-                    stringBuilder.append(".get(");
-                    typeCastFirstArrayAccessNode(node);
-                    visitChild(node.getChildren().get(0));
-                    stringBuilder.append(").set(");
-                    typeCastSecondArrayAccessNode(node);
-                    visitChild(node.getChildren().get(1));
-                    stringBuilder.append(", ");
-                }
-                //Second child of the assign node only needs get methods: .get(index).get(index)
-                else {
-                    stringBuilder.append(".get(");
-                    typeCastFirstArrayAccessNode(node);
-                    visitChild(node.getChildren().get(0));
-                    stringBuilder.append(").get(");
-                    typeCastSecondArrayAccessNode(node);
-                    visitChild(node.getChildren().get(1));
-                    stringBuilder.append(")");
-            }
-        }
+
     }
-
-     */
-
-    private void typeCastFirstArrayAccessNode(ArrayAccessNode node){
-        if(node.getChildren().get(0) instanceof IdentifierNode){
+    private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
+        if(node.getChildren().get(childIndex) instanceof IdentifierNode){
             stringBuilder.append("(int) ");
         }
     }
-    private void typeCastSecondArrayAccessNode(ArrayAccessNode node){
-        if(node.getChildren().get(1) instanceof IdentifierNode){
-            stringBuilder.append("(int) ");
-        }
-    }
-    //Checks if the grandparent is a VarDclNode or if the sibling is an identifier
-    private boolean isGrandparentVarDclOrSiblingIdentifier(ArrayAccessNode node){
-        return node.getParent().getParent() instanceof VarDclNode || node.getParent().getChildren().get(0) instanceof IdentifierNode;
 
-    }
-    private void accessArrayFirstChild(ArrayAccessNode node){
-        stringBuilder.append(".get(");
-        visitChild(node.getChildren().get(0));
-        stringBuilder.append(")");
-    }
-    private void accessArraySecondChild(ArrayAccessNode node){
-        stringBuilder.append(".get(");
-        visitChild(node.getChildren().get(1));
-        stringBuilder.append(")");
-    }
     //Check if the array access node is a 1D array or 2D array
     private int accessArrayDimensions(AstNode node){
         if(node.getParent().getChildren().size() == 1){
@@ -569,15 +494,13 @@ public class CodeGenVisitor implements NodeVisitor {
     AstNode leftChild = node.getChildren().get(0);
     AstNode rightChild = node.getChildren().get(1);
 
-    if(!(node.getChildren().get(1) instanceof ListNode) && !(node.getChildren().get(0) instanceof ArrayAccessNode)){
+    if(!(node.getChildren().get(1) instanceof ListNode)){
             visitChild(leftChild);
             stringBuilder.append(" = ");
             visitChild(rightChild);
     } else {
-
         visitChild(leftChild);
         visitChild(rightChild);
-        stringBuilder.append(")");
     }
     if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
         stringBuilder.append(javaE.SEMICOLON.getValue());
@@ -711,6 +634,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //for (Empty;CompareExpNode;Empty) {BodyNode}
     @Override
     public void visit(ForNode node) {
+        //this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder.append(javaE.FOR.getValue()).append("(");
         //check if the second child is a compare expression and the third child is an assign node
         if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
@@ -745,6 +669,7 @@ public class CodeGenVisitor implements NodeVisitor {
             }
         }
         codeOutput.add(getLine());
+       // this.symbolTable.leaveScope();
     }
 
     //HashMap to convert the type of the array to the type of the arraylist
@@ -785,18 +710,19 @@ public class CodeGenVisitor implements NodeVisitor {
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
          }
-        else if (isArray(node)) {
-            if(node.getParent().getChildren().get(1) instanceof InitializationNode){
-                stringBuilder.append(arrayVarDcl(node))
-                        .append(" ")
-                        .append(node.getName());
+        else if (isArray(node) && node.getParent().getChildren().size() != 1) {
+                if(node.getParent().getChildren().get(1) instanceof InitializationNode) {
+                    stringBuilder.append(arrayVarDcl(node))
+                            .append(" ")
+                            .append(node.getName());
 
-            } else {
-                stringBuilder.append(arrayVarDcl(node))
-                        .append(" ")
-                        .append(node.getName())
-                        .append(" = new ").append(VariableConverter(node.getType()));
-            }
+                } else {
+                    stringBuilder.append(arrayVarDcl(node))
+                            .append(" ")
+                            .append(node.getName())
+                            .append(" = new ").append(VariableConverter(node.getType()));
+                }
+
         }
         else if(node.getType()!= null){
              if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
@@ -807,13 +733,7 @@ public class CodeGenVisitor implements NodeVisitor {
                  stringBuilder.append(node.getName());
              }
 
-         }  else if(node.getType()!= null){
-            stringBuilder
-                    .append(VariableConverter(node.getType()))
-                    .append(" ")
-                    .append(node.getName());
-
-        } else{
+         } else{
             stringBuilder.append(node.getName());
         }
     }
@@ -976,13 +896,13 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(PrintCallNode node) {
         stringBuilder.append("System.out.println(");
-        //check if the array is a 1D array or 2D array else just normal print
-        if (isOneDimensionalArray(node)) {
-            printOneDimensionalArray(node);
-        } else if(isTwoDimensionalArray(node)){
+        if(isTwoDimensionalArray(node)){
             printTwoDimensionalArray(node);
         }
-        else {
+        else if(isOneDimensionalArray(node)){
+            printOneDimensionalArray(node);
+        }
+        else{
             visitChild(node.getChildren().get(0));
         }
         visitPrintChildrenFromChildOne(node);
@@ -992,37 +912,22 @@ public class CodeGenVisitor implements NodeVisitor {
 
     //Check if the print call node is a one dimensional array
     private boolean isOneDimensionalArray(PrintCallNode node) {
-        return node.getChildren().get(0) instanceof ArrayAccessNode &&
-                node.getChildren().get(0).getChildren().size() == 1;
+       return node.getChildren().get(0).getType().contains("[]");
     }
     //Check if the print call node is a two dimensional array
     private boolean isTwoDimensionalArray(PrintCallNode node) {
-        return node.getChildren().get(0) instanceof ArrayAccessNode &&
-                node.getChildren().get(0).getChildren().size() == 2;
+        return node.getChildren().get(0).getType().contains("[][]");
     }
     //Print the one dimensional array
     private void printOneDimensionalArray(PrintCallNode node){
-        stringBuilder.append(((ArrayAccessNode) node.getChildren().get(0)).getAccessIdentifier());
-        stringBuilder.append(".get(");
-        if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
-            stringBuilder.append("(int) ");
-        }
-        visit(node.getChildren().get(0));
+        stringBuilder.append("Arrays.toString(");
+        visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
     }
     //Print the two dimensional array
     private void printTwoDimensionalArray(PrintCallNode node){
-        stringBuilder.append(((ArrayAccessNode) node.getChildren().get(0)).getAccessIdentifier());
-        stringBuilder.append(".get(");
-        if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
-            stringBuilder.append("(int) ");
-        }
-        visitChild(node.getChildren().get(0).getChildren().get(0));
-        stringBuilder.append(").get(");
-        if(node.getChildren().get(0).getChildren().get(1) instanceof IdentifierNode){//typecast if the child is an identifier
-            stringBuilder.append("(int) ");
-        }
-        visitChild(node.getChildren().get(0).getChildren().get(1));
+        stringBuilder.append("Arrays.deepToString(");
+        visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
     }
     //Visit all the children of the print call node except the first one
