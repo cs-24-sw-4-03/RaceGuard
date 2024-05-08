@@ -46,6 +46,8 @@ public class SymbolTableVisitor implements NodeVisitor {
     //Declares a variable in the symbol table if it does not already exist
     @Override
     public void visit(VarDclNode node){
+        this.visitChildren(node);
+
         if(node.getParent() instanceof StateNode){
             if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType());
@@ -61,7 +63,6 @@ public class SymbolTableVisitor implements NodeVisitor {
                 this.exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope"));
             }
         }
-        this.visitChildren(node);
     }
 
     //Creates a new scope as a while iteration node is a new scope and leaves it after visiting the children
@@ -165,15 +166,17 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
-        if(node.getParent().getParent() instanceof StateNode){
-            if(this.symbolTable.lookUpStateSymbol(node.getName()) == null){
-                this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
-            }
-        //Ensures that we do not search for IdentifierNodes for method calls
-        }else if (!(node.getParent() instanceof MethodCallNode)){
-            if(this.symbolTable.lookUpSymbol(node.getName()) == null){
-                this.exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
+        if(!(node.getParent() instanceof VarDclNode)){
+            //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
+            if(node.getParent().getParent() instanceof StateNode){
+                if(this.symbolTable.lookUpStateSymbol(node.getName()) == null){
+                    this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
+                }
+                //Ensures that we do not search for IdentifierNodes for method calls
+            }else if (!(node.getParent() instanceof MethodCallNode)){
+                if(this.symbolTable.lookUpSymbol(node.getName()) == null){
+                    this.exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
+                }
             }
         }
     }
