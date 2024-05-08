@@ -916,7 +916,7 @@ public class CodeGenVisitor implements NodeVisitor {
         //codeOutput.add(getLineBasic());
         visitChildren(node);
         appendBodyClose();
-        writeToFile(node.getId(), codeOutput);
+        writeToFile(capitalizeFirstLetter(node.getId()), codeOutput);
     }
 
 
