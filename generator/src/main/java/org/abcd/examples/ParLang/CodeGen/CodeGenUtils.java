@@ -2,6 +2,9 @@ package org.abcd.examples.ParLang.CodeGen;
 
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
+
+//vitistor som input til constructor i stedet for symbolTable
+//metoder og visitor kan være ikke-statiske, men så skal der en CodeenUtils instance ind i CodeGenVisitor
 public class CodeGenUtils {
 
     static CodeGenVisitor visitor;
