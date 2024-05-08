@@ -1,3 +1,4 @@
+//should compile without errors
 Script Vaagen{
     on slaas(string s);
 }

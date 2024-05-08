@@ -206,20 +206,12 @@ public class TypeVisitor implements NodeVisitor {
                 if (actorParams.size() != scriptParams.size()){
                     return false;
                 }
-                int i = 0;
-                int j = 0;
+                Set<String> set = scriptParams.keySet();
+                Iterator<String> iter = set.iterator();
                 for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){
-                    for (Map.Entry<String, Attributes> scriptParam : scriptParams.entrySet()){
-                        if (i == j){
-                            if (!actorParam.getValue().getVariableType().equals(scriptParam.getValue().getVariableType())){
-                                return false;
-                            }
-                            j = 0;
-                            continue;
-                        }
-                        j++;
+                    if (!actorParam.getValue().getVariableType().equals(scriptParams.get(iter.next()).getVariableType())){
+                        return false;
                     }
-                    i++;
                 }
             }
         }
