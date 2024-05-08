@@ -844,7 +844,7 @@ public class TypeVisitor implements NodeVisitor {
             String identifierType = attributes.getVariableType();
             int identifierDimensions = countBracketPairs(identifierType);
             if(identifierDimensions != node.getDimensions()){
-                throw new ArrayAccessException("Dimensions of type " + identifierType + "(" + identifierDimensions + ")" + " do not match " + node.getAccessIdentifier() + printBrackets(node.getDimensions()));
+                throw new ArrayAccessException("Dimensions of type " + identifierType + "(" + identifierDimensions + ")" + " do not match access " + node.getAccessIdentifier() + printBrackets(node.getDimensions()) + "(" + node.getDimensions() + ")");
             }
             String accessType = removeBrackets(identifierType);
             node.setType(accessType);
