@@ -628,9 +628,7 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(javaE.SEMICOLON.getValue());
             visitChildren(node);
             appendBodyClose();
-        } else if (node.getParent() instanceof SpawnDclNode) { //No curly brackets needed
-            appendBody(node);
-        } else {
+        }  else {
             appendBody(node);
         }
     }
@@ -1252,10 +1250,12 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnDclNode node) {
-        String outerScopeName = symbolTable.findActorParent(node);
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
-                .append(outerScopeName);
+                .append(symbolTable.findActorParent(node));
+        if(node.getChildren().size()<2){//If there is no ParametersNode (only a body node)
+            stringBuilder.append("()");
+        }
         visitChildren(node);
 
     }

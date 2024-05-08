@@ -42,6 +42,7 @@ Actor myActor3 {
     }
     Knows{}
     Spawn(){
+        print("parlang spawner actors);
         myActor2 actor2 = Spawn myActor2();
         myActor1 actor1 = Spawn myActor1(1, 2+2, TRUE, actor2, self, State.varTest, "Hello");
         actor1 <- myTest(1, 2+2, TRUE, actor2, self, State.varTest, "Hello");
