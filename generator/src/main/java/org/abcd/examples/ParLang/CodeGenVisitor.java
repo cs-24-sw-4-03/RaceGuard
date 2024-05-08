@@ -203,9 +203,14 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("(");
         if(!params.isEmpty()){
             for(IdentifierNode param:params){
+                String javaType;
+                if(symbolTable.lookUpScope(param.getType())!=null){
+                    javaType=javaE.ACTORREF.getValue();
+                }else{
+                    javaType=VariableConverter(param.getType())+" ";
+                }
                 stringBuilder
-                        .append(VariableConverter(param.getType()))
-                        .append(" ")
+                        .append(javaType)
                         .append(param.getName())
                         .append(", ");
             }
