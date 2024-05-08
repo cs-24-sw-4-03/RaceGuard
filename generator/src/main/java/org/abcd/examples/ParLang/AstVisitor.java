@@ -1,13 +1,10 @@
 package org.abcd.examples.ParLang;
 
-import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.abcd.examples.ParLang.AstNodes.*;
-import  org.abcd.examples.ParLang.Exceptions.*;
+import org.abcd.examples.ParLang.Exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class AstVisitor extends ParLangBaseVisitor<AstNode> {
@@ -114,7 +111,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         String returnType; //returnType is either "void" or the type of the method
         switch (methodType) {
             case "on": //on-methods always return void
-                returnType = "void";
+                returnType = parLangE.VOID.getValue();
                 break;
             case "local": //local-methods can return any type
                 returnType = ctx.allTypes().getText();
@@ -218,7 +215,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitOnMethod(ParLangParser.OnMethodContext ctx) {
-        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),"void",ctx.ON_METHOD().getText());
+        MethodDclNode node= new MethodDclNode(ctx.identifier().getText(),parLangE.VOID.getValue(), ctx.ON_METHOD().getText());
         if (ctx.parameters() != null) {//If there are parameters
             node.addChild(visit(ctx.parameters())); //visit and add parameters as children to the methodNode
         }
@@ -342,7 +339,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
-
         if(ctx.getChildCount()==1){ //If there is only one child,
             return visit(ctx.term(0)); //visit the term
         }else{ //If there are more than one child

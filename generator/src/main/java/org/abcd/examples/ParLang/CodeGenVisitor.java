@@ -1,15 +1,12 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.io.*;
-import java.util.ArrayList;
-
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Iterator;
+import java.util.*;
 
 
 public class CodeGenVisitor implements NodeVisitor {
@@ -24,13 +21,14 @@ public class CodeGenVisitor implements NodeVisitor {
 
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
+    private int localIndent = 0; // indent for file generated. 4 spaces per indent
 
-    int localIndent = 0; // indent for file generated. 4 spaces per indent
+    private int uniqueActorsCounter = 0; // Stores the amount of spawned actors
 
     /**
      * @return the current line with the correct indentation.
      */
-    private String getLineBasic() {
+    private String getLine() {
         String line = stringBuilder.toString().indent(localIndent* 4);
         stringBuilder.setLength(0); // Resets string builder
         return line;
@@ -51,13 +49,13 @@ public class CodeGenVisitor implements NodeVisitor {
     private String VariableConverter(String type){
         switch (type) {
             case "int":
-                return "long";
+                return javaE.LONG.getValue();
             case "double":
-                return "double";
+                return javaE.DOUBLE.getValue();
             case "bool":
-                return "boolean";
+                return javaE.BOOLEAN.getValue();
             case "string":
-                return "String";
+                return javaE.STRING.getValue();
             default:
                 return type;
         }
@@ -102,6 +100,23 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /***
+     * Appends static final class definition string
+     * @param access access modifier
+     * @param name name of class
+     */
+
+    private void appendStaticFinalClassDef(String access, String name){
+        stringBuilder
+                .append(access)
+                .append(javaE.STATIC.getValue())
+                .append(javaE.FINAL.getValue())
+                .append(javaE.CLASS.getValue())
+                .append(name);
+    }
+
+
+
+    /***
      * Append method declaration string (e.g. "private void myMethod")
      * @param access access modifier (e.g. "private")
      * @param returnType (e.g. "void")
@@ -112,7 +127,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder
                 .append(access)
                 .append(returnType)
-                .append(" ")
                 .append(name);
     }
 
@@ -156,7 +170,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The children of this AST node constitutes all the body to be appended in the target code.
      */
     private void appendBody(AstNode node){
-        appendBodyOpen(node,"","");
+        appendBodyOpen(node);
         appendBodyClose();
     }
 
@@ -164,14 +178,15 @@ public class CodeGenVisitor implements NodeVisitor {
      * Can be used if something has to be added after visting the children.
      * @param node the parent of the body.
      */
+    private void appendBodyOpen(AstNode node){
+        appendBodyOpen(node,"","");
+    }
+
     private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
-        codeOutput.add(getLineBasic() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
+        codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
         visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
-        if(node instanceof ActorDclNode actorDclnode){//If node is an actor declaration, then the onReveice method needs to be appended.
-            appendOnReceive(actorDclnode);
-        }
     }
 
     /**
@@ -181,17 +196,55 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendBodyClose(){
         localIndent--;
         stringBuilder.append( "}\n");
-        codeOutput.add(getLineBasic() );
+        codeOutput.add(getLine() );
+    }
+
+    private void appendConstructor(String className,List<IdentifierNode> params){
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(className)
+                .append("(");
+        if(params.size()>0){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(VariableConverter(param.getType()))
+                        .append(" ")
+                        .append(param.getName())
+                        .append(", ");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+
+        stringBuilder.append(") {\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        if(params!=null){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(javaE.THIS.getValue())
+                        .append(".")
+                        .append(param.getName())
+                        .append(javaE.EQUALS.getValue())
+                        .append(param.getName())
+                        .append(";\n");
+            }
+        }
+        codeOutput.add(getLine());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLine());
     }
 
     /***
-     * Appends and onReceive() method to the vody of an Actor.
+     * Appends and onReceive() method to the body of an Actor.
      * @param node The ActorDclNode in the AST which is used to produce the body of the actor in the target code.
      */
     private void appendOnReceive(ActorDclNode node){
         Scope scope=symbolTable.lookUpScope(node.getId());//Get the scope of the actor.
         Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
         String methodName;
+        String className;
 
         //append the method signature
         stringBuilder
@@ -200,23 +253,44 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.ONRECEIVE.getValue())//has value "onReceive(Object message) "
                 .append("{\n");
 
-        codeOutput.add(getLineBasic());//get line and add to codeOutput before indentation changes.
+        codeOutput.add(getLine());//get line and add to codeOutput before indentation changes.
         localIndent++;
 
         //The body is an if-els chain.
         if(onMethods.hasNext()){//The first on-methods results in an if-statement.
             methodName=onMethods.next();
-            appendIfElseChainLink("if",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+            className=getclassName(node,methodName);
+            appendIfElseChainLink("if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
         }
         while (onMethods.hasNext()){//The remaining on-methods results in if-else statements
             methodName=onMethods.next();
-            appendIfElseChainLink("if else",getOnReceiveIfCondition(methodName),getOnReceiveIfBody(methodName));
+            className=getclassName(node,methodName);
+            appendIfElseChainLink("else if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
         }
         appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
 
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLineBasic()); //get line and add to codeOutput since indentation might change after calling this method.
+        codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
+    }
+
+    private String getclassName(ActorDclNode node,String methodName){
+        MethodDclNode methodNode=null;
+        String className=capitalizeFirstLetter(methodName);
+
+        for (AstNode childNode: node.getChildren()){
+            if(childNode instanceof MethodDclNode && ((MethodDclNode) childNode).getId().equals(methodName)){
+                methodNode=(MethodDclNode) childNode;
+                break;
+            }
+        }
+        if( methodNode!=null){
+            String scriptName=getMethodInFollowedScript(methodNode);
+            if(scriptName!=null){
+                className=scriptName+"."+className;
+            }
+        }
+        return className;
     }
 
     /**
@@ -229,8 +303,8 @@ public class CodeGenVisitor implements NodeVisitor {
         String keyword;
         if(type.equals("if")){
             keyword=javaE.IF.getValue();
-        }else if(type.equals("if else")) {
-            keyword=javaE.IFELSE.getValue();
+        }else if(type.equals("else if")) {
+            keyword=javaE.ELSEIF.getValue();
         }else{
             throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
         }
@@ -239,10 +313,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("(")
                 .append(condition)
                 .append(") {\n");
-        codeOutput.add(getLineBasic());//get line before indentation changes.
+        codeOutput.add(getLine());//get line before indentation changes.
         localIndent++;
         stringBuilder.append(body);
-        codeOutput.add(getLineBasic());//get line before indentation changes.
+        codeOutput.add(getLine());//get line before indentation changes.
         localIndent--;
         stringBuilder.append("}");
     }
@@ -256,21 +330,22 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder
                 .append(javaE.ELSE.getValue())
                 .append("{\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append(body);
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent--;
         stringBuilder.append("}\n");
-        codeOutput.add(getLineBasic());//get the line since indentation might change after calling this method.
+        codeOutput.add(getLine());//get the line since indentation might change after calling this method.
     }
 
     /**
      * @param methodName Name of the on-method
+     * @param className class name of the protocol class corresponding to the on-method.
      * @return A condition for checking if incoming message is of the message type corresponding to the on-method.
      */
-    private String getOnReceiveIfCondition(String methodName){
-        return "message "+javaE.INSTANCEOF.getValue()+capitalizeFirstLetter(methodName)+" "+methodName+"Msg";
+    private String getOnReceiveIfCondition(String className,String methodName){
+        return "message "+javaE.INSTANCEOF.getValue()+className+" "+methodName+"Msg";
     }
 
     /***
@@ -278,7 +353,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @return A statement which calls a private-method in the actor. This method has the functionality to be executed when the message corresponding to the on-method is received.
      */
     private String getOnReceiveIfBody(String methodName){
-        return "on"+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
+        return parLangE.ON.getValue()+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
     }
 
     private String capitalizeFirstLetter(String input) {
@@ -291,12 +366,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(AccessNode node) {
-        if(node instanceof StateAccessNode){
-            visit((StateAccessNode) node);
-        }else if(node instanceof KnowsAccessNode){
-            visit((KnowsAccessNode) node);
-        }
+        //abstract class, should not be called.
     }
+
 
     @Override
     public void visit(ArrayAccessNode node){
@@ -455,14 +527,19 @@ public class CodeGenVisitor implements NodeVisitor {
                 "ActorRef",
                 "ActorSystem",
                 "Props",
-                "UntypedAbstractActor",
+                "UntypedAbstractActor"
+        );
+        appendImports("akka.event",
                 "Logging",
                 "LoggingAdapter"
         );
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
-        //System.out.println("actor declaration");
-        appendBody(node);//append the body of the actor class
+
+        //append the body of the actor class
+        appendBodyOpen(node);
+        appendOnReceive(node);
+        appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
     }
@@ -504,7 +581,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
     if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
         stringBuilder.append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         }
 
     }
@@ -514,15 +591,21 @@ public class CodeGenVisitor implements NodeVisitor {
         if (node.getParent() instanceof MainDclNode) {
             stringBuilder
                     .append(javaE.CURLY_OPEN.getValue());
-            codeOutput.add(getLineBasic());
+            codeOutput.add(getLine());
             localIndent++;
             stringBuilder
                     .append("ActorSystem system = ActorSystem.create(\"system\")")
                     .append(javaE.SEMICOLON.getValue());
             visitChildren(node);
             appendBodyClose();
-        }
-        else {
+        } else if (node.getParent() instanceof SpawnDclNode) { //No curly brackets needed
+            String outerScopeName = symbolTable.findActorParent(node);
+            stringBuilder
+                    .append(javaE.PUBLIC.getValue())
+                    .append(outerScopeName)
+                    .append("() ");
+            appendBody(node);
+        } else {
             appendBody(node);
         }
     }
@@ -661,7 +744,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 visitChild(node.getChildren().get(2));
             }
         }
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     //HashMap to convert the type of the array to the type of the arraylist
@@ -689,13 +772,15 @@ public class CodeGenVisitor implements NodeVisitor {
         if (node.getParent() instanceof KnowsNode) {
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
-                    .append(javaE.FINAL.getValue())
                     .append(javaE.ACTORREF.getValue())
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
-            codeOutput.add(getLineBasic());
+            codeOutput.add(getLine());
         }
         /*else if(arrayType !=null){
+
+            codeOutput.add(getLine());
+        } else if(arrayType !=null){
             stringBuilder
                     .append(arrayType)
                     .append(" ")
@@ -712,6 +797,15 @@ public class CodeGenVisitor implements NodeVisitor {
              stringBuilder
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
+         }
+        else if(node.getType()!= null){
+             if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
+                 stringBuilder.append(VariableConverter(node.getType()));
+                 stringBuilder.append(" ");
+                 stringBuilder.append(node.getName());
+             } else {
+                 stringBuilder.append(node.getName());
+             }
 
          } else if (isArray(node)) {
             if(node.getParent().getChildren().get(1) instanceof InitializationNode){
@@ -774,7 +868,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(KnowsAccessNode node) {
         stringBuilder
-                .append(parLangE.KNOWS.getValue())
+                .append(javaE.THIS.getValue())
                 .append(".")
                 .append(node.getAccessIdentifier());
     }
@@ -809,12 +903,17 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(MainDclNode node) {
         resetStringBuilder();
         //public class Main {
+        appendImports("akka.actor",
+                "ActorSystem",
+                "ActorRef",
+                "Props",
+                "UntypedAbstractActor");
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.CLASS.getValue())
                 .append("Main")
                 .append(" {\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
         localIndent++;
         //public static void main(String[] args) {
         //      ActorSystem system = ActorSystem.create("system");
@@ -839,6 +938,16 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MethodDclNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
+            if(getMethodInFollowedScript(node)==null){
+                //We create a static class. Instances of this class is sent as message when the on-method is called.
+                String className=capitalizeFirstLetter(node.getId());
+                appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
+                appendBodyOpen(node.getChildren().getFirst(),javaE.PUBLIC.getValue(),";\n");
+                appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
+                appendBodyClose();
+            }
+            appendBehvaiour(node);
+
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
@@ -847,6 +956,28 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    private void appendBehvaiour(MethodDclNode node){
+        String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
+        appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),name);
+        appendParameters((ParametersNode) node.getChildren().getFirst());
+        appendBody(node.getChildren().get(1));
+    }
+
+    private String getMethodInFollowedScript(MethodDclNode node){
+        //MethodDclNode's parent is always an actor.
+        // If the actor follows a script, a FollowsNode is the first child of this actor
+        AstNode firstChildOfActor=node.getParent().getChildren().getFirst();
+        if(firstChildOfActor instanceof FollowsNode followsNode){
+            List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
+            for(IdentifierNode script:followedScripts){
+                HashMap<String, Attributes> scriptOnMethods=symbolTable.lookUpScope(script.getName()).getDeclaredOnMethods();
+                if(scriptOnMethods.containsKey(node.getId())){
+                    return script.getName();
+                }
+            }
+        }
+        return null;
+    }
 
 
 
@@ -873,7 +1004,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         visitPrintChildrenFromChildOne(node);
         stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     //Check if the print call node is a one dimensional array
@@ -939,7 +1070,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
 
@@ -961,15 +1092,20 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptMethodNode node) {
-        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a scrupt does not need to be handled here.
-            //Create a static class for the on-method.
-            stringBuilder
-                    .append(javaE.PUBLIC.getValue())
-                    .append(javaE.STATIC.getValue())
-                    .append(javaE.FINAL.getValue())
-                    .append(javaE.CLASS.getValue())
-                    .append(node.getId());
-            appendBody(node);//appends the body of the static class (prublic fields for each parameter in the method)
+        if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a script does not need to be handled here.
+            String className=capitalizeFirstLetter(node.getId());
+            appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//Create a static class for the on-method.
+
+            //appends opening of the body of the static class and creates public fields for each parameter in the method.
+            appendBodyOpen(node);
+
+            List<IdentifierNode> params=new ArrayList<IdentifierNode>();//prepare list of parameters for constructor
+            if(!node.getChildren().isEmpty()){
+               params=(List<IdentifierNode>)(List<?>)node.getChildren().get(0).getChildren(); //set list of parameters if there are any.
+            }
+            appendConstructor(className,params);//append the constructor in the body.
+
+            appendBodyClose();//close the body
         }
     }
 
@@ -983,14 +1119,16 @@ public class CodeGenVisitor implements NodeVisitor {
             localIndent++;
             visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue()); //Insterts the parameters ad public fields in the method's static class
             localIndent--;
-            codeOutput.add(getLineBasic() );
+            codeOutput.add(getLine() );
         }
     }
 
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
         visitChildren(node,"",",");//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
-        stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        if(node.getChildren().size()>0){
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+        }
         stringBuilder.append(")");
     }
 
@@ -1015,26 +1153,49 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(SendMsgNode node) {
 
     }
-
+    
+    private int getNextUniqueActor() {
+        return uniqueActorsCounter++;
+    }
     @Override
     public void visit(SpawnActorNode node) {
+        String outerScopeName = symbolTable.findActorParent(node);
+        if (outerScopeName != null) { //Actor or Script
+            stringBuilder
+                    .append("getContext().actorOf(Props.create(")
+                    .append(node.getType())
+                    .append(".class")
+                    .append("), \"")
+                    .append(getNextUniqueActor())
+                    .append("\")");
+        }
+        else { //null means it's main
+            stringBuilder
+                    .append("system.actorOf(Props.create(")
+                    .append(node.getType())
+                    .append(".class")
+                    .append("), \"")
+                    .append(getNextUniqueActor())
+                    .append("\")");
 
+        }
     }
 
     @Override
     public void visit(SpawnDclNode node) {
+        visitChildren(node);
 
     }
 
     @Override
-    public void visit(ExpNode node) {
+    public void visit(ExpNode node) {//abstract
 
     }
 
     @Override
     public void visit(StateAccessNode node) {
         stringBuilder
-                .append(parLangE.STATE.getValue())
+                .append(javaE.THIS.getValue())
                 .append(".")
                 .append(node.getAccessIdentifier());
     }
@@ -1048,14 +1209,14 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(VarDclNode node) {
         if (node.getParent() instanceof StateNode) {
-            stringBuilder.append(javaE.PRIVATE.getValue()).append(javaE.FINAL.getValue());
+            stringBuilder.append(javaE.PRIVATE.getValue());
         }
         visitChildren(node);
 
         //if the parent is not a for node, add a semicolon, else don't
         if(!(node.getParent() instanceof ForNode)){
                 stringBuilder.append(javaE.SEMICOLON.getValue());
-                codeOutput.add(getLineBasic());
+                codeOutput.add(getLine());
             }
 
     }
@@ -1068,7 +1229,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
         stringBuilder.append("\n");
-        codeOutput.add(getLineBasic());
+        codeOutput.add(getLine());
     }
 
     @Override

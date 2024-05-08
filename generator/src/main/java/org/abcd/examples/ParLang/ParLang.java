@@ -54,7 +54,7 @@ public class ParLang {
         methodVisitor.visit(ast);
         printExceptions(methodVisitor.getExceptions());
 
-
+        printAST(ast, args);
         System.out.println("\nType Checking");
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);

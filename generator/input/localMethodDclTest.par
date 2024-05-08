@@ -22,7 +22,6 @@ Actor myActor{
     local localMethod5():int{
         return 2;
     }
-
     local localMethod6():double{
          return 2.71;
     }
