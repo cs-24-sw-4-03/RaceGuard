@@ -209,7 +209,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.PUBLIC.getValue())
                 .append(className)
                 .append("(");
-        if(params.size()>0){
+        if(!params.isEmpty()){
             for(IdentifierNode param:params){
                 stringBuilder
                         .append(param.getType())
@@ -522,8 +522,20 @@ public class CodeGenVisitor implements NodeVisitor {
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
     }
 
+    //Can either be:
+    //value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     @Override
     public void visit(ArgumentsNode node) {
+        if (node.getParent() instanceof SpawnActorNode) {
+            visitChildren(node, ", ", "");
+        }
+        if (node.getParent() instanceof MethodCallNode) {
+            visitChildren(node, " ", ",");
+            if (node.getChildren().size() > 1) {
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            }
+        }
+        //if instance is method call
 
     }
 
@@ -595,8 +607,12 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolNode node) {
-
-        visitChild(node.getChildren().get(0));
+        if (!node.getChildren().isEmpty()) {
+            visitChild(node.getChildren().get(0));
+        }
+        else {
+            stringBuilder.append(node.getValue());
+        }
     }
 
     @Override
@@ -655,7 +671,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelfNode node) {
-
+        stringBuilder.append(javaE.THIS.getValue());
     }
 
     @Override
@@ -1111,21 +1127,11 @@ public class CodeGenVisitor implements NodeVisitor {
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
     }
-    private void appendArguments(String nodeName, List<ArgumentsNode> params) {
 
-    }
-    //if(params!=null){
-    //            for(IdentifierNode param:params){
-    //                stringBuilder
-    //                        .append(javaE.THIS.getValue())
-    //                        .append(".")
-    //                        .append(param.getName())
-    //                        .append(javaE.EQUALS.getValue())
-    //                        .append(param.getName())
-    //                        .append(";\n");
-    //            }
-    //className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
 
+    //					SpawnActorNode : HelloWorldMain with type: HelloWorldMain
+    //						ArgumentsNode
+    //							IntegerNode : 10 with type: int
     @Override
     public void visit(SpawnActorNode node) {
         String outerScopeName = symbolTable.findActorParent(node);
@@ -1134,15 +1140,12 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         else { //null means it's main
             stringBuilder.append("system.actorOf(Props.create(");
-
-
         }
-
-
         stringBuilder
                 .append(node.getType())
-                .append(".class")
-                .append("), \"")
+                .append(".class");
+        visitChildren(node);
+        stringBuilder.append("), \"")
                 .append(getNextUniqueActor())
                 .append("\")");
     }
