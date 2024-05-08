@@ -31,7 +31,9 @@ public enum javaE {
     STRING("String"),
     DOUBLE("double"),
     BOOLEAN("boolean"),
-    TELL("tell");
+    TELL("tell"),
+    NEW("new "),
+    GET_SELF("getSelf()");
 
 
 

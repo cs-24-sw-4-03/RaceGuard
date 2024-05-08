@@ -795,10 +795,18 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append(type)
                     .append(node.getName());
+        } else if (node.getParent()instanceof SendMsgNode) {
+            stringBuilder.append(node.getType());
         } else{
             stringBuilder.append(node.getName());
         }
     }
+
+    /***
+     *
+     * @param node parent must be SendMsgNode
+     */
+
 
     private boolean isChildOfVarDclOrParameters(IdentifierNode node){
         return (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode);
@@ -1125,14 +1133,40 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SendMsgNode node) {
+        appendTellOpen(node);
+        appendProtocolArg(node);
+        appendTellClose();
+
+    }
+
+    private void appendTellOpen(SendMsgNode node){
         stringBuilder
                 .append(node.getReceiver())
                 .append(".")
                 .append(javaE.TELL.getValue())
-        String receiver=;
-
-        visitChildren(node);
+                .append("(");
     }
+
+    private void appendTellClose(){
+        stringBuilder.append(javaE.GET_SELF.getValue());
+        stringBuilder.append(");");
+        codeOutput.add(getLine());
+    }
+
+    private void appendProtocolArg(SendMsgNode node){
+        String protocolClass=capitalizeFirstLetter(node.getMsgName());
+        stringBuilder.append(javaE.NEW.getValue());
+        visit((IdentifierNode) node.getChildren().getFirst());//visit the IdentifierNode
+        stringBuilder
+                .append(".")
+                .append(protocolClass)
+                .append("(");
+        visit((ArgumentsNode) node.getChildren().getLast());//visit the ArgumentsNode
+        stringBuilder.append("),");
+
+    }
+
+
     
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
