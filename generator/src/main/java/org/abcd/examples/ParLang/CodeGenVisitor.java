@@ -629,11 +629,6 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChildren(node);
             appendBodyClose();
         } else if (node.getParent() instanceof SpawnDclNode) { //No curly brackets needed
-            String outerScopeName = symbolTable.findActorParent(node);
-            stringBuilder
-                    .append(javaE.PUBLIC.getValue())
-                    .append(outerScopeName)
-                    .append("() ");
             appendBody(node);
         } else {
             appendBody(node);
@@ -1152,7 +1147,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ParametersNode node) {
-        if(node.getParent() instanceof MethodDclNode) {
+        if(node.getParent() instanceof MethodDclNode || node.getParent() instanceof SpawnDclNode) {
             //If parameters is part of method declaration in an actor we simply append them to the method declaration in the target code
             appendParameters(node);
         }else if (node.getParent() instanceof ScriptMethodNode){
@@ -1161,6 +1156,8 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue()); //Insterts the parameters ad public fields in the method's static class
             localIndent--;
             codeOutput.add(getLine() );
+        }else{
+            throw new RuntimeException("ParametersNode not instance of MethodDclNode, SpawnDclNode or SrciptMethodNode");
         }
     }
 
@@ -1255,6 +1252,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnDclNode node) {
+        String outerScopeName = symbolTable.findActorParent(node);
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(outerScopeName);
         visitChildren(node);
 
     }
