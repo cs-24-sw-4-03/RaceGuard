@@ -34,7 +34,8 @@ public enum javaE {
     TELL("tell"),
     NEW("new "),
     GET_SELF("getSelf()"),
-    INLINE_COMMENT("//");
+    INLINE_COMMENT("//"),
+    NO_SENDER("ActorRef.noSender()");
 
 
 

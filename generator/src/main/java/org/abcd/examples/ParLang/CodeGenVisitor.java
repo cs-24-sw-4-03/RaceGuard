@@ -830,9 +830,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append(type)
                     .append(node.getName());
-        } else if (node.getParent()instanceof SendMsgNode) {
-            stringBuilder.append(node.getType());
-        } else{
+        }  else{
             stringBuilder.append(node.getName());
         }
     }
@@ -1189,35 +1187,51 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(SendMsgNode node) {
         appendTellOpen(node);
         appendProtocolArg(node);
-        appendTellClose();
+        appendTellClose(node);
 
     }
 
     private void appendTellOpen(SendMsgNode node){
+        visitReceiver(node);
         stringBuilder
-                .append(node.getReceiver())
                 .append(".")
                 .append(javaE.TELL.getValue())
                 .append("(");
     }
 
-    private void appendTellClose(){
-        stringBuilder.append(javaE.GET_SELF.getValue());
-        stringBuilder.append(");");
+    private void appendTellClose(SendMsgNode node){
+        String sender;
+        if(node.getParent().getParent() instanceof MainDclNode){
+            sender=javaE.NO_SENDER.getValue();
+        }else {
+            sender=javaE.GET_SELF.getValue();
+        }
+        stringBuilder
+                .append(sender)
+                .append(");");
         codeOutput.add(getLine());
     }
 
     private void appendProtocolArg(SendMsgNode node){
         String protocolClass=capitalizeFirstLetter(node.getMsgName());
-        stringBuilder.append(javaE.NEW.getValue());
-        visit((IdentifierNode) node.getChildren().getFirst());//visit the IdentifierNode
         stringBuilder
+                .append(javaE.NEW.getValue())
+                .append(node.getChildren().getFirst().getType())
                 .append(".")
                 .append(protocolClass)
                 .append("(");
         visit((ArgumentsNode) node.getChildren().getLast());//visit the ArgumentsNode
         stringBuilder.append("),");
 
+    }
+
+    private void visitReceiver(SendMsgNode node){
+        AstNode firstChild=node.getChildren().getFirst();
+        if(firstChild instanceof IdentifierNode){
+            visit((IdentifierNode) firstChild);//visit the IdentifierNode
+        }else if (firstChild instanceof  KnowsAccessNode){
+            visit((KnowsAccessNode) firstChild);
+        }
     }
 
 
