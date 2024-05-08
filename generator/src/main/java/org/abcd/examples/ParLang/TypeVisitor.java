@@ -455,7 +455,7 @@ public class TypeVisitor implements NodeVisitor {
             }
             String initType = node.getChildren().get(1).getType();
             if (!canConvert(idType, initType)) {
-                throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId());
+                throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId() + " of type " + idType + " and " + initType);
             }
             node.setType(idType);
        /* }
