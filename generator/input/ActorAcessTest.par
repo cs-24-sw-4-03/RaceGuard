@@ -1,0 +1,34 @@
+Actor Person{
+    State{
+        string feeling;
+        int age;
+    }
+    Knows{
+        Person mom;
+        Person dad;
+        Person friend;
+    }
+    Spawn(int age){
+        Knows.mom=Spawn Person(41);
+        Knows.dad=Spawn Person(38);
+        State.age=age;
+        State.feeling="sad";
+    }
+    local setFeeling(string s):void{
+        State.feeling=s;
+    }
+    on birthDay(){
+        State.age=State.age+1;
+    }
+    on getFriend(Person friend){
+        Knows.friend=friend;
+        setFeeling("happy");
+    }
+}
+
+main(){
+    Person james=Spawn Person(18);
+    Person dylan=Spawn Person(19);
+    james<-getFriend(dylan);
+    dylan<-getFriend(james);
+}
