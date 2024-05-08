@@ -254,18 +254,21 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent++;
 
         //The body is an if-els chain.
-        if(onMethods.hasNext()){//The first on-methods results in an if-statement.
-            methodName=onMethods.next();
-            className=getclassName(node,methodName);
-            appendIfElseChainLink("if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
-        }
-        while (onMethods.hasNext()){//The remaining on-methods results in if-else statements
-            methodName=onMethods.next();
-            className=getclassName(node,methodName);
-            appendIfElseChainLink("else if",getOnReceiveIfCondition(className,methodName),getOnReceiveIfBody(methodName));
-        }
-        appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
+        if(onMethods.hasNext()) {//The first on-methods results in an if-statement.
+            methodName = onMethods.next();
+            className = getclassName(node, methodName);
+            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName));
 
+            while (onMethods.hasNext()) {//The remaining on-methods results in if-else statements
+                methodName = onMethods.next();
+                className = getclassName(node, methodName);
+                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName));
+            }
+            appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
+        }else{
+            stringBuilder.append(javaE.UNHANDLED.getValue());
+            codeOutput.add(getLine());
+        }
         localIndent--;
         stringBuilder.append("}\n");
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
