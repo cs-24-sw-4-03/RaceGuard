@@ -683,7 +683,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelfNode node) {
-        stringBuilder.append(javaE.THIS.getValue());
+        stringBuilder.append(javaE.GET_SELF.getValue());
     }
 
     @Override

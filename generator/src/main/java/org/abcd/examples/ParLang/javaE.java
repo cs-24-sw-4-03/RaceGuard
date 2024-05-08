@@ -39,6 +39,7 @@ public enum javaE {
 
 
 
+
     private String string;
     private javaE(String s){
         this.string=s;
