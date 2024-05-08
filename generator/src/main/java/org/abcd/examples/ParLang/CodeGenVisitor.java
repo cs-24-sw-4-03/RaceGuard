@@ -56,6 +56,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 return javaE.BOOLEAN.getValue();
             case "string":
                 return javaE.STRING.getValue();
+            case "void":
+                return javaE.VOID.getValue();
             default:
                 return type;
         }
@@ -783,24 +785,23 @@ public class CodeGenVisitor implements NodeVisitor {
             if(node.getParent() instanceof VarDclNode && node.getParent().getChildren().size() > 1){
                 stringBuilder.append(node.getName());
             }
-        } else if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
-             stringBuilder
-                     .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
-                     .append(node.getName());
-         }
-        else if(node.getType()!= null){
-             if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
-                 stringBuilder.append(VariableConverter(node.getType()));
-                 stringBuilder.append(" ");
-                 stringBuilder.append(node.getName());
-             } else {
-                 stringBuilder.append(node.getName());
-             }
-
-        }
-        else{
+        } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
+            String type;
+            if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
+                type=javaE.ACTORREF.getValue();
+            }else{
+                type=VariableConverter(node.getType())+" ";
+            }
+            stringBuilder
+                    .append(type)
+                    .append(node.getName());
+        } else{
             stringBuilder.append(node.getName());
         }
+    }
+
+    private boolean isChildOfVarDclOrParameters(IdentifierNode node){
+        return (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode);
     }
 
     @Override
@@ -911,7 +912,9 @@ public class CodeGenVisitor implements NodeVisitor {
                 //We create a static class. Instances of this class is sent as message when the on-method is called.
                 String className=capitalizeFirstLetter(node.getId());
                 appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
-                appendBodyOpen(node.getChildren().getFirst(),javaE.PUBLIC.getValue(),";\n");
+
+                String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
+                appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
                 appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
                 appendBodyClose();
             }
@@ -919,7 +922,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VariableConverter(node.getType()),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
