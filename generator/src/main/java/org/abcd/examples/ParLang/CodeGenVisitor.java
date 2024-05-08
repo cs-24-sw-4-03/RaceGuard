@@ -56,6 +56,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 return javaE.BOOLEAN.getValue();
             case "string":
                 return javaE.STRING.getValue();
+            case "void":
+                return javaE.VOID.getValue();
             default:
                 return type;
         }
@@ -788,11 +790,10 @@ public class CodeGenVisitor implements NodeVisitor {
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
             }else{
-                type=VariableConverter(node.getType());
+                type=VariableConverter(node.getType())+" ";
             }
             stringBuilder
                     .append(type)
-                    .append(" ")
                     .append(node.getName());
         } else{
             stringBuilder.append(node.getName());
@@ -921,7 +922,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), node.getType(),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VariableConverter(node.getType()),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
