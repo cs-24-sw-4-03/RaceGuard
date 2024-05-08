@@ -911,7 +911,9 @@ public class CodeGenVisitor implements NodeVisitor {
                 //We create a static class. Instances of this class is sent as message when the on-method is called.
                 String className=capitalizeFirstLetter(node.getId());
                 appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
-                appendBodyOpen(node.getChildren().getFirst(),javaE.PUBLIC.getValue(),";\n");
+
+                String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
+                appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
                 appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
                 appendBodyClose();
             }
