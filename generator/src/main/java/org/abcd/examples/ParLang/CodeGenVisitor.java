@@ -243,8 +243,9 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The ActorDclNode in the AST which is used to produce the body of the actor in the target code.
      */
     private void appendOnReceive(ActorDclNode node){
-        Scope scope=symbolTable.lookUpScope(node.getId());//Get the scope of the actor.
-        Iterator<String> onMethods= scope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
+        String actorName=node.getId();
+        Scope actorScope=symbolTable.lookUpScope(actorName);//Get the scope of the actor.
+        Iterator<String> onMethods= actorScope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
         String methodName;
         String className;
 
@@ -258,16 +259,19 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());//get line and add to codeOutput before indentation changes.
         localIndent++;
 
+
+
         //The body is an if-els chain.
         if(onMethods.hasNext()) {//The first on-methods results in an if-statement.
             methodName = onMethods.next();
             className = getclassName(node, methodName);
-            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName));
-
+            Iterator<String> params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet().iterator();
+            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params));
             while (onMethods.hasNext()) {//The remaining on-methods results in if-else statements
                 methodName = onMethods.next();
                 className = getclassName(node, methodName);
-                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName));
+                params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet().iterator();
+                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params));
             }
             appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
         }else{
@@ -277,6 +281,10 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent--;
         stringBuilder.append("}\n");
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
+    }
+
+    private void appendOnReceiveCase(){
+
     }
 
     private String getclassName(ActorDclNode node,String methodName){
@@ -357,8 +365,23 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param methodName Name of the on-method
      * @return A statement which calls a private-method in the actor. This method has the functionality to be executed when the message corresponding to the on-method is received.
      */
-    private String getOnReceiveIfBody(String methodName){
-        return parLangE.ON.getValue()+capitalizeFirstLetter(methodName)+"("+methodName+"Msg"+");";
+    private String getOnReceiveIfBody(String methodName, Iterator<String> params){
+        StringBuilder localStringBuilder=new StringBuilder();
+        localStringBuilder
+                .append(parLangE.ON.getValue())
+                .append(capitalizeFirstLetter(methodName))
+                .append("(");
+        while (params.hasNext()){
+            localStringBuilder
+                    .append(methodName)
+                    .append("Msg.")
+                    .append(params.next());
+            if(params.hasNext()){
+                localStringBuilder.append(", ");
+            }
+        }
+        localStringBuilder.append(");");
+        return localStringBuilder.toString();
     }
 
     private String capitalizeFirstLetter(String input) {
