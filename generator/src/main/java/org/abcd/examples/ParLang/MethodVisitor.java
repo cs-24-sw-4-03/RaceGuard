@@ -308,11 +308,6 @@ public class MethodVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(AccessNode node) {
-        this.visitChildren(node);
-    }
-
-    @Override
     public void visit(ArrayAccessNode node) {
         this.visitChildren(node);
     }
