@@ -13,7 +13,7 @@ Actor Gorm follows Vaagen, Dvale{
     Knows{ }
     Spawn(string s){State.farve=s;}
 
-    local kaemp():void{
+    local kaemp(int x, int y):void{
         print("Gorm kaemper");
     }
     on gaaIDvale(string s){
@@ -21,7 +21,7 @@ Actor Gorm follows Vaagen, Dvale{
         print(s);
     }
     on slaas(string s){
-        kaemp();
+        kaemp(2,3);
         print(s);
     }
     on sove(int x, int y){

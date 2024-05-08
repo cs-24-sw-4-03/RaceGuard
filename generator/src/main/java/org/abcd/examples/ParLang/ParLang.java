@@ -104,7 +104,7 @@ public class ParLang {
 
     private static void generateCode(AstNode ast, SymbolTable symbolTable) throws IOException {
         CodeGenVisitor codeGenVisitor = new CodeGenVisitor(symbolTable);
-        codeGenVisitor.visit(ast);
+        codeGenVisitor.visitChildren(ast);
     }
 
 }

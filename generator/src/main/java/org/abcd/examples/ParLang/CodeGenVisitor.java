@@ -40,11 +40,6 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent = 0;
     }
 
-    public void visit(AstNode node) {
-        for (AstNode childNode : node.getChildren()) {
-            childNode.accept(this);
-        }
-    }
 
     private String VariableConverter(String type){
         switch (type) {
@@ -540,17 +535,17 @@ public class CodeGenVisitor implements NodeVisitor {
     //value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     @Override
     public void visit(ArgumentsNode node) {
-        if (node.getParent() instanceof SpawnActorNode) {
+        if (node.getParent() instanceof SpawnActorNode ) {
             visitChildren(node, ", ", "");
-        }
-        if (node.getParent() instanceof MethodCallNode) {
-            visitChildren(node, " ", ",");
-            if (node.getChildren().size() > 1) {
+        }else if(node.getParent() instanceof MethodCallNode || node.getParent() instanceof SendMsgNode ) {
+            visitChildren(node, "", ",");
+            if (node.getChildren().size() > 0) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             }
+        }else {
+            throw  new RuntimeException("Parent of ArgumentsNode is not SpawnActorNode, MethodCallNode or SendMsgNode");
         }
         //if instance is method call
-
     }
 
     @Override
@@ -839,13 +834,11 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(InitNode node) {
 
-
     }
 
     @Override
     public void visit(IntegerNode node) {
         stringBuilder.append(node.getValue());
-
     }
 
     @Override
@@ -928,8 +921,9 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(MethodCallNode node) {
         visit((IdentifierNode) node.getChildren().getFirst());
         stringBuilder.append("(");
+        System.out.println(node.getChildren().size());
         if(node.getChildren().size()>1){
-            visit(node.getChildren().get(1));
+            visit((ArgumentsNode) node.getChildren().get(1));//ArgumentdNode
         }
         stringBuilder.append(")");
         stringBuilder.append(javaE.SEMICOLON.getValue());
@@ -1038,7 +1032,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(node.getChildren().get(0).getChildren().get(0) instanceof IdentifierNode){ //typecast if the child is an identifier
             stringBuilder.append("(int) ");
         }
-        visit(node.getChildren().get(0));
+        visitChildren(node.getChildren().get(0));
         stringBuilder.append(")");
     }
     //Print the two dimensional array
@@ -1076,10 +1070,12 @@ public class CodeGenVisitor implements NodeVisitor {
             visit((ArithExpNode) returnee);
         } else if (returnee instanceof BoolExpNode) {
             visit((BoolExpNode) returnee);
-        } else if (returnee instanceof AccessNode) {
-            visit((AccessNode) returnee);
+        } else if (returnee instanceof StateAccessNode) {
+            visit((StateAccessNode) returnee);
+        } else if(returnee instanceof KnowsAccessNode){
+            visit((KnowsAccessNode) returnee);
         } else if (returnee instanceof LiteralNode){
-            visit((LiteralNode<?>) returnee);
+            stringBuilder.append(((LiteralNode<?>) returnee).getValue());
         } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
@@ -1088,9 +1084,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
 
-     public void visit(LiteralNode<?> node){
-        stringBuilder.append(node.getValue());
-     }
+
 
     @Override
     public void visit(ScriptDclNode node) {
@@ -1247,7 +1241,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(StringNode node) {
-    stringBuilder.append(node.getValue());
+        stringBuilder.append(node.getValue());
     }
 
 
