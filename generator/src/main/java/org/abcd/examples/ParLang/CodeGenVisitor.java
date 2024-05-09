@@ -41,23 +41,58 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
 
-    private String VariableConverter(String type, boolean actorRef){
-        switch (type) {
-            case "int": case "int[]" : case "int[][]":
-                return javaE.LONG.getValue();
-            case "double": case "double[]" : case "double[][]":
-                return javaE.DOUBLE.getValue();
-            case "bool": case "bool[]" : case "bool[][]":
+    private String arrayVarDcl(IdentifierNode node){
+        HashMap<String, String> HashMapConverter = new HashMap<>();
+        //1 dimensional arrays
+        HashMapConverter.put(parLangE.INT_ARRAY.getValue(), "long[]");
+        HashMapConverter.put(parLangE.DOUBLE_ARRAY.getValue(), "double[]");
+        HashMapConverter.put(parLangE.BOOL_ARRAY.getValue(), "boolean[]");
+        HashMapConverter.put(parLangE.STRING_ARRAY.getValue(), "String[]");
+        //2 dimensional arrays
+        HashMapConverter.put(parLangE.INT_ARRAY_2D.getValue(), "long[][]");
+        HashMapConverter.put(parLangE.DOUBLE_ARRAY_2D.getValue(), "double[][]");
+        HashMapConverter.put(parLangE.BOOL_ARRAY_2D.getValue(), "boolean[][]");
+        HashMapConverter.put(parLangE.STRING_ARRAY_2D.getValue(), "String[][]");
+        return HashMapConverter.get(node.getType());
+    }
+
+
+    private String VarTypeConverter(String parlangType, boolean useActorRef, boolean removeBrackets){
+        String javaType;
+        switch (parlangType) {
+            case "int":
+                javaType=javaE.LONG.getValue();
+                break;
+            case "int[]" :
+                javaType=javaE.LONG_ARRAY.getValue();
+                break;
+            case "int[][]":
+                javaType=javaE.LONG_ARRAY_2D.getValue();
+                break;
+            case "double":
+                javaType=javaE.DOUBLE.getValue();
+                break;
+            case "double[]" :
+                javaType=javaE.DOUBLE_ARRAY.getValue();
+                break;
+            case "double[][]":
+                javaType=javaE.DOUBLE_ARRAY_2D.getValue();
+                break;;
+            case "bool":
+
+            case "bool[]" :
+
+            case "bool[][]":
                 return javaE.BOOLEAN.getValue();
             case "string": case "string[]" : case "string[][]":
                 return javaE.STRING.getValue();
             case "void":
                 return javaE.VOID.getValue();
             default:
-                if(actorRef){
+                if(useActorRef){
                     return javaE.ACTORREF.getValue();
                 }else {
-                    return type;
+                    return parlangType;
                 }
         }
     }
@@ -211,7 +246,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 if(symbolTable.lookUpScope(param.getType())!=null){
                     javaType=javaE.ACTORREF.getValue();
                 }else{
-                    javaType=VariableConverter(param.getType(),false)+" ";
+                    javaType= VarTypeConverter(param.getType(),false)+" ";
                 }
                 stringBuilder
                         .append(javaType)
@@ -700,20 +735,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     //HashMap to convert the type of the array to the type of the arraylist
-    private String arrayVarDcl(IdentifierNode node){
-        HashMap<String, String> HashMapConverter = new HashMap<>();
-        //1 dimensional arrays
-        HashMapConverter.put(parLangE.INT_ARRAY.getValue(), "long[]");
-        HashMapConverter.put(parLangE.DOUBLE_ARRAY.getValue(), "double[]");
-        HashMapConverter.put(parLangE.BOOL_ARRAY.getValue(), "boolean[]");
-        HashMapConverter.put(parLangE.STRING_ARRAY.getValue(), "String[]");
-        //2 dimensional arrays
-        HashMapConverter.put(parLangE.INT_ARRAY_2D.getValue(), "long[][]");
-        HashMapConverter.put(parLangE.DOUBLE_ARRAY_2D.getValue(), "double[][]");
-        HashMapConverter.put(parLangE.BOOL_ARRAY_2D.getValue(), "boolean[][]");
-        HashMapConverter.put(parLangE.STRING_ARRAY_2D.getValue(), "String[][]");
-        return HashMapConverter.get(node.getType());
-    }
+
     private boolean isArray(AstNode node){
         return node.getType().contains("[]") || node.getType().contains("[][]");
     }
@@ -727,7 +749,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        String arrayType = arrayVarDcl(node);
         if (node.getParent() instanceof KnowsNode) {
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
@@ -745,14 +766,14 @@ public class CodeGenVisitor implements NodeVisitor {
                     stringBuilder.append(arrayVarDcl(node))
                             .append(" ")
                             .append(node.getName())
-                            .append(" = new ").append(VariableConverter(node.getType(),true));
+                            .append(" = new ").append(VarTypeConverter(node.getType(),true));
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
             String type;
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
             }else{
-                type=VariableConverter(node.getType(),false)+" ";
+                type= VarTypeConverter(node.getType(),false)+" ";
             }
             stringBuilder
                     .append(type)
@@ -888,7 +909,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VariableConverter(node.getType(),false),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }

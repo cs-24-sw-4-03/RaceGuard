@@ -178,7 +178,7 @@ dclTypes : arrayDcl
     | identifier
     ;
 
-arrayDcl : (primitiveType|ACTOR_TYPE) SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
+arrayDcl : (primitiveType|identifier) SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
 
 //can be any primitive type in language
 primitiveType : INT_TYPE
