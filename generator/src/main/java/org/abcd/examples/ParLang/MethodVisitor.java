@@ -28,7 +28,7 @@ public class MethodVisitor implements NodeVisitor {
         HashMap<String, Attributes> legalLocalMethods = this.symbolTable.getDeclaredLocalMethods();
         //Then we check if the called method is part of that list
         if (!legalLocalMethods.containsKey(node.getMethodName())) {
-            exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found"));
+            exceptions.add(new LocalMethodCallException("Local method id " + node.getMethodName() + " not found" + " Line: " + node.getLineNumber() + "Column: " + node.getColumnNumber()));
         }
     }
 
@@ -59,7 +59,7 @@ public class MethodVisitor implements NodeVisitor {
             HashMap<String, Attributes> legalOnMethods = this.symbolTable.getDeclaredOnMethods();
             //We then check if the message is part of the list of allowed messages
             if (!legalOnMethods.containsKey(node.getMsgName())) {
-                exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found in actor: " + symbolTable.getCurrentScope().getScopeName()));
+                exceptions.add(new OnMethodCallException("On method id " + node.getMsgName() + " not found in actor: " + symbolTable.getCurrentScope().getScopeName() + " Line: " + node.getLineNumber() + "Column: " + node.getColumnNumber()));
             }
 
             //We then leave the scope, such that we do not mess with our scope stack
@@ -67,7 +67,7 @@ public class MethodVisitor implements NodeVisitor {
 
             this.visitChildren(node);
         } catch (NullPointerException e){
-            exceptions.add(new SymbolNotFoundException("Symbol: " + node.getReceiver() + " not found"));
+            exceptions.add(new SymbolNotFoundException("Symbol: " + node.getReceiver() + " not found" + " Line: " + node.getLineNumber() + "Column: " + node.getColumnNumber()));
         }
 
     }
@@ -93,12 +93,12 @@ public class MethodVisitor implements NodeVisitor {
             //We then check if every entry in the Scripts list also is in the Actors list
             for (String onMethod : legalOnMethodsScript.keySet()) {
                 if (!legalOnMethodsActor.containsKey(onMethod)) {
-                    exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName()));
+                    exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have on method: " + onMethod + " from Script: " + script.getName() + " Line: " + node.getLineNumber() + "Column: " + node.getColumnNumber()));
                 }
             }
             for(String localMethod : legalLocalMethodsScript.keySet()){
                 if (!legalLocalMethodsActor.containsKey(localMethod)) {
-                    exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have local method: " + localMethod + " from Script: " + script.getName()));
+                    exceptions.add(new MissingOnMethodException("Actor: " + this.symbolTable.findActorParent(node) +  " does not have local method: " + localMethod + " from Script: " + script.getName() + " Line: " + node.getLineNumber() + "Column: " + node.getColumnNumber()));
                 }
             }
         }
