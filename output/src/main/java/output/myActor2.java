@@ -8,8 +8,8 @@ import akka.actor.UntypedAbstractActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 
-public class Soldier extends UntypedAbstractActor {
-    public Soldier() {
+public class myActor2 extends UntypedAbstractActor {
+    public myActor2() {
     }
     public void onReceive(Object message) {
         unhandled(message);
