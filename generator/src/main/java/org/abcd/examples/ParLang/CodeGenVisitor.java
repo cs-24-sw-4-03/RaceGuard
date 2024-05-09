@@ -1143,16 +1143,19 @@ public class CodeGenVisitor implements NodeVisitor {
     private void visitReceiver(SendMsgNode node){
         AstNode firstChild=node.getChildren().getFirst();
         if(firstChild instanceof IdentifierNode){
-            visit((IdentifierNode) firstChild);//visit the IdentifierNode
+            visit((IdentifierNode) firstChild); //visit the IdentifierNode
         }else if (firstChild instanceof  KnowsAccessNode){
-            visit((KnowsAccessNode) firstChild);
+            visit((KnowsAccessNode) firstChild); //visit the KnowsAccessNode
+        }
+        else if(node.getReceiver().equals("self")){ //receiver is self
+            visit((SelfNode) firstChild);
+        }else{
+            throw new RuntimeException("Receiver of message is not an IdentifierNode, KnowsAccessNode or selfnode");
         }
     }
-
-
-
-    private int getNextUniqueActor() {
-        return uniqueActorsCounter++;
+    
+    private String getNextUniqueActor() {
+        return UUID.randomUUID().toString();
     }
 
 
@@ -1164,17 +1167,20 @@ public class CodeGenVisitor implements NodeVisitor {
         String outerScopeName = symbolTable.findActorParent(node);
         if (outerScopeName != null) { //Actor or Script
             stringBuilder.append("getContext().actorOf(Props.create(");
-        }
-        else { //null means it's main
+        } else { //null means it's main
             stringBuilder.append("system.actorOf(Props.create(");
         }
         stringBuilder
                 .append(node.getType())
-                .append(".class");
+                .append(".")
+                .append(javaE.CLASS.getValue());
         visitChildren(node);
         stringBuilder.append("), \"")
                 .append(getNextUniqueActor())
                 .append("\")");
+        if (outerScopeName == null) {
+            stringBuilder.append(javaE.SEMICOLON.getValue());
+        }
     }
 
     @Override
