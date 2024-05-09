@@ -26,8 +26,6 @@ public class CodeGenVisitor implements NodeVisitor {
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
     private int localIndent = 0; // indent for file generated. 4 spaces per indent
 
-    private int uniqueActorsCounter = 0; // Stores the amount of spawned actors
-
     /**
      * @return the current line with the correct indentation.
      */
@@ -520,7 +518,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 "Logging",
                 "LoggingAdapter"
         );
-        appendImport("java.util","Arrays");
+        appendImports("java.util","Arrays","UUID");
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
 
@@ -878,7 +876,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 "ActorRef",
                 "Props",
                 "UntypedAbstractActor");
-        appendImports("java.util","Arrays");
+        appendImports("java.util","Arrays", "UUID");
+
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.CLASS.getValue())
@@ -1180,8 +1179,8 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
     
-    private String getNextUniqueActor() {
-        return UUID.randomUUID().toString();
+    private void getNextUniqueActor() {
+        stringBuilder.append("UUID.randomUUID().toString()");
     }
 
 
@@ -1201,9 +1200,9 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(".")
                 .append(javaE.CLASS.getValue());
         visitChildren(node);
-        stringBuilder.append("), \"")
-                .append(getNextUniqueActor())
-                .append("\")");
+        stringBuilder.append("), ");
+        getNextUniqueActor();
+        stringBuilder.append(")");
         if (!(node.getParent() instanceof InitializationNode ||node.getParent() instanceof  AssignNode)) {
             stringBuilder.append(javaE.SEMICOLON.getValue());
         }

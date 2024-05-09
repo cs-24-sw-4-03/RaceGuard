@@ -18,6 +18,7 @@ Actor FactorialMain follows Factorial {
     }
     on multiply(int x) {
         State.x = x;
+        print(State.x);
     }
 }
 
