@@ -21,7 +21,8 @@ public enum parLangE {
     STRING_ARRAY_2D("string[][]"),
     BOOL("bool"),
     BOOL_ARRAY("bool[]"),
-    BOOL_ARRAY_2D("bool[][]");
+    BOOL_ARRAY_2D("bool[][]"),
+    SEND("<-");
 
     private String string;
 

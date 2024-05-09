@@ -1,5 +1,5 @@
 Script Script1{
-    on method1(int x, String y);
+    on method1(int x);
 }
 
 Script Script2{
@@ -16,7 +16,7 @@ Actor Sven follows Script1, Script2{
     on method2(){
         int x=2+2;
     }
-    on method3(int x, int y){
+    on method3(int x, int y, Sven s){
         print("total viking power");
     }
     local localm():string{

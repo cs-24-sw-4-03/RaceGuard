@@ -9,8 +9,8 @@ Actor Person{
         Person friend;
     }
     Spawn(int age){
-        //Knows.mom=Spawn Person(41);
-        //Knows.dad=Spawn Person(38);
+        Knows.mom=Spawn Person(41);
+        Knows.dad=Spawn Person(38);
         State.age=age;
         State.feeling="sad";
     }
