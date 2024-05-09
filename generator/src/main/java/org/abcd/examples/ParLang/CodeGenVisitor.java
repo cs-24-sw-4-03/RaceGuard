@@ -650,40 +650,22 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(BoolAndExpNode node) {
-        for(int i = 0; i < node.getChildren().size(); i ++){
-            if(node.getIsParenthesized()) {
-                if (i == 0) {
-                    stringBuilder.append("(");
-                    visitChild(node.getChildren().get(i));
-                } else {
-                    stringBuilder.append(" && ");
-                    visitChild(node.getChildren().get(i));
-                    if(node.getChildren().size()-1 == node.getChildren().indexOf(node.getChildren().get(i))){
-                        stringBuilder.append(")");
-                    }
-                }
-            }
-            else {
-                if (i == 0) {
-                    visitChild(node.getChildren().get(i));
-                } else {
-                    stringBuilder.append(" && ");
-                    visitChild(node.getChildren().get(i));
-                }
-            }
-        }
-
+        booleanFunction(node, " && ");
     }
 
     @Override
     public void visit(BoolExpNode node) {
-        for(int i = 0; i < node.getChildren().size(); i ++){
+        booleanFunction(node, " || ");
+    }
+
+    public void booleanFunction(ExpNode node, String string){
+       for(int i = 0; i < node.getChildren().size(); i ++){
             if(node.getIsParenthesized()) {
                 if (i == 0) {
                     stringBuilder.append("(");
                     visitChild(node.getChildren().get(i));
                 } else {
-                    stringBuilder.append(" || ");
+                    stringBuilder.append(string);
                     visitChild(node.getChildren().get(i));
                     if(node.getChildren().size()-1 == node.getChildren().indexOf(node.getChildren().get(i))){
                         stringBuilder.append(")");
@@ -694,12 +676,11 @@ public class CodeGenVisitor implements NodeVisitor {
                 if (i == 0) {
                     visitChild(node.getChildren().get(i));
                 } else {
-                    stringBuilder.append(" || ");
+                    stringBuilder.append(string);
                     visitChild(node.getChildren().get(i));
                 }
             }
         }
-
     }
 
     @Override
