@@ -864,7 +864,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.STRING.getValue())) {
-                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue())) {
+                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue()) || child.getType().contains("[]")) {
                         continue;
                     }
                     throw new PrintException("Print statement only accepts string arguments");

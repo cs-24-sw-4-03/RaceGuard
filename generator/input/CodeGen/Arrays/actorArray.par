@@ -1,0 +1,18 @@
+Actor Soldier{
+    State{}
+    Knows{}
+    Spawn(){}
+}
+
+main(){
+    Soldier ryan=Spawn Soldier();
+    Soldier bo=Spawn Soldier();
+    Soldier gorm=Spawn Soldier();
+
+    Soldier[3] army = {ryan,bo,gorm};
+
+    Soldier sven=Spawn Soldier();
+
+    army[2]=sven;
+    army[1]=army[2];
+}

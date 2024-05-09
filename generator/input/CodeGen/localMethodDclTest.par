@@ -2,6 +2,7 @@ Actor myActor{
     State{int x=2;}
     Knows{myActor a;}
     Spawn(){}
+
     local localMethod(int i):string{
         string s="local Method reporting";
         myActor a;
