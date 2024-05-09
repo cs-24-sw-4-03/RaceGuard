@@ -188,35 +188,7 @@ public class TypeVisitor implements NodeVisitor {
         }*/
     }
 
-    private boolean hasCorrectScriptMethods(List<String> scriptNames, String actorName){
-        Scope actorScope = symbolTable.lookUpScope(actorName);
-        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods();
-        actorMethods.putAll(actorScope.getDeclaredLocalMethods());
-        for (String scriptName : scriptNames){
-            Scope scope = symbolTable.lookUpScope(scriptName);
-            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods();
-            scriptMethods.putAll(scope.getDeclaredLocalMethods());
-            for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){
-                String method = scriptMethod.getKey();
-                if (!actorMethods.containsKey(scriptMethod.getKey())){
-                    return false;
-                }
-                LinkedHashMap<String, Attributes> actorParams = symbolTable.lookUpScope(method+actorName).getParams();
-                LinkedHashMap<String, Attributes> scriptParams = symbolTable.lookUpScope(method+scriptName).getParams();
-                if (actorParams.size() != scriptParams.size()){
-                    return false;
-                }
-                Set<String> set = scriptParams.keySet();
-                Iterator<String> iter = set.iterator();
-                for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){
-                    if (!actorParam.getValue().getVariableType().equals(scriptParams.get(iter.next()).getVariableType())){
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
+
 
     @Override
     public void visit(ParametersNode node) {
@@ -529,9 +501,7 @@ public class TypeVisitor implements NodeVisitor {
                 scripts.add(child.getType());
                 errorMessage += child.getType() + ", ";
             }
-            if (!hasCorrectScriptMethods(scripts, ((ActorDclNode) node.getParent()).getId())) {
-                throw new FollowsNodeException("Actor " + ((ActorDclNode) node.getParent()).getId() + " do not have the correct methods according to the scripts followed: " + errorMessage);
-            }
+            hasCorrectScriptMethods(scripts, ((ActorDclNode) node.getParent()).getId());
             node.setType("follows");
        /* }
         catch (FollowsNodeException e) {
@@ -540,6 +510,39 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new FollowsNodeException(e.getMessage() + " in FollowsNode"));
         }*/
+    }
+
+    private void hasCorrectScriptMethods(List<String> scriptNames, String actorName){
+        Scope actorScope = symbolTable.lookUpScope(actorName);
+        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods();
+        actorMethods.putAll(actorScope.getDeclaredLocalMethods());
+        for (String scriptName : scriptNames){
+            Scope scope = symbolTable.lookUpScope(scriptName);
+            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods();
+            scriptMethods.putAll(scope.getDeclaredLocalMethods());
+            for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){
+                String method = scriptMethod.getKey();
+                if (!actorMethods.containsKey(scriptMethod.getKey())){
+                    throw new FollowsNodeException("Actor " + actorName + " does not have method: " + method + "from " + scriptName);
+                }
+                LinkedHashMap<String, Attributes> actorParams = symbolTable.lookUpScope(method+actorName).getParams();
+                LinkedHashMap<String, Attributes> scriptParams = symbolTable.lookUpScope(method+scriptName).getParams();
+                if (actorParams.size() != scriptParams.size()){
+                    throw new FollowsNodeException("Actor " + actorName + " does not have the same number of parameters as script " + scriptName + " in method " + method);
+                }
+                Set<String> set = scriptParams.keySet();
+                Iterator<String> iter = set.iterator();
+                for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){
+                    String scriptKey = iter.next();
+                    if (!actorParam.getValue().getVariableType().equals(scriptParams.get(scriptKey).getVariableType())){
+                        throw new FollowsNodeException("Actor " + actorName + " does not have the same parameter types as script " + scriptName + " in method " + method);
+                    }
+                    if (!actorParam.getKey().equals(scriptKey)){
+                        throw new FollowsNodeException("Actor " + actorName + " does not have the same parameter names as script " + scriptName + " in method " + method);
+                    }
+                }
+            }
+        }
     }
 
     @Override
