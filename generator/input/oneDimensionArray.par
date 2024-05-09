@@ -1,6 +1,0 @@
-main(){
- int i = 2;
- double a = 3.0;
-
- a = i;
-}
