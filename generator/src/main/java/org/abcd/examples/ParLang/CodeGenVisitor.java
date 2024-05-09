@@ -374,28 +374,27 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ArrayAccessNode node){
         stringBuilder.append(node.getAccessIdentifier());
         if(accessArrayDimensions(node) == 1){
-            stringBuilder.append("[");
-            if(node.getChildren().get(0) instanceof IdentifierNode){
-                typeCastArrayAccessNode(node,0);
+                stringBuilder.append("[");
+                if(node.getChildren().get(0) instanceof IdentifierNode){
+                    typeCastArrayAccessNode(node,0);
+                }
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append("]");
             }
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append("]");
-        }
-        else{
-            stringBuilder.append("[");
-            if(node.getChildren().get(0) instanceof IdentifierNode){
-                typeCastArrayAccessNode(node,0);
+            else{
+                stringBuilder.append("[");
+                if(node.getChildren().get(0) instanceof IdentifierNode){
+                    typeCastArrayAccessNode(node,0);
+                }
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append("]");
+                stringBuilder.append("[");
+                if(node.getChildren().get(1) instanceof IdentifierNode){
+                    typeCastArrayAccessNode(node,1);
+                }
+                visitChild(node.getChildren().get(1));
+                stringBuilder.append("]");
             }
-            visitChild(node.getChildren().get(0));
-            stringBuilder.append("]");
-            stringBuilder.append("[");
-            if(node.getChildren().get(1) instanceof IdentifierNode){
-                typeCastArrayAccessNode(node,1);
-            }
-            visitChild(node.getChildren().get(1));
-            stringBuilder.append("]");
-        }
-
     }
     private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
         if(node.getChildren().get(childIndex) instanceof IdentifierNode){
@@ -404,11 +403,10 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     //Check if the array access node is a 1D array or 2D array
-    private int accessArrayDimensions(AstNode node){
-        if(node.getParent().getChildren().size() == 1){
+    private int accessArrayDimensions(AstNode node) {
+      if (node.getParent().getChildren().get(0).getChildren().size() == 1) {
             return 1;
-        }
-        else{
+        } else {
             return 2;
         }
     }
@@ -418,8 +416,8 @@ public class CodeGenVisitor implements NodeVisitor {
     private void resetCodeOutput(ArrayList<String> codeOutput) {
         codeOutput.clear();
     }
-    
-    private void writeToFile(String fileName, ArrayList<String> codeOutput) { 
+
+    private void writeToFile(String fileName, ArrayList<String> codeOutput) {
         try {
             File dir = new File(dirPath);
             if(!dir.exists()){
@@ -491,21 +489,18 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(AssignNode node) {
-    AstNode leftChild = node.getChildren().get(0);
-    AstNode rightChild = node.getChildren().get(1);
-
-    if(!(node.getChildren().get(1) instanceof ListNode)){
-            visitChild(leftChild);
-            stringBuilder.append(" = ");
-            visitChild(rightChild);
-    } else {
-        visitChild(leftChild);
-        visitChild(rightChild);
-    }
-    if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
-        stringBuilder.append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLine());
+        if(!(node.getChildren().get(1) instanceof ListNode)){
+                visitChild(node.getChildren().get(0));
+                stringBuilder.append(" = ");
+                visitChild(node.getChildren().get(1));
+        } else {
+            visitChild(node.getChildren().get(0));
+            visitChild(node.getChildren().get(1));
         }
+        if(!(node.getParent() instanceof ForNode)){ //if the parent is not a for node, add a semicolon, else don't
+            stringBuilder.append(javaE.SEMICOLON.getValue());
+            codeOutput.add(getLine());
+            }
 
     }
 
@@ -676,15 +671,15 @@ public class CodeGenVisitor implements NodeVisitor {
     private String arrayVarDcl(IdentifierNode node){
         HashMap<String, String> HashMapConverter = new HashMap<>();
         //1 dimensional arrays
-        HashMapConverter.put("int[]", "long[]");
-        HashMapConverter.put("double[]", "double[]");
-        HashMapConverter.put("bool[]", "boolean[]");
-        HashMapConverter.put("string[]", "String[]");
+        HashMapConverter.put(parLangE.INT_ARRAY.getValue(), "long[]");
+        HashMapConverter.put(parLangE.DOUBLE_ARRAY.getValue(), "double[]");
+        HashMapConverter.put(parLangE.BOOL_ARRAY.getValue(), "boolean[]");
+        HashMapConverter.put(parLangE.STRING_ARRAY.getValue(), "String[]");
         //2 dimensional arrays
-        HashMapConverter.put("int[][]", "long[][]");
-        HashMapConverter.put("double[][]", "double[][]");
-        HashMapConverter.put("bool[][]", "boolean[][]");
-        HashMapConverter.put("string[][]", "String[][]");
+        HashMapConverter.put(parLangE.INT_ARRAY_2D.getValue(), "long[][]");
+        HashMapConverter.put(parLangE.DOUBLE_ARRAY_2D.getValue(), "double[][]");
+        HashMapConverter.put(parLangE.BOOL_ARRAY_2D.getValue(), "boolean[][]");
+        HashMapConverter.put(parLangE.STRING_ARRAY_2D.getValue(), "String[][]");
         return HashMapConverter.get(node.getType());
     }
     private boolean isArray(AstNode node){
@@ -710,7 +705,7 @@ public class CodeGenVisitor implements NodeVisitor {
                      .append(javaE.ACTORREF.getValue())//appends "ActorRef ".
                      .append(node.getName());
          }
-        else if (isArray(node) && node.getParent().getChildren().size() != 1) {
+        else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
                 if(node.getParent().getChildren().get(1) instanceof InitializationNode) {
                     stringBuilder.append(arrayVarDcl(node))
                             .append(" ")
@@ -882,16 +877,11 @@ public class CodeGenVisitor implements NodeVisitor {
         return null;
     }
 
-
-
-
     @Override
     public void visit(NegatedBoolNode node) {
         stringBuilder.append("!");
         visitChild(node.getChildren().get(0));
     }
-
-
 
     @Override
     public void visit(PrintCallNode node) {
@@ -909,7 +899,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
         codeOutput.add(getLine());
     }
-
     //Check if the print call node is a one dimensional array
     private boolean isOneDimensionalArray(PrintCallNode node) {
        return node.getChildren().get(0).getType().contains("[]");
@@ -1041,7 +1030,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(SendMsgNode node) {
 
     }
-    
+
     private int getNextUniqueActor() {
         return uniqueActorsCounter++;
     }
