@@ -743,7 +743,7 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
         } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
-                if(node.getParent().getChildren().get(1) instanceof InitializationNode) {
+                if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
                             .append(" ")
                             .append(node.getName());
