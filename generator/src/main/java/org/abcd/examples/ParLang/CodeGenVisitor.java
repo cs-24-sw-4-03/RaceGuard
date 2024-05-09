@@ -718,7 +718,11 @@ public class CodeGenVisitor implements NodeVisitor {
         return node.getType().contains("[]") || node.getType().contains("[][]");
     }
     private boolean isParrentArray(AstNode node) {
-        return node.getParent().getType().contains("[]") || node.getParent().getType().contains("[][]");
+        if(node.getParent().getType()!=null){
+            return node.getParent().getType().contains("[]") || node.getParent().getType().contains("[][]");
+        }else{
+            return false;
+        }
     }
 
     @Override
@@ -748,7 +752,7 @@ public class CodeGenVisitor implements NodeVisitor {
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
             }else{
-                type=VariableConverter(node.getType())+" ";
+                type=VariableConverter(node.getType(),false)+" ";
             }
             stringBuilder
                     .append(type)
@@ -884,7 +888,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VariableConverter(node.getType()),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VariableConverter(node.getType(),false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
