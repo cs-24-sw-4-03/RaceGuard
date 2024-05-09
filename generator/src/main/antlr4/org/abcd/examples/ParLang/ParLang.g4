@@ -130,7 +130,7 @@ forStatement : sendMsg
 
 // body is a block of code
 body : CURLY_OPEN statement*  CURLY_CLOSE;
-localMethodBody: CURLY_OPEN statement* returnStatement? CURLY_CLOSE;
+localMethodBody: CURLY_OPEN statement* returnStatement CURLY_CLOSE;
 
 
 // defines the parameters of a function

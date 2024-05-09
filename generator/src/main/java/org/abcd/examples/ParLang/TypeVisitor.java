@@ -232,7 +232,11 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
         /*try {*/
-        if(!node.getParent().getParent().getType().equals(parLangE.VOID.getValue())) {
+        AstNode parent = node.getParent();
+        while (!(parent instanceof MethodDclNode)){
+            parent = parent.getParent();
+        }
+        if(!parent.getType().equals(parLangE.VOID.getValue())) {
             if (!node.getChildren().isEmpty()) {
                 String returnType = node.getChildren().getFirst().getType();
                 node.setType(returnType);
