@@ -30,6 +30,10 @@ Actor myActor{
         return State.x;
     }
 
+    local localMethod8():string{
+        return "halløj";
+    }
+
 
     on myOnMethod1(){
         print("on Method1 reporting");

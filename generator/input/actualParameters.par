@@ -1,0 +1,54 @@
+//value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
+Actor myActor1{
+    State{
+        int primitive;
+        int arithExp;
+        bool boolExp;
+        myActor2 actorAccess;
+        myActor3 SELF;
+        int identifier;
+        string String;
+
+        }
+    Knows{}
+    Spawn(int primitive, int arithExp, bool boolExp, myActor2 actorAccess, myActor3 SELF, int identifier, string String){
+        State.primitive = primitive;
+        State.arithExp = arithExp;
+        State.boolExp = boolExp;
+        State.actorAccess = actorAccess;
+        State.SELF = SELF;
+        State.identifier = identifier;
+        State.String = String;
+        }
+    on myTest(int primitive, int arithExp, bool boolExp, myActor2 actorAccess, myActor3 SELF, int identifier, string String) {
+        State.primitive = primitive;
+        State.arithExp = arithExp;
+        State.boolExp = boolExp;
+        State.actorAccess = actorAccess;
+        State.SELF = SELF;
+        State.identifier = identifier;
+        State.String = String;
+        print("HEJ MED DIG");
+    }
+}
+Actor myActor2{
+    State{}
+    Knows{}
+    Spawn(){}
+}
+
+Actor myActor3 {
+    State{
+        int varTest = 1;
+    }
+    Knows{}
+    Spawn(){
+        myActor2 actor2 = Spawn myActor2();
+        myActor1 actor1 = Spawn myActor1(1, 2+2, TRUE, actor2, self, State.varTest, "Hello");
+        actor1 <- myTest(1, 2+2, TRUE, actor2, self, State.varTest, "Hello");
+    }
+}
+main(){
+    //spawn myActor3
+    myActor3 actor3 = Spawn myActor3();
+}

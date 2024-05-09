@@ -3,7 +3,7 @@ Script Vaagen{
 }
 
 Script Dvale{
-    on sove(string s);
+    on sove(int x, int y);
 }
 
 Actor Gorm follows Vaagen, Dvale{
@@ -13,7 +13,7 @@ Actor Gorm follows Vaagen, Dvale{
     Knows{ }
     Spawn(string s){State.farve=s;}
 
-    local kaemp():void{
+    local kaemp(int x, int y):void{
         print("Gorm kaemper");
     }
     on gaaIDvale(string s){
@@ -21,14 +21,19 @@ Actor Gorm follows Vaagen, Dvale{
         print(s);
     }
     on slaas(string s){
-        kaemp();
+        kaemp(2,3);
         print(s);
     }
     on sove(int x, int y){
         print("Gorm sover");
-        int seepCount=x+7;
+        int sheepCount=x+7;
     }
 }
 
 main(){
+    Gorm gorm=Spawn Gorm("Hvid");
+    Vaagen kampendeGorm=Spawn Gorm("Rød");
+    gorm<-sove(100,200);
+    kampendeGorm<-slaas("arrrh");
+    gorm<-gaaIDvale("Zzzz");
 }

@@ -30,9 +30,10 @@ Actor International{
 }
 
 Actor HelloWorldMain{
-    State{}
+    State{int a;}
     Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter;}
-    Spawn(){
+    Spawn(int a){
+        State.a = a;
         Knows.danishGreeter=Spawn Danish();
         Knows.englishGreeter=Spawn English();
         Knows.internationalGreeter=Spawn International();
@@ -44,7 +45,7 @@ Actor HelloWorldMain{
 }
 
 main(){
-    HelloWorldMain mainActor = Spawn HelloWorldMain();
+    HelloWorldMain mainActor = Spawn HelloWorldMain(10);
     mainActor<-sayHello("World");
     mainActor<-sayHello("Untyped Akka");
 }
