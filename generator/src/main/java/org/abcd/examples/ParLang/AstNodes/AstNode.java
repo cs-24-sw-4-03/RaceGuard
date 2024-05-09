@@ -11,6 +11,9 @@ public abstract class AstNode {
     private List<AstNode> children = new ArrayList<>();
     private AstNode parent;
     private String type;
+    int lineNumber;
+    int columnNumber;
+
     public List<AstNode> getChildren() {
         return children;
     }
@@ -34,6 +37,22 @@ public abstract class AstNode {
     public void setType(String type) {
         this.type = type;
     }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
+    public int getColumnNumber() {
+        return columnNumber;
+    }
+
+    public void setColumnNumber(int columnNumber) {
+        this.columnNumber = columnNumber;
+    }
+
 
     //Generates a hash code based on the memory address of the object
     //Not guaranteed to be unique, but probability of identical hashcode is low
