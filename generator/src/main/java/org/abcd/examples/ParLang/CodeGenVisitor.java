@@ -17,7 +17,10 @@ public class CodeGenVisitor implements NodeVisitor {
         this.symbolTable=symbolTable;
     }
 
-    private String dirPath = System.getProperty("user.dir") + "/output";
+    private String parentDirPath = new File(System.getProperty("user.dir")).getParent();
+    private String dirPath = parentDirPath + "/output/src/main/java/output";
+
+
 
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
@@ -40,23 +43,6 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent = 0;
     }
 
-
-    private String arrayVarDcl(IdentifierNode node){
-        HashMap<String, String> HashMapConverter = new HashMap<>();
-        //1 dimensional arrays
-        HashMapConverter.put(parLangE.INT_ARRAY.getValue(), "long[]");
-        HashMapConverter.put(parLangE.DOUBLE_ARRAY.getValue(), "double[]");
-        HashMapConverter.put(parLangE.BOOL_ARRAY.getValue(), "boolean[]");
-        HashMapConverter.put(parLangE.STRING_ARRAY.getValue(), "String[]");
-        //2 dimensional arrays
-        HashMapConverter.put(parLangE.INT_ARRAY_2D.getValue(), "long[][]");
-        HashMapConverter.put(parLangE.DOUBLE_ARRAY_2D.getValue(), "double[][]");
-        HashMapConverter.put(parLangE.BOOL_ARRAY_2D.getValue(), "boolean[][]");
-        HashMapConverter.put(parLangE.STRING_ARRAY_2D.getValue(), "String[][]");
-        return HashMapConverter.get(node.getType());
-    }
-
-
     private String VarTypeConverter(String parlangType, boolean useActorRef, boolean removeBrackets){
         String javaType;
         switch (parlangType) {
@@ -77,24 +63,37 @@ public class CodeGenVisitor implements NodeVisitor {
                 break;
             case "double[][]":
                 javaType=javaE.DOUBLE_ARRAY_2D.getValue();
-                break;;
+                break;
             case "bool":
-
+                javaType=javaE.BOOLEAN.getValue();
+                break;
             case "bool[]" :
-
+                javaType=javaE.BOOLEAN_ARRAY.getValue();
+                break;
             case "bool[][]":
-                return javaE.BOOLEAN.getValue();
-            case "string": case "string[]" : case "string[][]":
-                return javaE.STRING.getValue();
+                javaType=javaE.BOOLEAN_ARRAY_2D.getValue();
+                break;
+            case "string":
+                javaType=javaE.STRING.getValue();
+                break;
+            case "string[]" :
+                javaType=javaE.STRING_ARRAY.getValue();
+                break;
+            case "string[][]":
+                javaType=javaE.STRING_ARRAY_2D.getValue();
             case "void":
-                return javaE.VOID.getValue();
+                javaType=javaE.VOID.getValue();
             default:
                 if(useActorRef){
-                    return javaE.ACTORREF.getValue();
+                    javaType=javaE.ACTORREF.getValue();
                 }else {
-                    return parlangType;
+                    javaType=parlangType;
                 }
         }
+        if(removeBrackets){
+            javaType=javaType.replaceAll("\\[", "").replaceAll("\\]","");
+        }
+        return javaType;
     }
 
     public void visitChild(AstNode node){
@@ -246,7 +245,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 if(symbolTable.lookUpScope(param.getType())!=null){
                     javaType=javaE.ACTORREF.getValue();
                 }else{
-                    javaType= VarTypeConverter(param.getType(),false)+" ";
+                    javaType= VarTypeConverter(param.getType(),false,false)+" ";
                 }
                 stringBuilder
                         .append(javaType)
@@ -503,6 +502,8 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ActorDclNode node) {
         resetStringBuilder();
 
+        appendPackage();
+
         //imports necessary for most akka actor classes
         appendImports("akka.actor",
                 "ActorRef",
@@ -523,6 +524,10 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
+    }
+
+    private void appendPackage(){
+        stringBuilder.append("package output;\n \n");
     }
 
     //Can either be:
@@ -758,22 +763,22 @@ public class CodeGenVisitor implements NodeVisitor {
             codeOutput.add(getLine());
         } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
                 if(node.getParent().getChildren().get(1) instanceof InitializationNode) {
-                    stringBuilder.append(arrayVarDcl(node))
+                    stringBuilder.append(VarTypeConverter(node.getType(),true,false))
                             .append(" ")
                             .append(node.getName());
 
                 } else {
-                    stringBuilder.append(arrayVarDcl(node))
+                    stringBuilder.append(VarTypeConverter(node.getType(),true,false))
                             .append(" ")
                             .append(node.getName())
-                            .append(" = new ").append(VarTypeConverter(node.getType(),true));
+                            .append(" = new ").append(VarTypeConverter(node.getType(),true, true));
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
             String type;
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
             }else{
-                type= VarTypeConverter(node.getType(),false)+" ";
+                type= VarTypeConverter(node.getType(),false,false)+" ";
             }
             stringBuilder
                     .append(type)
@@ -859,6 +864,8 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(MainDclNode node) {
         resetStringBuilder();
+
+        appendPackage();
         //public class Main {
         appendImports("akka.actor",
                 "ActorSystem",
@@ -909,7 +916,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
@@ -1038,6 +1045,8 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptDclNode node) {
         resetStringBuilder();
+
+        appendPackage();
 
         //We crate a public class for the script with the same name as the script.
         appendImports("akka.actor","ActorRef");
