@@ -1,0 +1,13 @@
+//should not compile
+Script test{
+    on someMethod(int x, double y);
+}
+
+Actor testActor follows test{
+    State {}
+    Knows {}
+    Spawn(){}
+    on someMethod(int e, double y){}
+}
+
+main(){}
