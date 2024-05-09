@@ -12,15 +12,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ScopeClassTests {
 
-    private static Scope scope1 = new Scope("1");
-    private static Scope scope2 = new Scope("2");
-    private static Scope scope3 = new Scope("3");
-    private static Scope scope4 = new Scope("4");
-    private static Scope scope5 = new Scope("5");
+    private static final Scope scope1 = new Scope("1");
+    private static final Scope scope2 = new Scope("2");
+    private static final Scope scope3 = new Scope("3");
+    private static final Scope scope4 = new Scope("4");
+    private static final Scope scope5 = new Scope("5");
 
 
     @BeforeAll
-    public static void setUpClass() {
+    public static void setUp() {
         scope5.setParent(scope4);
         scope4.setParent(scope3);
         scope3.setParent(scope2);
