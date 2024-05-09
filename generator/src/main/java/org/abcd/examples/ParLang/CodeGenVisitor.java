@@ -46,7 +46,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    private String VariableConverter(String type){
+    private String VariableConverter(String type, boolean actorRef){
         switch (type) {
             case "int": case "int[]" : case "int[][]":
                 return javaE.LONG.getValue();
@@ -57,7 +57,11 @@ public class CodeGenVisitor implements NodeVisitor {
             case "string": case "string[]" : case "string[][]":
                 return javaE.STRING.getValue();
             default:
-                return type;
+                if(actorRef){
+                    return javaE.ACTORREF.getValue();
+                }else {
+                    return type;
+                }
         }
     }
 
@@ -207,7 +211,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(params.size()>0){
             for(IdentifierNode param:params){
                 stringBuilder
-                        .append(VariableConverter(param.getType()))
+                        .append(VariableConverter(param.getType(),false))
                         .append(" ")
                         .append(param.getName())
                         .append(", ");
@@ -715,13 +719,12 @@ public class CodeGenVisitor implements NodeVisitor {
                     stringBuilder.append(arrayVarDcl(node))
                             .append(" ")
                             .append(node.getName())
-                            .append(" = new ").append(VariableConverter(node.getType()));
+                            .append(" = new ").append(VariableConverter(node.getType(),true));
                 }
-
         }
         else if(node.getType()!= null){
              if (node.getParent() instanceof VarDclNode || node.getParent() instanceof ParametersNode) {
-                 stringBuilder.append(VariableConverter(node.getType()));
+                 stringBuilder.append(VariableConverter(node.getType(),false));
                  stringBuilder.append(" ");
                  stringBuilder.append(node.getName());
              } else {
