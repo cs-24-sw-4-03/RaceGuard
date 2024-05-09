@@ -2,3 +2,4 @@
 generator/target/
 generator/output/
 .vscode
+/output/src/main/java/output/
