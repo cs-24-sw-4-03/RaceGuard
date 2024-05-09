@@ -84,6 +84,11 @@ public class CodeGenVisitor implements NodeVisitor {
             default:
                 if(useActorRef){
                     javaType=javaE.ACTORREF.getValue();
+                    String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
+                    if(substrings.length>1){
+                        String[] actorRefNoSpace=javaType.split(" ");
+                        javaType=actorRefNoSpace[0]+substrings[1];
+                    }
                 }else {
                     javaType=parlangType;
                 }
@@ -513,7 +518,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 "Logging",
                 "LoggingAdapter"
         );
-        appendImport("java.util", "UUID");
+        appendImports("java.util","Arrays","UUID");
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
 
@@ -722,11 +727,11 @@ public class CodeGenVisitor implements NodeVisitor {
     //HashMap to convert the type of the array to the type of the arraylist
 
     private boolean isArray(AstNode node){
-        return node.getType().contains("[]") || node.getType().contains("[][]");
+        return node.getType().contains("[");
     }
     private boolean isParrentArray(AstNode node) {
         if(node.getParent().getType()!=null){
-            return node.getParent().getType().contains("[]") || node.getParent().getType().contains("[][]");
+            return node.getParent().getType().contains("[");
         }else{
             return false;
         }
@@ -742,16 +747,32 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
         } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
-                if(node.getParent().getChildren().get(1) instanceof InitializationNode) {
+                if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
                             .append(" ")
                             .append(node.getName());
+                    stringBuilder
+                            .append(" = ")
+                            .append(javaE.NEW.getValue())
+                            .append(VarTypeConverter(node.getType(),true,true));
+                    /*
+                            .append("[")
+                            .append(((IntegerNode) node.getParent().getChildren().get(1)).getValue())
+                            .append("]");
+                    if(node.getParent().getChildren().size()==3){
+                        stringBuilder
+                                .append("[")
+                                .append(((IntegerNode) node.getParent().getChildren().get(1)).getValue())
+                                .append("]");
+                    }
+                    */
+
 
                 } else {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
                             .append(" ")
                             .append(node.getName())
-                            .append(" = new ").append(VarTypeConverter(node.getType(),true, true));
+                            .append(" = new ").append(VarTypeConverter(node.getType(),true, false));
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
             String type;
@@ -778,7 +799,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitializationNode node) {
-        stringBuilder.append(" = ");
+        if(!isParrentArray(node)){
+            stringBuilder.append(" = ");
+        }
         visitChildren(node);
     }
 
@@ -793,8 +816,9 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append("[")
                     .append(node.getValue())
                     .append("]");
-        }
-        else{
+        } else if (node.getParent() instanceof ArrayAccessNode) {
+                stringBuilder.append(node.getValue());
+        } else{
             stringBuilder
                     .append(node.getValue())
                     .append("L"); //java interprets integer literals as int by default. This converts it to long in the target code.
@@ -852,7 +876,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 "ActorRef",
                 "Props",
                 "UntypedAbstractActor");
-        appendImport("java.util", "UUID");
+        appendImports("java.util","Arrays", "UUID");
+
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.CLASS.getValue())
@@ -1178,7 +1203,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("), ");
         getNextUniqueActor();
         stringBuilder.append(")");
-        if (outerScopeName == null) {
+        if (!(node.getParent() instanceof InitializationNode ||node.getParent() instanceof  AssignNode)) {
             stringBuilder.append(javaE.SEMICOLON.getValue());
         }
     }
