@@ -1,0 +1,58 @@
+Script Fib{
+
+on result(int result);
+}
+
+main(){
+    Spawn FibManager(10);
+}
+
+
+Actor FibManager follows Fib{
+    State{}
+    Knows{}
+
+    Spawn(int number){
+        Spawn FibCalculator(self, number);
+    }
+
+    on result(int result){
+        print(result);
+    }
+}
+
+Actor FibCalculator follows Fib{
+    State{
+        int result = 0;
+        int resultReceived = false;
+    }
+    Knows{FibCalculator parent}
+
+    Spawn(FibCalculator parent, int number){
+        Knows.parent = parent;
+
+        self <- calculate(number);
+    }
+
+    on calculate(int number){
+        if(number <= 1){
+            Knows.parent <- result(number);
+            KILL;
+        } else{
+            Spawn FibCalculator(self, number - 1);
+            Spawn FibCalculator(self, number - 2);
+        }
+    }
+
+
+    on result(int result){
+        if(State.resultReceived){
+            State.result = State.result + result;
+            Knows.parent <- result(State.result);
+            KILL;
+        }else{
+            State.resultReceived = true;
+            State.result = result
+        }
+    }
+}
