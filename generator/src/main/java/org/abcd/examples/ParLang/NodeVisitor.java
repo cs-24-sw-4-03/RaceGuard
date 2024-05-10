@@ -64,4 +64,6 @@ public interface NodeVisitor {
     void visit(SelfNode node);
 
     void visit(BoolCompareNode node);
+
+    void visit(KillNode node);
 }

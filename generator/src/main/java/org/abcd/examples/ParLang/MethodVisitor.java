@@ -112,6 +112,9 @@ public class MethodVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(KillNode node) {}
+
+    @Override
     public void visitChildren(AstNode node){
         for(AstNode child : node.getChildren()){
             child.accept(this);

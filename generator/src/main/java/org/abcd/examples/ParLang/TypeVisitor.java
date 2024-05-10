@@ -458,6 +458,9 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SelfNode node) {
         //We do not visit children since this is a leaf node
+        if (!hasParent(node, ActorDclNode.class)){
+            throw new SelfNodeException("SelfNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
+        }
         node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
     }
 
@@ -478,6 +481,14 @@ public class TypeVisitor implements NodeVisitor {
         catch (Exception e) {
             exceptions.add(new BoolCompareException(e.getMessage() + " in BoolCompareNode"));
         }*/
+    }
+
+    @Override
+    public void visit(KillNode node) {
+        //does not need types
+        if (!hasParent(node, ActorDclNode.class)){
+            throw new KillNodeException("KillNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
+        }
     }
 
     @Override

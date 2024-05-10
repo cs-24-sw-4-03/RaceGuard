@@ -31,6 +31,7 @@ spawn : SPAWN parameters body;
 actorMethod: onMethod | localMethod;
 onMethod : ON_METHOD  identifier parameters body;
 localMethod: LOCAL_METHOD identifier parameters COLON allTypes localMethodBody;
+killCall : KILL SEMICOLON;
 
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : stateAccess
@@ -121,6 +122,7 @@ statement : declaration SEMICOLON
     | printCall
     | returnStatement
     | spawnActor SEMICOLON
+    | killCall
     ;
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
@@ -247,6 +249,7 @@ LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
 FOLLOWS : 'follows';
+KILL : 'KILL';
 
 //Control structures
 IF : 'if';

@@ -27,6 +27,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     private AstNode childVisitor(AstNode node, List<ParseTree> children){
         //visit all children of a node and add them to the node
         for(ParseTree c:children){
+            boolean isTerminal = c instanceof TerminalNode;
             if(c instanceof TerminalNode){
                 continue; //skip if child is a terminal node
             }
@@ -421,6 +422,13 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
 
     @Override public AstNode visitStatement(ParLangParser.StatementContext ctx) {
         return visit(ctx.getChild(0));//if statement has more than one child, the second one is ";". We just visit the  child always.
+    }
+
+    @Override public AstNode visitKillCall(ParLangParser.KillCallContext ctx) {
+        KillNode killNode = new KillNode();
+        killNode.setLineNumber(ctx.getStart().getLine());
+        killNode.setColumnNumber(ctx.getStart().getCharPositionInLine());
+        return killNode;
     }
 
     @Override public AstNode visitArithExp(ParLangParser.ArithExpContext ctx) {
