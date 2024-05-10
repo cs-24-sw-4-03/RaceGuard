@@ -516,6 +516,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //4. Write the file
     @Override
     public void visit(ActorDclNode node) {
+        this.symbolTable.enterScope(node.getId());
         resetStringBuilder();
 
         appendPackage();
@@ -541,6 +542,7 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
+        this.symbolTable.leaveScope();
     }
 
     private void appendPackage(){
@@ -945,6 +947,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MainDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         resetStringBuilder();
 
         appendPackage();
@@ -975,6 +978,7 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChildren(node);
         appendBodyClose();
         writeToFile(capitalizeFirstLetter(node.getId()), codeOutput);
+        this.symbolTable.leaveScope();
     }
 
 
@@ -993,6 +997,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
+        this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
         if(node.getMethodType().equals(parLangE.ON.getValue())){
             appendInlineComment(parLangE.ON.getValue()," method:"," ",node.getId());
             appendProtocolClass(node);
@@ -1004,6 +1009,7 @@ public class CodeGenVisitor implements NodeVisitor {
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
+        this.symbolTable.leaveScope();
     }
 
     private void appendInlineComment(String... strings){
@@ -1128,6 +1134,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
+        this.symbolTable.enterScope(node.getId());
         resetStringBuilder();
 
         appendPackage();
@@ -1138,6 +1145,7 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBody(node);//The body of the class has a static class for each on-method declared in the script.
 
         writeToFile(node.getId(),codeOutput); //The class is written to a separate file.
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -1288,6 +1296,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SpawnDclNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(symbolTable.findActorParent(node));
@@ -1295,7 +1304,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append("()");
         }
         visitChildren(node);
-
+        this.symbolTable.leaveScope();
     }
 
     @Override
