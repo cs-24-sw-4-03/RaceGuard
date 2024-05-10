@@ -121,6 +121,7 @@ statement : declaration SEMICOLON
     | printCall
     | returnStatement
     | spawnActor SEMICOLON
+    | KILL
     ;
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
@@ -247,6 +248,7 @@ LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
 FOLLOWS : 'follows';
+KILL : 'kill';
 
 //Control structures
 IF : 'if';
