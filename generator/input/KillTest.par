@@ -6,4 +6,4 @@ Actor killActor{
         KILL;
     }
 }
-main(){
+main(){}

@@ -28,7 +28,6 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         //visit all children of a node and add them to the node
         for(ParseTree c:children){
             boolean isTerminal = c instanceof TerminalNode;
-            System.out.println(c.getText() + "is of class: " + c.getClass() + " " + isTerminal);
             if(c instanceof TerminalNode){
                 continue; //skip if child is a terminal node
             }
