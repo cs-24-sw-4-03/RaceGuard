@@ -1,6 +1,8 @@
 package org.abcd.examples.ParLang;
 
 import org.abcd.examples.ParLang.AstNodes.*;
+import org.abcd.examples.ParLang.Exceptions.ArgumentsException;
+import org.abcd.examples.ParLang.Exceptions.SendMsgException;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
@@ -567,6 +569,7 @@ public class CodeGenVisitor implements NodeVisitor {
         LinkedHashMap<String, Attributes> params = null;
         ArrayList<String> formalParameterTypes = new ArrayList<>();
         AstNode parent = node.getParent();
+
         if (parent instanceof MethodCallNode methodCallNode) {
             String actorType = symbolTable.findActorParent(node);
             String methodName = methodCallNode.getMethodName();
@@ -588,21 +591,25 @@ public class CodeGenVisitor implements NodeVisitor {
             Attributes attributes = null; //The attributes are used to get the correct method scope
 
             //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode or SelfNode
-            if (receiverNode instanceof StateAccessNode) {
-                attributes = symbolTable.lookUpStateSymbol(receiverName);
-            } else if (receiverNode instanceof KnowsAccessNode) {
-                attributes = symbolTable.lookUpKnowsSymbol(receiverName);
-            } else if (receiverNode instanceof SelfNode) {
+            if(receiverNode instanceof StateAccessNode){
+                attributes = symbolTable.lookUpStateSymbol(receiverName.replaceAll("State\\.",""));
+            }else if(receiverNode instanceof KnowsAccessNode){
+                attributes = symbolTable.lookUpKnowsSymbol(receiverName.replaceAll("Knows\\.",""));
+            }else if(receiverNode instanceof SelfNode){
                 String actorName = symbolTable.findActorParent(receiverNode);
                 attributes = symbolTable.lookUpSymbol(actorName);
-            } else if (receiverNode instanceof IdentifierNode) {
+            }else if(receiverNode instanceof IdentifierNode){
                 attributes = symbolTable.lookUpSymbol(receiverName);
             }
 
             if (attributes != null) {
                 Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                 params = methodScope.getParams();
+            }else{
+                throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
             }
+        }else {
+            throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
         }
 
         if(params != null){
