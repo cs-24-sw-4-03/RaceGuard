@@ -321,9 +321,9 @@ public class TypeVisitor implements NodeVisitor {
 
                 //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode or SelfNode
                 if(receiverNode instanceof StateAccessNode){
-                    attributes = symbolTable.lookUpStateSymbol(receiverName);
+                    attributes = symbolTable.lookUpStateSymbol(receiverName.replaceAll("State.",""));
                 }else if(receiverNode instanceof KnowsAccessNode){
-                    attributes = symbolTable.lookUpKnowsSymbol(receiverName);
+                    attributes = symbolTable.lookUpKnowsSymbol(receiverName.replaceAll("Knows.",""));
                 }else if(receiverNode instanceof SelfNode){
                     String actorName = symbolTable.findActorParent(receiverNode);
                     attributes = symbolTable.lookUpSymbol(actorName);
@@ -335,6 +335,8 @@ public class TypeVisitor implements NodeVisitor {
                     Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                     params = methodScope.getParams();
                     checkArgTypes(node, params, methodName);
+                }else{
+                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
                 }
             }else {
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
