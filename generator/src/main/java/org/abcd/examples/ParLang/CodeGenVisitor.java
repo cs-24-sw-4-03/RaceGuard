@@ -110,11 +110,22 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     //An alternative version of visitChildren where the Strings before and after is appended before and after the result of visiting the child node
-    public void visitChildren(AstNode node, String before, String after){
+    public void visitChildren(AstNode node, String before, String after, ArrayList<String> parameterTypes){
+        int index = 0;
         for (AstNode childNode : node.getChildren()) {
             stringBuilder.append(before);
+
+            if(parameterTypes != null){
+                stringBuilder.append( determineSuffix(parameterTypes.get(index)) + ".valueOf(");
+            }
+
             childNode.accept(this);
+
+            if(parameterTypes != null){
+                stringBuilder.append(")");
+            }
             stringBuilder.append(after);
+            index++;
         }
     }
 
@@ -224,7 +235,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append( " {\n");
         codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++; //content of the body is indented
-        visitChildren(node,before,after);//append the content of the body by visiting the children of @param node.
+        visitChildren(node,before,after, null);//append the content of the body by visiting the children of @param node.
     }
 
     /**
@@ -538,10 +549,11 @@ public class CodeGenVisitor implements NodeVisitor {
     //value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     @Override
     public void visit(ArgumentsNode node) {
+        ArrayList<String> formalParameters = findFormalParameters(node);
         if (node.getParent() instanceof SpawnActorNode ) {
-            visitChildren(node, ", ", "");
+            visitChildren(node, ", ", "", formalParameters);
         }else if(node.getParent() instanceof MethodCallNode || node.getParent() instanceof SendMsgNode ) {
-            visitChildren(node, "", ",");
+            visitChildren(node, "", ",", formalParameters);
             if (node.getChildren().size() > 0) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             }
@@ -549,6 +561,65 @@ public class CodeGenVisitor implements NodeVisitor {
             throw  new RuntimeException("Parent of ArgumentsNode is not SpawnActorNode, MethodCallNode or SendMsgNode");
         }
         //if instance is method call
+    }
+
+    private ArrayList<String> findFormalParameters(ArgumentsNode node){
+        LinkedHashMap<String, Attributes> params = null;
+        ArrayList<String> formalParameterTypes = new ArrayList<>();
+        AstNode parent = node.getParent();
+        if (parent instanceof MethodCallNode methodCallNode) {
+            String actorType = symbolTable.findActorParent(node);
+            String methodName = methodCallNode.getMethodName();
+            Scope actorScope = symbolTable.lookUpScope(methodName + actorType);
+            params = actorScope.getParams();
+        } else if (parent instanceof SpawnActorNode spawnActorNode) {
+            //We can call SpawnActor from any scope, hence we have to find the Actor scope where the Spawn we are calling is declared
+            Scope ActorScope = symbolTable.lookUpScope(parent.getType());
+            //Within the Actor Scope we enter the spawn scope to get the parameters associated with Spawn
+            Scope SpawnScope = ActorScope.children.get(0);
+            params = SpawnScope.getParams();
+            String actorName = spawnActorNode.getType();
+        } else if (parent instanceof SendMsgNode sendMsgNode) {
+            //The first child of SendMsgNode is always a receiver node
+            AstNode receiverNode = sendMsgNode.getChildren().get(0);
+            String receiverName = sendMsgNode.getReceiver();
+            //Method name is used to find the parameters to check the arguments up against
+            String methodName = ((SendMsgNode) parent).getMsgName();
+            Attributes attributes = null; //The attributes are used to get the correct method scope
+
+            //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode or SelfNode
+            if (receiverNode instanceof StateAccessNode) {
+                attributes = symbolTable.lookUpStateSymbol(receiverName);
+            } else if (receiverNode instanceof KnowsAccessNode) {
+                attributes = symbolTable.lookUpKnowsSymbol(receiverName);
+            } else if (receiverNode instanceof SelfNode) {
+                String actorName = symbolTable.findActorParent(receiverNode);
+                attributes = symbolTable.lookUpSymbol(actorName);
+            } else if (receiverNode instanceof IdentifierNode) {
+                attributes = symbolTable.lookUpSymbol(receiverName);
+            }
+
+            if (attributes != null) {
+                Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                params = methodScope.getParams();
+            }
+        }
+
+        if(params != null){
+            SequencedCollection<Attributes> formalParameterAttributes = params.sequencedValues();
+            for(Attributes attribute : formalParameterAttributes){
+                formalParameterTypes.add(attribute.getVariableType());
+            }
+        }
+        return formalParameterTypes;
+    }
+
+    private String determineSuffix(String type){
+        return switch (type) {
+            case "int" -> "Long";
+            case "double" -> "Double";
+            default -> "";
+        };
     }
 
     @Override
@@ -1089,7 +1160,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }else if (node.getParent() instanceof ScriptMethodNode){
             //If the method is declared in a script, the parameters are mapped to fields in the static class representing the method
             localIndent++;
-            visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue()); //Insterts the parameters ad public fields in the method's static class
+            visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue(), null); //Insterts the parameters ad public fields in the method's static class
             localIndent--;
             codeOutput.add(getLine() );
         }else{
@@ -1099,7 +1170,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
-        visitChildren(node,"",",");//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
+        visitChildren(node,"",",", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
         if(node.getChildren().size()>0){
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
         }
