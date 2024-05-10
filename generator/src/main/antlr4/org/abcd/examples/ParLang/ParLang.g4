@@ -101,8 +101,8 @@ unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
     ; // unary minus operator
 
 // operator to compare two arithmetic expressions
-compareOperator : compareEqNEg;
-compareEqNEg : EQUAL // EQUAL and NOTEQUAL have lower precedence than other compare operators
+compareOperator : compareEqNEq;
+compareEqNEq : EQUAL // EQUAL and NOTEQUAL have lower precedence than other compare operators
     | NOTEQUAL
     | compareOther
     ;
