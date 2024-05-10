@@ -24,11 +24,11 @@ Actor FibManager follows Fib{
 Actor FibCalculator follows Fib{
     State{
         int result = 0;
-        int resultReceived = false;
+        bool resultReceived = FALSE;
     }
-    Knows{FibCalculator parent}
+    Knows{Fib parent}
 
-    Spawn(FibCalculator parent, int number){
+    Spawn(Fib parent, int number){
         Knows.parent = parent;
 
         self <- calculate(number);
@@ -51,7 +51,7 @@ Actor FibCalculator follows Fib{
             Knows.parent <- result(State.result);
             KILL;
         }else{
-            State.resultReceived = true;
+            State.resultReceived = TRUE;
             State.result = result
         }
     }
