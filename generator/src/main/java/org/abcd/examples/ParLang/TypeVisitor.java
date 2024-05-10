@@ -481,6 +481,14 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     @Override
+    public void visit(KillNode node) {
+        //does not need types
+        if (!hasParent(node, ActorDclNode.class)){
+            throw new KillNodeException("KillNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
+        }
+    }
+
+    @Override
     public void visit(StateNode node) {
         //does not need types
         this.visitChildren(node);

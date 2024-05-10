@@ -1,0 +1,11 @@
+Actor killActor{
+    State{}
+    Knows{}
+    Spawn(){}
+    on kill(){
+        self <- kill();
+        KILL;
+    }
+}
+main(){
+}
