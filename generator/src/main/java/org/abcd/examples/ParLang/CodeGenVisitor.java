@@ -117,13 +117,15 @@ public class CodeGenVisitor implements NodeVisitor {
         for (AstNode childNode : node.getChildren()) {
             stringBuilder.append(before);
 
+            //If the children are actual parameters in a call we need to add valueOf() in order for Akka types to work
             if(parameterTypes != null){
-                stringBuilder.append( determineSuffix(parameterTypes.get(index)) + ".valueOf(");
+                stringBuilder.append(determineValue(parameterTypes.get(index)));
             }
 
             childNode.accept(this);
 
-            if(parameterTypes != null){
+            //If we have parameters and the type is either Int or Double, otherwise determineValue returns empty string
+            if(parameterTypes != null && !determineValue(parameterTypes.get(index)).isEmpty()){
                 stringBuilder.append(")");
             }
             stringBuilder.append(after);
@@ -623,10 +625,10 @@ public class CodeGenVisitor implements NodeVisitor {
         return formalParameterTypes;
     }
 
-    private String determineSuffix(String type){
+    private String determineValue(String type){
         return switch (type) {
-            case "int" -> "Long";
-            case "double" -> "Double";
+            case "int" -> "Long.valueOf(";
+            case "double" -> "Double.valueOf(";
             default -> "";
         };
     }
