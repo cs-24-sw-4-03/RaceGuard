@@ -807,7 +807,130 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitNode node) {
+        createReaper();
+        visitChildren(node);
 
+    }
+
+    private void createReaper(){
+        resetStringBuilder();
+
+        String actorName=parLangE.REAPER.getValue();
+        appendClassDefinition(javaE.PUBLIC.getValue(),actorName, "UntypedAbstractActor");
+
+
+        //append the body of the actor
+        stringBuilder.append( " {\n");
+        codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
+        localIndent++;
+        appendConstructor(actorName,new ArrayList<>());
+
+        stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();");
+
+       //WatchMe protocol
+        appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "WatchMe");
+        stringBuilder.append("{\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.FINAL.getValue())
+                .append(javaE.ACTORREF.getValue())
+                .append("sender;\n")
+                .append(javaE.PUBLIC.getValue())
+                .append("WatchMe")
+                .append("(")
+                .append(javaE.ACTORREF.getValue())
+                .append("sender")
+                .append("){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append(javaE.THIS.getValue())
+                .append("sender = sender;\n");
+        codeOutput.add(getLine());
+        localIndent--;
+        stringBuilder.append("}\n");
+
+        //onWatchMe
+        stringBuilder
+                .append("OnWatchMe(ActorRef sender){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("if(this.watches.add(sender)){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("this.getContext().watch(sender);\n");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        appendBodyClose();
+
+        //Terminated protocol
+        appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "Terminated");
+        stringBuilder.append("{\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.FINAL.getValue())
+                .append(javaE.ACTORREF.getValue())
+                .append("sender;\n")
+                .append(javaE.PUBLIC.getValue())
+                .append("Terminated")
+                .append("(")
+                .append(javaE.ACTORREF.getValue())
+                .append("sender")
+                .append("){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append(javaE.THIS.getValue())
+                .append("sender = sender;\n");
+        codeOutput.add(getLine());
+        localIndent--;
+        stringBuilder.append("}\n");
+
+        //onTerminated
+        stringBuilder
+                .append("OnTerminated(ActorRef sender){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("if(this.watches.remove(sender)){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("if (this.watchees.isEmpty()){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("this.getContext().getSystem().terminate();");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        stringBuilder.append("else{\n");
+        codeOutput.add(getLine());
+        //stringBuilder.append("this.log().error(\"Got termination message from unwatched {}.\", sender);")
+        codeOutput.add(getLine());
+        appendBodyClose();
+
+
+
+        //onReceive
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.VOID.getValue())
+                .append(javaE.ONRECEIVE.getValue())//has value "onReceive(Object message) "
+                .append("{\n");
+        codeOutput.add(getLine());//get line and add to codeOutput before indentation changes.
+        localIndent++;
+        List<String> params=new ArrayList<>();
+        params.add("sender");
+        appendIfElseChainLink("if", getOnReceiveIfCondition(actorName, "WatchMe"), getOnReceiveIfBody("WatchMe",params.iterator()));
+        appendIfElseChainLink("else if", getOnReceiveIfCondition(actorName, "Terminated"), getOnReceiveIfBody("Terminated",params.iterator()));
+        appendElse(javaE.UNHANDLED.getValue());
+
+        appendBodyClose();
+        appendBodyClose();
+
+        writeToFile(actorName, codeOutput);//Write the actor class to a separate file.
     }
 
     @Override
@@ -1275,5 +1398,11 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(BoolCompareNode node){
 
+    }
+
+    @Override
+    public void visit(KillNode node) {
+        stringBuilder.append("getContext().stop(getSelf());");
+        codeOutput.add(getLine());
     }
 }

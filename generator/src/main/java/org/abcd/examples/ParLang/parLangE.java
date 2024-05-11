@@ -22,7 +22,8 @@ public enum parLangE {
     BOOL("bool"),
     BOOL_ARRAY("bool[]"),
     BOOL_ARRAY_2D("bool[][]"),
-    SEND("<-");
+    SEND("<-"),
+    REAPER("Reaper");
 
     private String string;
 
