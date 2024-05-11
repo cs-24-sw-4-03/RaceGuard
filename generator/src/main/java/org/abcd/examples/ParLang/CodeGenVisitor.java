@@ -593,12 +593,28 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append("ActorSystem system = ActorSystem.create(\"system\")")
                     .append(javaE.SEMICOLON.getValue());
+            appendSpawnReaper();
             visitChildren(node);
             appendBodyClose();
-        }  else {
+        } else if (node.getParent() instanceof SpawnDclNode) {
+            stringBuilder.append(javaE.CURLY_OPEN.getValue());
+            codeOutput.add(getLine());
+            localIndent++;
+            stringBuilder.append("Reaper.sendWatchMeMessage(this);\n");
+            codeOutput.add(getLine());
+            visitChildren(node);
+            appendBodyClose();
+        } else {
             appendBody(node);
         }
     }
+
+    private void appendSpawnReaper(){
+        appendInlineComment("Create Reaper Actor");
+        stringBuilder.append("system.actorOf(Props.create(Reaper.class),\"reaper\");\n");
+
+    }
+
     //In FactorialHelper this is: private final int currentValue;
     @Override
     public void visit(StateNode node) {
@@ -816,6 +832,23 @@ public class CodeGenVisitor implements NodeVisitor {
         resetStringBuilder();
 
         String actorName=parLangE.REAPER.getValue();
+
+        appendPackage();
+
+        //imports necessary for most akka actor classes
+        appendImports("akka.actor",
+                "ActorRef",
+                "ActorSystem",
+                "Props",
+                "UntypedAbstractActor",
+                "ActorSelection"
+        );
+        appendImports("akka.event",
+                "Logging",
+                "LoggingAdapter"
+        );
+        appendImports("java.util","Arrays","Set","HashSet","UUID");
+
         appendClassDefinition(javaE.PUBLIC.getValue(),actorName, "UntypedAbstractActor");
 
 
@@ -824,8 +857,12 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
         localIndent++;
         appendConstructor(actorName,new ArrayList<>());
+        appendSendWatchMeMessage();
+        appendSendTerminatedMessage();
 
-        stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();");
+
+
+        stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();\n");
 
        //WatchMe protocol
         appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "WatchMe");
@@ -836,7 +873,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.FINAL.getValue())
                 .append(javaE.ACTORREF.getValue())
-                .append("sender;\n")
+                .append("sender;\n") //måske bare brug getSender() frem for at have sender field.
                 .append(javaE.PUBLIC.getValue())
                 .append("WatchMe")
                 .append("(")
@@ -847,14 +884,15 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent++;
         stringBuilder
                 .append(javaE.THIS.getValue())
+                .append(".")
                 .append("sender = sender;\n");
         codeOutput.add(getLine());
-        localIndent--;
-        stringBuilder.append("}\n");
+        appendBodyClose();
+        appendBodyClose();
 
         //onWatchMe
         stringBuilder
-                .append("OnWatchMe(ActorRef sender){\n");
+                .append("private void onWatchMe(ActorRef sender){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder
@@ -886,20 +924,21 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent++;
         stringBuilder
                 .append(javaE.THIS.getValue())
+                .append(".")
                 .append("sender = sender;\n");
         codeOutput.add(getLine());
-        localIndent--;
-        stringBuilder.append("}\n");
+        appendBodyClose();
+        appendBodyClose();
 
         //onTerminated
         stringBuilder
-                .append("OnTerminated(ActorRef sender){\n");
+                .append("private void onTerminated(ActorRef sender){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append("if(this.watches.remove(sender)){\n");
         codeOutput.add(getLine());
         localIndent++;
-        stringBuilder.append("if (this.watchees.isEmpty()){\n");
+        stringBuilder.append("if (this.watches.isEmpty()){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append("this.getContext().getSystem().terminate();");
@@ -907,8 +946,10 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
         stringBuilder.append("else{\n");
         codeOutput.add(getLine());
+        localIndent++;
         //stringBuilder.append("this.log().error(\"Got termination message from unwatched {}.\", sender);")
-        codeOutput.add(getLine());
+        appendBodyClose();
+        appendBodyClose();
         appendBodyClose();
 
 
@@ -923,8 +964,8 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent++;
         List<String> params=new ArrayList<>();
         params.add("sender");
-        appendIfElseChainLink("if", getOnReceiveIfCondition(actorName, "WatchMe"), getOnReceiveIfBody("WatchMe",params.iterator()));
-        appendIfElseChainLink("else if", getOnReceiveIfCondition(actorName, "Terminated"), getOnReceiveIfBody("Terminated",params.iterator()));
+        appendIfElseChainLink("if", getOnReceiveIfCondition("WatchMe", "watchMe"), getOnReceiveIfBody("watchMe",params.iterator()));
+        appendIfElseChainLink("else if", getOnReceiveIfCondition("Terminated", "terminated"), getOnReceiveIfBody("terminated",params.iterator()));
         appendElse(javaE.UNHANDLED.getValue());
 
         appendBodyClose();
@@ -932,6 +973,27 @@ public class CodeGenVisitor implements NodeVisitor {
 
         writeToFile(actorName, codeOutput);//Write the actor class to a separate file.
     }
+
+    private void appendSendWatchMeMessage(){
+        stringBuilder.append("public static void sendWatchMeMessage(UntypedAbstractActor actor) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("ActorSelection reaper = actor.getContext().getSystem().actorSelection(\"/user/\" + \"reaper\");\n")
+                .append("reaper.tell(new WatchMe(actor.getSelf()), actor.getSelf());\n");
+        appendBodyClose();
+    }
+
+    private void appendSendTerminatedMessage(){
+        stringBuilder.append("public static void sendTerminatedMessage(UntypedAbstractActor actor) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("ActorSelection reaper = actor.getContext().getSystem().actorSelection(\"/user/\" + \"reaper\");\n")
+                .append("reaper.tell(new Terminated(actor.getSelf()), actor.getSelf());\n");
+        appendBodyClose();
+    }
+
 
     @Override
     public void visit(IntegerNode node) {
@@ -1045,7 +1107,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false)+" ",node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
@@ -1402,7 +1464,10 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(KillNode node) {
-        stringBuilder.append("getContext().stop(getSelf());");
+        stringBuilder
+                .append("Reaper.sendTerminatedMessage(this);\n")
+                .append("getContext().stop(getSelf());\n");
+
         codeOutput.add(getLine());
     }
 }
