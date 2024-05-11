@@ -1,0 +1,62 @@
+
+main(){
+    FactorialManager manager = Spawn FactorialManager();
+
+    manager <- calculateFactorial(20);
+}
+
+
+Actor FactorialManager{
+    State{
+        int result = 1;
+        int numberOfActors = 3;
+        int resultsReceived = 0;
+    }
+    Knows{}
+
+    Spawn(){
+    }
+
+    on calculateFactorial(int factorialNumber){
+        int chunkSize = factorialNumber / State.numberOfActors;
+
+        FactorialCalculator calculator1 = Spawn FactorialCalculator();
+        FactorialCalculator calculator2 = Spawn FactorialCalculator();
+        FactorialCalculator calculator3 = Spawn FactorialCalculator();
+
+        calculator1 <- calculate(1, chunkSize, self);
+        calculator2 <- calculate(chunkSize + 1, chunkSize * 2, self);
+        calculator3 <- calculate(chunkSize * 2 + 1, factorialNumber, self);
+    }
+
+    on receiveResult(int result){
+        State.result = State.result * result;
+        State.resultsReceived = State.resultsReceived + 1;
+
+        if(State.resultsReceived == State.numberOfActors){
+        print(State.result);
+        KILL;
+        }
+    }
+
+}
+
+Actor FactorialCalculator{
+    State{}
+    Knows{}
+
+    Spawn(){
+    }
+
+    on calculate(int start, int end, FactorialManager manager){
+        int result = 1;
+
+        for(int i = start; i <= end; start = i + 1){
+            result = result * i;
+        }
+
+        manager <- receiveResult(result);
+        KILL;
+    }
+
+}

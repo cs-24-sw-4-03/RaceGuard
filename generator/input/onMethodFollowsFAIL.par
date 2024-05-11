@@ -1,6 +1,6 @@
 //should not compile
 Script Script1{
-    on method1(int x);
+    on method1(int x, String y);
 }
 
 Script Script2{
@@ -15,9 +15,9 @@ Actor Sven follows Script1, Script2{
         print("ragout");
     }
     on method2(){
-        int x=2+2;
+        print("hej");
     }
-    on method3(int x, int y, Sven s){
+    on method3(int x, int y){
         print("total viking power");
     }
     local localm():string{

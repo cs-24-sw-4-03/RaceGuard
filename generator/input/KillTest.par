@@ -1,0 +1,9 @@
+Actor killActor{
+    State{}
+    Knows{}
+    Spawn(){}
+    on kill(){
+        KILL;
+    }
+}
+main(){}
