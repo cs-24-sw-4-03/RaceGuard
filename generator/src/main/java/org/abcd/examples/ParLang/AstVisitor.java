@@ -123,11 +123,11 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             }
             List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
             children.remove(1);//remove identifier from list of children
-            return childVisitor(node, children);
+            return childVisitor(node, children); //visit all children of the script node and add them as children to the scriptNode
         } catch (DuplicateScriptTypeException e) {
             System.out.println(e.getMessage());
             return null;
-        } catch (Exception e) {
+        } catch (Exception e) { //if error just return null to continue visiting
             System.out.println(e.getMessage());
             return null;
         }
