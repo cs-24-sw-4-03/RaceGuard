@@ -605,11 +605,16 @@ public class CodeGenVisitor implements NodeVisitor {
                 attributes = symbolTable.lookUpSymbol(receiverName);
             }
 
-            if (attributes != null) {
-                Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+            if(receiverNode instanceof SelfNode){
+                Scope methodScope=symbolTable.lookUpScope(methodName+symbolTable.findActorParent(receiverNode));
                 params = methodScope.getParams();
-            }else{
-                throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
+            }else {
+                if (attributes != null) {
+                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                    params = methodScope.getParams();
+                }else{
+                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
+                }
             }
         }else {
             throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");

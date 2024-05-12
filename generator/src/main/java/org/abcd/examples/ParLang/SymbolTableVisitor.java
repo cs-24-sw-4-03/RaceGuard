@@ -138,10 +138,6 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(ActorDclNode node) {
         if(this.symbolTable.addScope(node.getId())){
-            Scope parent=symbolTable.getCurrentScope().getParent();
-            Attributes attributes=new Attributes(node.getId());
-            parent.addSymbol(node.getId(),attributes);
-
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
             //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the Actor node
