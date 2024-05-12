@@ -81,15 +81,17 @@ public class CodeGenVisitor implements NodeVisitor {
                 break;
             case "string[][]":
                 javaType=javaE.STRING_ARRAY_2D.getValue();
+                break;
             case "void":
                 javaType=javaE.VOID.getValue();
+                break;
             default:
                 if(useActorRef){
-                    javaType=javaE.ACTORREF.getValue();
                     String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
                     if(substrings.length>1){
-                        String[] actorRefNoSpace=javaType.split(" ");
-                        javaType=actorRefNoSpace[0]+substrings[1];
+                        javaType=javaE.ACTORREF.getValue()+substrings[1];
+                    }else{
+                        javaType=javaE.ACTORREF.getValue();
                     }
                 }else {
                     javaType=parlangType;
@@ -301,6 +303,7 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendOnReceive(ActorDclNode node){
         String actorName=node.getId();
         Scope actorScope=symbolTable.lookUpScope(actorName);//Get the scope of the actor.
+        Set<String> onMethodsList= actorScope.getDeclaredOnMethods().keySet();
         Iterator<String> onMethods= actorScope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
         String methodName;
         String className;
@@ -1128,7 +1131,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false)+" ",node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),true,false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }

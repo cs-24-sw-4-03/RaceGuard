@@ -11,7 +11,7 @@ Actor Sven follows Script1, Script2{
     State{}
     Knows{}
     Spawn(){}
-    on method1(int x){
+    on method1(int x, String y){
         print("ragout");
     }
     on method2(){
