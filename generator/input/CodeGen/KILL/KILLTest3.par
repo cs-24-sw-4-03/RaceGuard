@@ -20,8 +20,7 @@ Actor Terminator{
     on finishedCounting(){
         State.children=State.children-1;
         if(State.children<=0){
-            print("I'll be back");
-            KILL; //vilde gerne kalde "self<-kill()" her, men der sker en type checking fejl.
+            self<-kill();
         }
     }
     on count(Terminator t){
