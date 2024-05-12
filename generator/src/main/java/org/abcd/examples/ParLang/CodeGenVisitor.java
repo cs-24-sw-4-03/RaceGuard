@@ -577,15 +577,14 @@ public class CodeGenVisitor implements NodeVisitor {
         if (parent instanceof MethodCallNode methodCallNode) {
             String actorType = symbolTable.findActorParent(node);
             String methodName = methodCallNode.getMethodName();
-            Scope actorScope = symbolTable.lookUpScope(methodName + actorType);
-            params = actorScope.getParams();
+            Scope methodScope = symbolTable.lookUpScope(methodName + actorType);
+            params = methodScope.getParams();
         } else if (parent instanceof SpawnActorNode spawnActorNode) {
             //We can call SpawnActor from any scope, hence we have to find the Actor scope where the Spawn we are calling is declared
-            Scope ActorScope = symbolTable.lookUpScope(parent.getType());
+            Scope ActorScope = symbolTable.lookUpScope(spawnActorNode.getType());
             //Within the Actor Scope we enter the spawn scope to get the parameters associated with Spawn
             Scope SpawnScope = ActorScope.children.get(0);
             params = SpawnScope.getParams();
-            String actorName = spawnActorNode.getType();
         } else if (parent instanceof SendMsgNode sendMsgNode) {
             //The first child of SendMsgNode is always a receiver node
             AstNode receiverNode = sendMsgNode.getChildren().get(0);
