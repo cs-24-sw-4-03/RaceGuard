@@ -674,16 +674,12 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append("ActorSystem system = ActorSystem.create(\"system\")")
                     .append(javaE.SEMICOLON.getValue());
-            appendSpawnReaper();
+            appendSpawnReaper();//appends code that spawn the reaper Actor.
             visitChildren(node);
             appendBodyClose();
         } else if (node.getParent() instanceof SpawnDclNode) {
-            stringBuilder.append(javaE.CURLY_OPEN.getValue());
-            codeOutput.add(getLine());
-            localIndent++;
-            stringBuilder.append("Reaper.sendWatchMeMessage(this);\n");
-            codeOutput.add(getLine());
-            visitChildren(node);
+            appendBodyOpen(node);
+            stringBuilder.append("Reaper.sendWatchMeMessage(this);\n");//All actors register themselves at the reaper when they spawn.
             appendBodyClose();
         } else {
             appendBody(node);
@@ -1489,8 +1485,8 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(KillNode node) {
         stringBuilder
-                .append("Reaper.sendTerminatedMessage(this);\n")
-                .append("getContext().stop(getSelf());\n");
+                .append("Reaper.sendTerminatedMessage(this);\n")//The actor informs the reaper that it is dead.
+                .append("getContext().stop(getSelf());\n");//The actor kills itself.
         codeOutput.add(getLine());
     }
 }

@@ -713,7 +713,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         }
         return node;
     }
-    
+
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
         methodBodyNode.setLineNumber(ctx.getStart().getLine());
