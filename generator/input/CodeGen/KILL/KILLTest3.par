@@ -36,5 +36,4 @@ Actor Terminator{
 main(){
     Terminator t=Spawn Terminator();
     t<-walkAndSpawn();
-    t<-kill();
 }

@@ -925,24 +925,21 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append( " {\n");
         codeOutput.add(getLine() );
         localIndent++;
-        appendConstructor(actorName,new ArrayList<>());//new ArrayList<>() mocks list of parameters. Here, the
-        appendSendWatchMeMessage();
-        appendSendTerminatedMessage();
+        appendSendWatchMeMessage();//a static method used by other actors for sending a WatchMe message to the reaper
+        appendSendTerminatedMessage();/// a static method used by other actors for sending a Temrinated Message to the reaper
 
-        stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();\n");
+        stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();\n");//The set of actors the reaper watches. when they have all terminated, the reaper kills the system.
 
-       //WatchMe protocol
+       //Protocol class for the WatchMe message.
         appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "WatchMe");
         stringBuilder.append("{}\n");
         codeOutput.add(getLine());
 
-        //onWatchMe
-        stringBuilder
-                .append("private void onWatchMe(){\n");
+        //private onWatchMe method which is executed when the reaper receives a WatchMe message
+        stringBuilder.append("private void onWatchMe(){\n");
         codeOutput.add(getLine());
         localIndent++;
-        stringBuilder
-                .append("if(this.watches.add(getSender())){\n");
+        stringBuilder.append("if(this.watches.add(getSender())){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append("this.getContext().watch(getSender());\n");
@@ -950,14 +947,13 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
         appendBodyClose();
 
-        //Terminated protocol
+        //Protocol class for the Terminated message
         appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "Terminated");
         stringBuilder.append("{}\n");
         codeOutput.add(getLine());
 
-        //onTerminated
-        stringBuilder
-                .append("private void onTerminated(){\n");
+        //private onTerminated method which is executed when the reaper receives a Terminated message
+        stringBuilder.append("private void onTerminated(){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append("if(this.watches.remove(getSender())){\n");
@@ -977,8 +973,6 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
         appendBodyClose();
 
-
-
         //onReceive
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
@@ -987,11 +981,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("{\n");
         codeOutput.add(getLine());//get line and add to codeOutput before indentation changes.
         localIndent++;
-        List<String> params=new ArrayList<>();
+        List<String> params=new ArrayList<>();//There are no parameters, but we mock an empty parameters list since  getOnReceiveIfBody() requires such a list.
         appendIfElseChainLink("if", getOnReceiveIfCondition("WatchMe", "watchMe"), getOnReceiveIfBody("watchMe",params.iterator()));
         appendIfElseChainLink("else if", getOnReceiveIfCondition("Terminated", "terminated"), getOnReceiveIfBody("terminated",params.iterator()));
         appendElse(javaE.UNHANDLED.getValue());
-
         appendBodyClose();
         appendBodyClose();
 
