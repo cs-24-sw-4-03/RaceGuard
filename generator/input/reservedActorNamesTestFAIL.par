@@ -1,0 +1,12 @@
+main(){}
+Actor Reaper{
+    State{}
+    Knows{}
+    Spawn(){}
+}
+
+Actor Main{
+    State{}
+    Knows{}
+    Spawn(){}
+}
