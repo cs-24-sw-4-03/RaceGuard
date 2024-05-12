@@ -24,59 +24,57 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private String arithTypeConvert(String type1, String type2){
-        if (type1.equals(type2)){
+        if (type1.equals(type2)){ //If the types are the same, return that type
             return type1;
         }
         if (type1.equals(parLangE.INT.getValue()) && type2.equals(parLangE.DOUBLE.getValue())){
-            return parLangE.DOUBLE.getValue();
+            return parLangE.DOUBLE.getValue(); //if types are int and double, return double
         }
         if (type1.equals(parLangE.DOUBLE.getValue()) && type2.equals(parLangE.INT.getValue())){
-            return parLangE.DOUBLE.getValue();
+            return parLangE.DOUBLE.getValue(); //if types are double and int, return double
         }
         return null;
     }
 
     private boolean canConvert(String assignTo, String assignFrom){
-        if (assignTo.equals(assignFrom)){
+        if (assignTo.equals(assignFrom)){ //If the types are the same, return true
             return true;
         }
         if (assignTo.equals(parLangE.DOUBLE.getValue()) && assignFrom.equals(parLangE.INT.getValue())){
-            return true;
+            return true; //if types are int and double, return true
         }
         if (assignTo.equals(parLangE.DOUBLE_ARRAY.getValue()) && assignFrom.equals(parLangE.INT_ARRAY.getValue())){
-            return true;
+            return true; //if types are int[] and double[], return true
         }
         if (assignTo.equals(parLangE.DOUBLE_ARRAY_2D.getValue()) && assignFrom.equals(parLangE.INT_ARRAY_2D.getValue())){
-            return true;
+            return true; //if types are int[][] and double[][], return true
         }
-        if (symbolTable.declaredScripts.contains(assignTo)){
-            symbolTable.enterScope(assignTo);
-            ArrayList<String> types = symbolTable.getActorsFollowingScript();
-            if (types.contains(assignFrom)){
-                symbolTable.leaveScope();
+        if (symbolTable.declaredScripts.contains(assignTo)){ //If the assignTo is a script, check if the assignFrom is an actor following the script
+            symbolTable.enterScope(assignTo); //Enter the scope of the script
+            ArrayList<String> folowingActors = symbolTable.getActorsFollowingScript();
+            if (folowingActors.contains(assignFrom)){
+                symbolTable.leaveScope(); //Leave the scope of the script
                 return true;
             }
-            symbolTable.leaveScope();
+            symbolTable.leaveScope(); //Leave the scope of the script
         }
         return false;
     }
 
     private Attributes accessType(AstNode node){
-        Attributes attributes = null;
+        Attributes attributes = null; //The attributes are used to get the correct type
         if (node instanceof StateAccessNode){
             String id = ((StateAccessNode) node).getAccessIdentifier();
-            attributes = symbolTable.lookUpStateSymbol(id);
+            attributes = symbolTable.lookUpStateSymbol(id); //Look up the state symbol in the symbol table
         }
         if (node instanceof KnowsAccessNode){
-            if (node instanceof KnowsAccessNode){
-                String id = ((KnowsAccessNode) node).getAccessIdentifier();
-                attributes = symbolTable.lookUpKnowsSymbol(id);
-            }
+            String id = ((KnowsAccessNode) node).getAccessIdentifier();
+            attributes = symbolTable.lookUpKnowsSymbol(id); //Look up the knows symbol in the symbol table
         }
-        if (attributes != null){
+        if (attributes != null){ //If the attributes are not null, return them
             return attributes;
         }
-        else {
+        else { //If the attributes are null, throw an exception
             throw new AccessTypeException("Access type not found for node: " + node.getClass().getName());
         }
     }
@@ -93,8 +91,8 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
-            if (node.getId() == null) {
-                throw new ScriptDclException("Type is not defined for script declaration node");
+            if (node.getId() == null) { //If the id is null, throw an exception (node not created correctly)
+                throw new ScriptDclException("Type is not defined for script declaration node " + node.getId() + " line: " + node.getLineNumber() + " column: " + node.getColumnNumber());
             }
             node.setType(node.getId());
             this.symbolTable.leaveScope();
@@ -112,11 +110,11 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
         symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
         this.visitChildren(node);
-            if (node.getType() == null) {
-                throw new ScriptMethodException("Type is not defined for script method node");
+            if (node.getType() == null) { //If the type is null, throw an exception (node not created correctly)
+                throw new ScriptMethodException("Type is not defined for script method node " + node.getId() + " line: " + node.getLineNumber() + " column: " + node.getColumnNumber());
             }
-            if (node.getMethodType() == null) {
-                throw new ScriptMethodException("(on/local) Method type is not defined for script method node");
+            if (node.getMethodType() == null) { //If the method type is null, throw an exception (node not created correctly)
+                throw new ScriptMethodException("(on/local) Method type is not defined for script method node " + node.getId() + " line: " + node.getLineNumber() + " column: " + node.getColumnNumber());
             }
         symbolTable.leaveScope();
        /* }
@@ -158,26 +156,27 @@ public class TypeVisitor implements NodeVisitor {
         /*try { */
             if((node.getParent() instanceof MethodCallNode)) {
                 String Name = node.getName();
-                Attributes attributes = symbolTable.getDeclaredLocalMethods().get(Name);
-                node.setType(attributes.getVariableType());
+                Attributes attributes = symbolTable.getDeclaredLocalMethods().get(Name); //Get the attributes of the method
+                node.setType(attributes.getVariableType()); //Set the type of the node to the type of the method
             }
             else if ((node.getParent() instanceof SendMsgNode)){
                 String id = node.getName();
-                Attributes attributes = symbolTable.lookUpSymbol(id);
-                node.setType(attributes.getVariableType());
+                Attributes attributes = symbolTable.lookUpSymbol(id); //Look up the symbol in the symbol table
+                node.setType(attributes.getVariableType()); //Set the type of the node to the type of the symbol
             }
             else {
                 System.out.println("Symbol: " + node.getName());
-                if (hasParent(node, StateNode.class)) {
+                if (hasParent(node, StateNode.class)) { //If the parent is a StateNode lookup in stateSymbols
                     node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
                 }
-                else if (hasParent(node, KnowsNode.class)) {
+                else if (hasParent(node, KnowsNode.class)) { //If the parent is a KnowsNode lookup in knowsSymbols
                     node.setType(this.symbolTable.lookUpKnowsSymbol(node.getName()).getVariableType());
                 }
-                else if (hasParent(node, FollowsNode.class)) {
+                else if (hasParent(node, FollowsNode.class)) { //If the parent is a FollowsNode simply set type
                     node.setType(node.getName());
                 }
                 else {
+                    //If the parent is not a StateNode, KnowsNode, or followsNode lookup in the symbol table
                     System.out.println("Normal Symbol: " + node.getName());
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
@@ -205,21 +204,21 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
         AstNode parent = node.getParent();
-        while (!(parent instanceof MethodDclNode)){
+        while (!(parent instanceof MethodDclNode)){ //Find the parent MethodDclNode
             parent = parent.getParent();
-        }
+        } //returnStatementNode  should have a parent of type MethodDclNode due to lexer and parser rules
         if(!parent.getType().equals(parLangE.VOID.getValue())) {
             if (!node.getChildren().isEmpty()) {
                 String returnType = node.getChildren().getFirst().getType();
                 node.setType(returnType);
             }else {
-                throw new ReturnNodeException("Type is not defined for return statement");
+                throw new ReturnNodeException("Type is not defined for return statement in method "+ ((MethodDclNode)parent).getId() + "line: " + node.getLineNumber() + "column: " + node.getColumnNumber() );
             }
         }else{
-            if(node.getChildren().isEmpty()){
+            if(node.getChildren().isEmpty()){ //since the the return type is void, the return statement should be empty
                 node.setType(parLangE.VOID.getValue());
             }else {
-                throw new ReturnNodeException("return type is not void for void-returning local method");
+                throw new ReturnNodeException("return type is not void for void-returning local method: " + ((MethodDclNode)parent).getId() + "line: " + node.getLineNumber() + "column: " + node.getColumnNumber() );
             }
         }
         /*}
@@ -236,10 +235,10 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.visitChildren(node);
             if (node.getType() == null) {
-                throw new SpawnActorException("Type is not defined for spawn actor node");
+                throw new SpawnActorException("Type is not defined for spawn actor node " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             if (symbolTable.declaredScripts.contains(node.getType())) {
-                throw new SpawnActorException("scripts cannot be spawned " + node.getType());
+                throw new SpawnActorException("scripts cannot be spawned " + node.getType() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
        /* }
         catch (SpawnActorException e) {
@@ -254,7 +253,8 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(MethodCallNode node) {
         /*try {*/
             if (!symbolTable.getDeclaredLocalMethods().containsKey(node.getMethodName())) {
-                throw new MethodCallException("Method: " + node.getMethodName() + " not found");
+                // if the method is not declared in the local methods, throw an exception
+                throw new MethodCallException("Method: " + node.getMethodName() + " not found " + node.getLineNumber() + ":" + node.getColumnNumber());
             } else{
                 System.out.println("Method: " + node.getMethodName() + " found");
                 node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
@@ -273,11 +273,12 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
         /*try{*/
-        if(!node.getParent().getType().equals(parLangE.VOID.getValue())){
+        if(!node.getParent().getType().equals(parLangE.VOID.getValue())){ //If the method does not return void
             if(!node.getChildren().isEmpty()&&(node.getChildren().getLast()instanceof ReturnStatementNode)){
+                // node has children and the last child is return statement
                 node.setType(node.getChildren().getLast().getType());
             }else{
-                throw new LocalMethodBodyNodeException("Return statement missing from local method which does not return void");
+                throw new LocalMethodBodyNodeException("Return statement missing from local method which does not return void " + ((MethodDclNode)node.getParent()).getId() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
         }else{
             node.setType(parLangE.VOID.getValue());//If there is a return statement, it is checked in visit(ReturnStatement node) that it is "return;". So an erro should already have been produced
@@ -295,14 +296,14 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(ArgumentsNode node) {
         /*try {*/
             this.visitChildren(node);
-            LinkedHashMap<String, Attributes> params;
+            LinkedHashMap<String, Attributes> params; //The parameters are used to check the arguments against
             AstNode parent = node.getParent();
             if (parent instanceof MethodCallNode methodCallNode) {
-                String actorType = symbolTable.findActorParent(node);
+                String actorType = symbolTable.findActorParent(node); //Find the actor type of the method call
                 String methodName = methodCallNode.getMethodName();
-                Scope actorScope = symbolTable.lookUpScope(methodName + actorType);
+                Scope actorScope = symbolTable.lookUpScope(methodName + actorType); //Find the scope of the method
                 params = actorScope.getParams();
-                checkArgTypes(node, params, methodName);
+                checkArgTypes(node, params, methodName); //Check the arguments against the parameters
             } else if (parent instanceof SpawnActorNode spawnActorNode) {
                 //We can call SpawnActor from any scope, hence we have to find the Actor scope where the Spawn we are calling is declared
                 Scope ActorScope = symbolTable.lookUpScope(parent.getType());
@@ -310,7 +311,7 @@ public class TypeVisitor implements NodeVisitor {
                 Scope SpawnScope = ActorScope.children.get(0);
                 params = SpawnScope.getParams();
                 String actorName = spawnActorNode.getType();
-                checkArgTypes(node, params, actorName);
+                checkArgTypes(node, params, actorName); //Check the arguments against the parameters
             } else if (parent instanceof SendMsgNode sendMsgNode) {
                 //The first child of SendMsgNode is always a receiver node
                 AstNode receiverNode = sendMsgNode.getChildren().get(0);
@@ -321,9 +322,9 @@ public class TypeVisitor implements NodeVisitor {
 
                 //The receiver can be: IdentifierNode, StateAccessNode, KnowsAccessNode or SelfNode
                 if(receiverNode instanceof StateAccessNode){
-                    attributes = symbolTable.lookUpStateSymbol(receiverName.replaceAll("State.",""));
+                    attributes = symbolTable.lookUpStateSymbol(receiverName.replaceAll("State.","")); //Look up the state symbol
                 }else if(receiverNode instanceof KnowsAccessNode){
-                    attributes = symbolTable.lookUpKnowsSymbol(receiverName.replaceAll("Knows.",""));
+                    attributes = symbolTable.lookUpKnowsSymbol(receiverName.replaceAll("Knows.","")); //Look up the knows symbol
                 }else if(receiverNode instanceof SelfNode){
                     String actorName = symbolTable.findActorParent(receiverNode);
                     attributes = symbolTable.lookUpSymbol(actorName);
@@ -334,12 +335,12 @@ public class TypeVisitor implements NodeVisitor {
                 if (attributes != null) {
                     Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                     params = methodScope.getParams();
-                    checkArgTypes(node, params, methodName);
-                }else{
-                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
+                    checkArgTypes(node, params, methodName); //Check the arguments against the parameters
+                }else{ //If the attributes are null, throw an exception
+                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found " + node.getLineNumber() + ":" + node.getColumnNumber());
                 }
-            }else {
-                throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
+            }else { //If the parent is not a method call, spawn actor or send message node, throw an exception
+                throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
         /*}
         catch (ArgumentsException e) {
@@ -351,15 +352,15 @@ public class TypeVisitor implements NodeVisitor {
     }
     private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
-        if (params.size() != size){
-            throw new ArgumentsException("Number of arguments does not match the number of parameters in: " + msgName);
+        if (params.size() != size){ //If the number of parameters does not match the number of arguments, throw an exception
+            throw new ArgumentsException("Number of arguments does not match the number of parameters in: " + msgName + " " + node.getLineNumber() + ":" + node.getColumnNumber());
         }
         for (Map.Entry<String, Attributes> parameter : params.entrySet()) { //Iterates over parameters and arguments and matches them against each other
             int index = new ArrayList<>(params.keySet()).indexOf(parameter.getKey()); //Find the index of the parameter == index of argument
             String argType = node.getChildren().get(index).getType(); //Type of argument
             String paramType = parameter.getValue().getVariableType(); //Type of parameter
-            if (!canConvert(paramType, argType)){
-                throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName);
+            if (!canConvert(paramType, argType)){ //If the types do not match, throw an exception
+                throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
         }
     }
@@ -370,8 +371,8 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             String identifierType = node.getChildren().get(0).getType();
             String assignType = node.getChildren().get(1).getType();
-            if (!canConvert(identifierType, assignType)) {
-                throw new AssignExecption("Type mismatch in assignment between " + identifierType + " and " + assignType);
+            if (!canConvert(identifierType, assignType)) { //If the types do not match, throw an exception
+                throw new AssignExecption("Type mismatch in assignment between " + identifierType + " and " + assignType + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             node.setType(identifierType);
         /*}
@@ -388,8 +389,8 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             String childType = node.getChildren().get(0).getType();
-            if (childType == null) {
-                throw new InitializationNodeException("Type is not defined for initialization node");
+            if (childType == null) { //If the type of the child is null typechecking cannot be done, thus throw exception
+                throw new InitializationNodeException("Type is not defined for initialization node " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             node.setType(childType);
        /* }
@@ -407,8 +408,8 @@ public class TypeVisitor implements NodeVisitor {
         /*try{*/
             String listType = node.getChildren().get(0).getType();
             for (AstNode child : node.getChildren()) {
-                if (!canConvert(listType, child.getType())) {
-                    throw new ListNodeException("List elements must be of the same type");
+                if (!canConvert(listType, child.getType())) { //If the types do not match, throw an exception
+                    throw new ListNodeException("List elements must be of the same type listtype: " + node.getType() + " elementType: " + child.getType() + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(listType + "[]");
@@ -428,14 +429,14 @@ public class TypeVisitor implements NodeVisitor {
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
             if (!node.isInitialized()) {
-                node.setType(idType);
+                node.setType(idType); //If the variable is not initialized, the type is the same as the id
                 return;
             }
             String initType = node.getChildren().get(1).getType();
-            if (!canConvert(idType, initType)) {
+            if (!canConvert(idType, initType)) { //If the types do not match, throw an exception
                 throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId() + " of type " + idType + " and " + initType);
             }
-            node.setType(idType);
+            node.setType(idType); //If the types match, the type is the same as the id
        /* }
         catch (varDclNodeExeption e) {
             exceptions.add(e);
@@ -460,7 +461,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(SelfNode node) {
         //We do not visit children since this is a leaf node
-        if (!hasParent(node, ActorDclNode.class)){
+        if (!hasParent(node, ActorDclNode.class)){ //A Selfnode is only allowed to be a child of an ActorDclNode
             throw new SelfNodeException("SelfNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
         }
         node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
@@ -471,8 +472,8 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals(parLangE.BOOL.getValue())) {
-                    throw new BoolCompareException("all BoolCompareNode children does not have type bool");
+                if (!child.getType().equals(parLangE.BOOL.getValue())) { //If the children are not of type bool, throw an exception
+                    throw new BoolCompareException("all BoolCompareNode children does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(parLangE.BOOL.getValue());
@@ -488,7 +489,7 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(KillNode node) {
         //does not need types
-        if (!hasParent(node, ActorDclNode.class)){
+        if (!hasParent(node, ActorDclNode.class)){ //A KillNode is only allowed to be a child of an ActorDclNode
             throw new KillNodeException("KillNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
         }
     }
@@ -504,18 +505,17 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.visitChildren(node);
             for (AstNode child : node.getChildren()) {
-                if (child.getType() == null) {
-                    throw new FollowsNodeException("FollowsNode children does not have type defined");
+                if (child.getType() == null) { //If the type of the child is null, throw an exception
+                    throw new FollowsNodeException("FollowsNode children does not have type defined " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
-            List<String> scripts = new ArrayList<>();
-            String errorMessage = "";
+            List<String> scripts = new ArrayList<>(); // List of scripts the actor follows
+            String errorMessage = "";  // Error message to be printed
             for(AstNode child : node.getChildren()) {
-                scripts.add(child.getType());
-                errorMessage += child.getType() + ", ";
+                scripts.add(child.getType()); //Add the script to the list
+                errorMessage += child.getType() + ", "; //Add the script to the error message
             }
-            hasCorrectScriptMethods(scripts, ((ActorDclNode) node.getParent()).getId());
-            node.setType("follows");
+            hasCorrectScriptMethods(scripts, ((ActorDclNode) node.getParent()).getId()); //Check if the actor has the correct methods from the script
        /* }
         catch (FollowsNodeException e) {
             exceptions.add(e);
@@ -526,31 +526,31 @@ public class TypeVisitor implements NodeVisitor {
     }
 
     private void hasCorrectScriptMethods(List<String> scriptNames, String actorName){
-        Scope actorScope = symbolTable.lookUpScope(actorName);
-        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods();
-        actorMethods.putAll(actorScope.getDeclaredLocalMethods());
-        for (String scriptName : scriptNames){
-            Scope scope = symbolTable.lookUpScope(scriptName);
-            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods();
-            scriptMethods.putAll(scope.getDeclaredLocalMethods());
-            for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){
+        Scope actorScope = symbolTable.lookUpScope(actorName); //Find the scope of the actor
+        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods(); //Get the on methods of the actor
+        actorMethods.putAll(actorScope.getDeclaredLocalMethods()); //Add the local methods to the actor methods
+        for (String scriptName : scriptNames){ //Iterate over the scripts the actor follows
+            Scope scope = symbolTable.lookUpScope(scriptName); //Find the scope of the script
+            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods(); //Get the on methods of the script
+            scriptMethods.putAll(scope.getDeclaredLocalMethods()); //Add the local methods to the script methods
+            for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){ //Iterate over the methods of the script
                 String method = scriptMethod.getKey();
-                if (!actorMethods.containsKey(scriptMethod.getKey())){
+                if (!actorMethods.containsKey(scriptMethod.getKey())){ //If the actor does not have the method, throw an exception
                     throw new FollowsNodeException("Actor " + actorName + " does not have method: " + method + "from " + scriptName);
                 }
-                LinkedHashMap<String, Attributes> actorParams = symbolTable.lookUpScope(method+actorName).getParams();
-                LinkedHashMap<String, Attributes> scriptParams = symbolTable.lookUpScope(method+scriptName).getParams();
-                if (actorParams.size() != scriptParams.size()){
+                LinkedHashMap<String, Attributes> actorParams = symbolTable.lookUpScope(method+actorName).getParams(); //Get the parameters of the method in the actor
+                LinkedHashMap<String, Attributes> scriptParams = symbolTable.lookUpScope(method+scriptName).getParams(); //Get the parameters of the method in the script
+                if (actorParams.size() != scriptParams.size()){ //If the number of parameters do not match, throw an exception
                     throw new FollowsNodeException("Actor " + actorName + " does not have the same number of parameters as script " + scriptName + " in method " + method);
                 }
                 Set<String> set = scriptParams.keySet();
-                Iterator<String> iter = set.iterator();
-                for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){
-                    String scriptKey = iter.next();
-                    if (!actorParam.getValue().getVariableType().equals(scriptParams.get(scriptKey).getVariableType())){
+                Iterator<String> iter = set.iterator(); //Iterator for the script parameters
+                for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){ //Iterate over the parameters of the actor and script
+                    String scriptKey = iter.next(); //Get the key of the scriptParameter
+                    if (!actorParam.getValue().getVariableType().equals(scriptParams.get(scriptKey).getVariableType())){ //If the types do not match, throw an exception
                         throw new FollowsNodeException("Actor " + actorName + " does not have the same parameter types as script " + scriptName + " in method " + method);
                     }
-                    if (!actorParam.getKey().equals(scriptKey)){
+                    if (!actorParam.getKey().equals(scriptKey)){ //If the parameter names do not match, throw an exception
                         throw new FollowsNodeException("Actor " + actorName + " does not have the same parameter names as script " + scriptName + " in method " + method);
                     }
                 }
@@ -569,20 +569,20 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
-            if (node.getMethodType().equals(parLangE.LOCAL.getValue())){
+            if (node.getMethodType().equals(parLangE.LOCAL.getValue())){ //If the method type is local
                 String childType = node.getChildren().get(1).getType(); //getting BodyNode child
                 String nodeType = node.getType();
-                if (!canConvert(nodeType, childType)) {
-                    throw new MethodDclNodeException("Return does not match returnType of method " + node.getId());
+                if (!canConvert(nodeType, childType)) { //the return type and the type returned from the body should match
+                    throw new MethodDclNodeException("Return does not match returnType of method " + node.getId() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
                 }
             }
-            else if (node.getMethodType().equals(parLangE.ON.getValue())) {
-                if (node.getType() == null) {
-                    throw new MethodDclNodeException("Return type is not defined for on method node");
+            else if (node.getMethodType().equals(parLangE.ON.getValue())) { //If the method type is on
+                if (node.getType() == null) { //If the return type is not defined, throw an exception
+                    throw new MethodDclNodeException("Return type is not defined for on method " + node.getId() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
                 }
             }
-            else {
-                throw new MethodCallException("Method type is not local or on of method: " + node.getId());
+            else { //If the method type is not local or on, throw an exception
+                throw new MethodCallException("Method type is not local or on of method: " + node.getId() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             this.symbolTable.leaveScope();
         /*}
@@ -629,7 +629,7 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(IntegerNode node) {
         /*try {*/
             if (node.getValue() == null) {
-                throw new IntegerNodeException("IntegerNode value is null");
+                throw new IntegerNodeException("IntegerNode value is null " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.INT.getValue());
         /*}
@@ -645,7 +645,7 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(DoubleNode node) {
         /*try {*/
             if (node.getValue() == null) {
-                throw new DoubleNodeException("DoubleNode value is null");
+                throw new DoubleNodeException("DoubleNode value is null " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.DOUBLE.getValue());
         /*}
@@ -661,7 +661,7 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(StringNode node) {
         /*try {*/
             if (node.getValue() == null) {
-                throw new StringNodeException("StringNode value is null");
+                throw new StringNodeException("StringNode value is null " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.STRING.getValue());
        /* }
@@ -679,7 +679,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.BOOL.getValue())) {
-                    throw new BoolExpException("all BoolAndExpNode children does not have type bool");
+                    throw new BoolExpException("all BoolAndExpNode children does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(parLangE.BOOL.getValue());
@@ -698,7 +698,7 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.BOOL.getValue())) {
-                    throw new BoolExpException("all BoolExpNode children does not have type bool");
+                    throw new BoolExpException("all BoolExpNode children does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(parLangE.BOOL.getValue());
@@ -719,8 +719,8 @@ public class TypeVisitor implements NodeVisitor {
             String leftType = node.getChildren().get(0).getType();
             String rightType = node.getChildren().get(1).getType();
             String resultType = arithTypeConvert(leftType, rightType);
-            if (resultType == null) {
-                throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType);
+            if (resultType == null) { //If the types do not match, throw an exception
+                throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             node.setType(resultType);
         /*}
@@ -736,10 +736,10 @@ public class TypeVisitor implements NodeVisitor {
     public void visit(NegatedBoolNode node) {
         this.visitChildren(node);
         /*try {*/
-            if (node.getChildren().get(0).getType().equals(parLangE.BOOL.getValue())) {
+            if (node.getChildren().get(0).getType().equals(parLangE.BOOL.getValue())) { //If the child is of type bool
                 node.setType(parLangE.BOOL.getValue());
             } else {
-                throw new BoolNodeException("NegatedBoolNode does not have type bool");
+                throw new BoolNodeException("NegatedBoolNode does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
         /*}
         catch (BoolNodeException e) {
@@ -753,8 +753,8 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(BoolNode node) {
         /*try {*/
-            if (((BoolNode) node).getValue() == null) {
-                throw new BoolNodeException("BoolNode does not have type bool");
+            if (((BoolNode) node).getValue() == null) { //If the value of the node is null, throw an exception
+                throw new BoolNodeException("BoolNode does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.BOOL.getValue());
        /* }
@@ -772,10 +772,10 @@ public class TypeVisitor implements NodeVisitor {
         /*try {*/
             AstNode leftChild = node.getChildren().get(0);
             AstNode rightChild = node.getChildren().get(1);
-            if (compareExpTypeMatching(node.getOperator(), leftChild.getType(), rightChild.getType())) {
+            if (compareExpTypeMatching(node.getOperator(), leftChild.getType(), rightChild.getType())) { //If the types match
                 node.setType(parLangE.BOOL.getValue());
             } else {
-                throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType());
+                throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
        /* }
         catch (CompareTypeMatchingException e) {
@@ -788,13 +788,13 @@ public class TypeVisitor implements NodeVisitor {
 
     private boolean compareExpTypeMatching(String operator, String leftType, String rightType){
         if (leftType.equals(rightType) && leftType.equals(parLangE.INT.getValue()) || leftType.equals(parLangE.DOUBLE.getValue())){
-            return true;
+            return true; //If the types are the same and are either int or double
         }
         else if (operator.equals("==") && leftType.equals(rightType) && leftType.equals(parLangE.BOOL.getValue())){
-            return true;
+            return true; //If the types are the same and are bool
         }
         else {
-            return false;
+            return false; //If the types do not match
         }
     }
 
@@ -849,19 +849,19 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             String id = node.getAccessIdentifier();
             Attributes attributes;
-            if (hasParent(node, StateAccessNode.class)){
+            if (hasParent(node, StateAccessNode.class)){ //If the parent is a StateAccessNode, look up in stateSymbols
                 attributes = symbolTable.lookUpStateSymbol(id);
             }
             else{
-                attributes = symbolTable.lookUpSymbol(id);
+                attributes = symbolTable.lookUpSymbol(id); //Look up in symbol table
             }
             if (attributes == null){
-                throw new ArrayAccessException("Array: " + id + " not found");
+                throw new ArrayAccessException("Array: " + id + " not found " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             String identifierType = attributes.getVariableType();
             int identifierDimensions = countBracketPairs(identifierType);
-            if(identifierDimensions != node.getDimensions()){
-                throw new ArrayAccessException("Dimensions of type " + identifierType + "(" + identifierDimensions + ")" + " do not match access " + node.getAccessIdentifier() + printBrackets(node.getDimensions()) + "(" + node.getDimensions() + ")");
+            if(identifierDimensions != node.getDimensions()){ //If the dimensions do not match, throw an exception
+                throw new ArrayAccessException("Dimensions of type " + identifierType + "(" + identifierDimensions + ")" + " do not match access " + node.getAccessIdentifier() + printBrackets(node.getDimensions()) + "(" + node.getDimensions() + ") " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             String accessType = removeBrackets(identifierType);
             node.setType(accessType);
@@ -896,18 +896,18 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(StateAccessNode node) {
         /*try{*/
-            if (!hasParent(node, ActorDclNode.class)){
-                throw new StateAccessException("StateAccessNode is not a child of ActorDclNode");
+            if (!hasParent(node, ActorDclNode.class)){ //A StateAccessNode is only allowed to be a child of an ActorDclNode
+                throw new StateAccessException("StateAccessNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
-            if (!node.getChildren().isEmpty()){
+            if (!node.getChildren().isEmpty()){ //If the node has children, visit them
                 this.visitChildren(node);
                 node.setType(node.getChildren().get(0).getType());
             }
             else {
                 String id = node.getAccessIdentifier();
-                Attributes attributes = symbolTable.lookUpStateSymbol(id);
+                Attributes attributes = symbolTable.lookUpStateSymbol(id); //Look up the state symbol
                 if (attributes == null) {
-                    throw new StateAccessException("State: " + id + " not found");
+                    throw new StateAccessException("State: " + id + " not found " + node.getLineNumber() + ":" + node.getColumnNumber());
                 }
                 node.setType(attributes.getVariableType());
             }
@@ -923,8 +923,8 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(KnowsAccessNode node) {
         /*try {*/
-            if (!hasParent(node, ActorDclNode.class)) {
-                throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode");
+            if (!hasParent(node, ActorDclNode.class)) { //A KnowsAccessNode is only allowed to be a child of an ActorDclNode
+                throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             this.visitChildren(node);
             String id = node.getAccessIdentifier();
@@ -944,11 +944,11 @@ public class TypeVisitor implements NodeVisitor {
         this.visitChildren(node);
         /*try {*/
             for (AstNode child : node.getChildren()) {
-                if (!child.getType().equals(parLangE.STRING.getValue())) {
-                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue()) || child.getType().contains("[]")) {
+                if (!child.getType().equals(parLangE.STRING.getValue())) { //If the child is not of type string
+                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue()) || child.getType().contains("[]")) { //If the child is of type int or double we cn convert it to string
                         continue;
                     }
-                    throw new PrintException("Print statement only accepts string arguments");
+                    throw new PrintException("Print statement only accepts string arguments " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
         /*}
@@ -964,10 +964,10 @@ public class TypeVisitor implements NodeVisitor {
         AstNode parent = node.getParent();
         while (parent != null) {
             if (parent.getClass() == parentClass) {
-                return true;
+                return true; //If the parent is of the class parentClass
             }
             parent = parent.getParent();
         }
-        return false;
+        return false; // if the node does not have a parent of the class parentClass
     }
 }
