@@ -904,39 +904,28 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitNode node) {
-        createReaper();
+        createReaper();//creates Reaper actor responsible for terminating the actor system once all actors have been killed.
         visitChildren(node);
     }
 
+    /***
+     * creates a file named "Reaper" containing the Reaper actor class.
+     */
     private void createReaper(){
         resetStringBuilder();
 
-        String actorName=parLangE.REAPER.getValue();
-
         appendPackage();
-
         //imports necessary for most akka actor classes
-        appendImports("akka.actor",
-                "ActorRef",
-                "ActorSystem",
-                "Props",
-                "UntypedAbstractActor",
-                "ActorSelection"
-        );
-        appendImports("akka.event",
-                "Logging",
-                "LoggingAdapter"
-        );
+        appendImports("akka.actor", "ActorRef", "ActorSystem", "Props", "UntypedAbstractActor", "ActorSelection");
+        appendImports("akka.event", "Logging", "LoggingAdapter");
         appendImports("java.util","Arrays","Set","HashSet","UUID");
 
+        String actorName=parLangE.REAPER.getValue();
         appendClassDefinition(javaE.PUBLIC.getValue(),actorName, "UntypedAbstractActor");
-
-
-        //append the body of the actor
         stringBuilder.append( " {\n");
-        codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
+        codeOutput.add(getLine() );
         localIndent++;
-        appendConstructor(actorName,new ArrayList<>());
+        appendConstructor(actorName,new ArrayList<>());//new ArrayList<>() mocks list of parameters. Here, the
         appendSendWatchMeMessage();
         appendSendTerminatedMessage();
 

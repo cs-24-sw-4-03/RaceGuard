@@ -1,6 +1,6 @@
 Actor Terminator{
     State{
-        int children=0;
+        int children;
     }
     Knows{Terminator c1; Terminator c2;}
     Spawn(){}
@@ -36,4 +36,5 @@ Actor Terminator{
 main(){
     Terminator t=Spawn Terminator();
     t<-walkAndSpawn();
+    t<-kill();
 }
