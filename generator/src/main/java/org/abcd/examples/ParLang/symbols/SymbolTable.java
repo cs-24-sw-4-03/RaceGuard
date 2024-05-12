@@ -1,9 +1,6 @@
 package org.abcd.examples.ParLang.symbols;
 
-import org.abcd.examples.ParLang.AstNodes.ActorDclNode;
-import org.abcd.examples.ParLang.AstNodes.AstNode;
-import org.abcd.examples.ParLang.AstNodes.InitNode;
-import org.abcd.examples.ParLang.AstNodes.ScriptDclNode;
+import org.abcd.examples.ParLang.AstNodes.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -183,7 +180,6 @@ public class SymbolTable {
             }else if(parent instanceof ScriptDclNode){
                 return ((ScriptDclNode) parent).getId();
             }
-
             parent = parent.getParent();
         }
         return null;
