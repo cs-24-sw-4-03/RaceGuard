@@ -1,0 +1,12 @@
+Actor Precision{
+    State{double x; int y}
+    Knows{}
+    Spawn(double x, int y){
+        State.x = x;
+        State.y = y;
+    }
+}
+
+main(){
+    Precision actor = Spawn Precision(3,5);
+}
