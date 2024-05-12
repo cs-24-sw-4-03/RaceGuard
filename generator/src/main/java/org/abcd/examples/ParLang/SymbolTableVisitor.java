@@ -6,7 +6,6 @@ import org.abcd.examples.ParLang.Exceptions.DuplicateSymbolException;
 import org.abcd.examples.ParLang.Exceptions.ScopeNotFoundException;
 import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
 import org.abcd.examples.ParLang.symbols.Attributes;
-import org.abcd.examples.ParLang.symbols.Scope;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
 import java.util.ArrayList;
