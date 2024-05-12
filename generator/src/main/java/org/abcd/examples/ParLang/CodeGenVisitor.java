@@ -605,11 +605,16 @@ public class CodeGenVisitor implements NodeVisitor {
                 attributes = symbolTable.lookUpSymbol(receiverName);
             }
 
-            if (attributes != null) {
-                Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+            if(receiverNode instanceof SelfNode){
+                Scope methodScope=symbolTable.lookUpScope(methodName+symbolTable.findActorParent(receiverNode));
                 params = methodScope.getParams();
-            }else{
-                throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
+            }else {
+                if (attributes != null) {
+                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                    params = methodScope.getParams();
+                }else{
+                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
+                }
             }
         }else {
             throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node");
@@ -674,12 +679,24 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append("ActorSystem system = ActorSystem.create(\"system\")")
                     .append(javaE.SEMICOLON.getValue());
+            appendSpawnReaper();//appends code that spawn the reaper Actor.
             visitChildren(node);
             appendBodyClose();
-        }  else {
+        } else if (node.getParent() instanceof SpawnDclNode) {
+            appendBodyOpen(node);
+            stringBuilder.append("Reaper.sendWatchMeMessage(this);\n");//All actors register themselves at the reaper when they spawn.
+            appendBodyClose();
+        } else {
             appendBody(node);
         }
     }
+
+    private void appendSpawnReaper(){
+        appendInlineComment("Create Reaper Actor");
+        stringBuilder.append("system.actorOf(Props.create(Reaper.class),\"reaper\");\n");
+
+    }
+
     //In FactorialHelper this is: private final int currentValue;
     @Override
     public void visit(StateNode node) {
@@ -888,8 +905,113 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(InitNode node) {
-
+        createReaper();//creates Reaper actor responsible for terminating the actor system once all actors have been killed.
+        visitChildren(node);
     }
+
+    /***
+     * creates a file named "Reaper" containing the Reaper actor class.
+     */
+    private void createReaper(){
+        resetStringBuilder();
+
+        appendPackage();
+        //imports necessary for most akka actor classes
+        appendImports("akka.actor", "ActorRef", "ActorSystem", "Props", "UntypedAbstractActor", "ActorSelection");
+        appendImports("akka.event", "Logging", "LoggingAdapter");
+        appendImports("java.util","Arrays","Set","HashSet","UUID");
+
+        String actorName=parLangE.REAPER.getValue();
+        appendClassDefinition(javaE.PUBLIC.getValue(),actorName, "UntypedAbstractActor");
+        stringBuilder.append( " {\n");
+        codeOutput.add(getLine() );
+        localIndent++;
+        appendSendWatchMeMessage();//a static method used by other actors for sending a WatchMe message to the reaper
+        appendSendTerminatedMessage();/// a static method used by other actors for sending a Temrinated Message to the reaper
+
+        stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();\n");//The set of actors the reaper watches. when they have all terminated, the reaper kills the system.
+
+       //Protocol class for the WatchMe message.
+        appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "WatchMe");
+        stringBuilder.append("{}\n");
+        codeOutput.add(getLine());
+
+        //private onWatchMe method which is executed when the reaper receives a WatchMe message
+        stringBuilder.append("private void onWatchMe(){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("if(this.watches.add(getSender())){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("this.getContext().watch(getSender());\n");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        appendBodyClose();
+
+        //Protocol class for the Terminated message
+        appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "Terminated");
+        stringBuilder.append("{}\n");
+        codeOutput.add(getLine());
+
+        //private onTerminated method which is executed when the reaper receives a Terminated message
+        stringBuilder.append("private void onTerminated(){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("if(this.watches.remove(getSender())){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("if (this.watches.isEmpty()){\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append("this.getContext().getSystem().terminate();");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        stringBuilder.append("else{\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        //stringBuilder.append("this.log().error(\"Got termination message from unwatched {}.\", sender);")
+        appendBodyClose();
+        appendBodyClose();
+        appendBodyClose();
+
+        //onReceive
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(javaE.VOID.getValue())
+                .append(javaE.ONRECEIVE.getValue())//has value "onReceive(Object message) "
+                .append("{\n");
+        codeOutput.add(getLine());//get line and add to codeOutput before indentation changes.
+        localIndent++;
+        List<String> params=new ArrayList<>();//There are no parameters, but we mock an empty parameters list since  getOnReceiveIfBody() requires such a list.
+        appendIfElseChainLink("if", getOnReceiveIfCondition("WatchMe", "watchMe"), getOnReceiveIfBody("watchMe",params.iterator()));
+        appendIfElseChainLink("else if", getOnReceiveIfCondition("Terminated", "terminated"), getOnReceiveIfBody("terminated",params.iterator()));
+        appendElse(javaE.UNHANDLED.getValue());
+        appendBodyClose();
+        appendBodyClose();
+
+        writeToFile(actorName, codeOutput);//Write the actor class to a separate file.
+    }
+
+    private void appendSendWatchMeMessage(){
+        stringBuilder.append("public static void sendWatchMeMessage(UntypedAbstractActor actor) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("ActorSelection reaper = actor.getContext().getSystem().actorSelection(\"/user/\" + \"reaper\");\n")
+                .append("reaper.tell(new WatchMe(), actor.getSelf());\n");
+        appendBodyClose();
+    }
+
+    private void appendSendTerminatedMessage(){
+        stringBuilder.append("public static void sendTerminatedMessage(UntypedAbstractActor actor) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("ActorSelection reaper = actor.getContext().getSystem().actorSelection(\"/user/\" + \"reaper\");\n")
+                .append("reaper.tell(new Terminated(), actor.getSelf());\n");
+        appendBodyClose();
+    }
+
 
     @Override
     public void visit(IntegerNode node) {
@@ -1006,7 +1128,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false),node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false)+" ",node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
@@ -1363,5 +1485,13 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(BoolCompareNode node){
 
+    }
+
+    @Override
+    public void visit(KillNode node) {
+        stringBuilder
+                .append("Reaper.sendTerminatedMessage(this);\n")//The actor informs the reaper that it is dead.
+                .append("getContext().stop(getSelf());\n");//The actor kills itself.
+        codeOutput.add(getLine());
     }
 }

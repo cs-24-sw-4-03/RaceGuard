@@ -46,18 +46,18 @@ public class ParLang {
 
         System.out.println("\nSymbolTableVisitor");
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
-        symbolTableVisitor.visit(ast);
+        ast.accept(symbolTableVisitor);
         printExceptions(symbolTableVisitor.getExceptions());
 
         System.out.println("\nMethodVisitor");
         MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
-        methodVisitor.visit(ast);
+        ast.accept(methodVisitor);
         printExceptions(methodVisitor.getExceptions());
 
         printAST(ast, args);
         System.out.println("\nType Checking");
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
-        typeVisitor.visit(ast);
+        ast.accept(typeVisitor);
         printAST(ast, args);
         generateCode(ast,symbolTable);
     }
@@ -102,9 +102,9 @@ public class ParLang {
 
     }
 
-    private static void generateCode(AstNode ast, SymbolTable symbolTable) throws IOException {
+    private static void generateCode(InitNode ast, SymbolTable symbolTable) throws IOException {
         CodeGenVisitor codeGenVisitor = new CodeGenVisitor(symbolTable);
-        codeGenVisitor.visitChildren(ast);
+        ast.accept(codeGenVisitor);
     }
 
 }

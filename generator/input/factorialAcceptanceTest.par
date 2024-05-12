@@ -51,7 +51,7 @@ Actor FactorialCalculator{
     on calculate(int start, int end, FactorialManager manager){
         int result = 1;
 
-        for(int i = start; i <= end; start = i + 1){
+        for(int i = start; i <= end; i = i + 1){
             result = result * i;
         }
 
