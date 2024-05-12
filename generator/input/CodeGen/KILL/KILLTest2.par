@@ -1,0 +1,39 @@
+Actor Terminator{
+    State{}
+    Knows{TerminatorChild c1; TerminatorChild c2;}
+    Spawn(){}
+    on walkAndSpawn(){
+        print("Nice night for a walk. Spawning 2 companions.");
+        Knows.c1=Spawn TerminatorChild();
+        Knows.c2=Spawn TerminatorChild();
+    }
+    on kill(){
+        print("I'll be back");
+        Knows.c1<-kill();
+        Knows.c2<-kill();
+        KILL;
+    }
+}
+
+Actor TerminatorChild{
+    State{}
+    Knows{}
+    Spawn(){
+        print("TerminatorChild spawned");
+    }
+    on walk(){
+        print("Nice night for a walk.");
+    }
+    on kill(){
+        print("Hasta la vista baby");
+        KILL;
+    }
+}
+
+
+
+main(){
+    Terminator t=Spawn Terminator();
+    t<-walkAndSpawn();
+    t<-kill();
+}

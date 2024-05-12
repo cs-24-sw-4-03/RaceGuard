@@ -1421,7 +1421,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder
                 .append("Reaper.sendTerminatedMessage(this);\n")
                 .append("getContext().stop(getSelf());\n");
-
         codeOutput.add(getLine());
     }
 }
