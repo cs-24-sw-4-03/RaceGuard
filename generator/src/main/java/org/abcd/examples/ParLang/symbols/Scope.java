@@ -74,8 +74,6 @@ public class Scope {
     public void addDeclaredLocalMethod(String id, Attributes attributes) {
         if(!this.declaredLocalMethods.containsKey(id)){
             this.declaredLocalMethods.put(id, attributes);
-        }else{
-            System.out.println("Duplicate local method id: " + id);
         }
     }
 
@@ -94,8 +92,6 @@ public class Scope {
     public void addDeclaredOnMethod(String id, Attributes attributes) {
         if(!this.declaredOnMethods.containsKey(id)){
             this.declaredOnMethods.put(id, attributes);
-        }else{
-            System.out.println("Duplicate on method id: " + id);
         }
     }
 

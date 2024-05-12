@@ -1,0 +1,21 @@
+main() {
+}
+
+
+Actor test{
+    State{}
+    Knows{}
+    Spawn(){}
+
+
+    local testMethod(): void{
+
+    if(1==1){
+        if(1==1){
+            return;
+        }
+    }
+
+    return;
+    }
+}

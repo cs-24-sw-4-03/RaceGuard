@@ -31,6 +31,7 @@ spawn : SPAWN parameters body;
 actorMethod: onMethod | localMethod;
 onMethod : ON_METHOD  identifier parameters body;
 localMethod: LOCAL_METHOD identifier parameters COLON allTypes localMethodBody;
+killCall : KILL SEMICOLON;
 
 //Ways to acces either the state of an actor or access the actors known of the current actor
 actorAccess : stateAccess
@@ -90,6 +91,7 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
     ;
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
+    | methodCall
     | identifier
     | stateAccess
     | arrayAccess
@@ -101,8 +103,8 @@ unaryExp : MINUS PARAN_OPEN arithExp PARAN_CLOSE
     ; // unary minus operator
 
 // operator to compare two arithmetic expressions
-compareOperator : compareEqNEg;
-compareEqNEg : EQUAL // EQUAL and NOTEQUAL have lower precedence than other compare operators
+compareOperator : compareEqNEq;
+compareEqNEq : EQUAL // EQUAL and NOTEQUAL have lower precedence than other compare operators
     | NOTEQUAL
     | compareOther
     ;
@@ -122,6 +124,7 @@ statement : declaration SEMICOLON
     | printCall
     | returnStatement
     | spawnActor SEMICOLON
+    | killCall
     ;
 
 //a for loop can only send messages, make a declaration or assignment, or make an arithmetic axpression in the lop-end statement
@@ -131,7 +134,7 @@ forStatement : sendMsg
 
 // body is a block of code
 body : CURLY_OPEN statement*  CURLY_CLOSE;
-localMethodBody: CURLY_OPEN statement* returnStatement? CURLY_CLOSE;
+localMethodBody: CURLY_OPEN statement* returnStatement CURLY_CLOSE;
 
 
 // defines the parameters of a function
@@ -248,6 +251,7 @@ LOCAL_METHOD : 'local';
 SEND_MSG : '<-';
 SELF : 'self';
 FOLLOWS : 'follows';
+KILL : 'KILL';
 
 //Control structures
 IF : 'if';

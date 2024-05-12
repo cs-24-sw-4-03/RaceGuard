@@ -7,6 +7,15 @@ public class ArrayAccessNode extends AccessNode{
         super(accessType, accessIdentifier);
     }
 
+    private int dimensions;
+
+    public int getDimensions() {
+        return this.dimensions;
+    }
+    public void setDimensions(int dimensions) {
+        this.dimensions = dimensions;
+    }
+
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);

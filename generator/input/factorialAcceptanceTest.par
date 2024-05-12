@@ -35,7 +35,7 @@ Actor FactorialManager{
 
         if(State.resultsReceived == State.numberOfActors){
         print(State.result);
-        //KILL;
+        KILL;
         }
     }
 
@@ -56,7 +56,7 @@ Actor FactorialCalculator{
         }
 
         manager <- receiveResult(result);
-        //KILL;
+        KILL;
     }
 
 }

@@ -39,29 +39,30 @@ public class SymbolTableVisitor implements NodeVisitor {
             //Leaves the scope after visiting the children, as the variables in the Script node are not available outside the Script node
             this.symbolTable.leaveScope();
         }else{
-            this.exceptions.add(new DuplicateScopeException("Script: " + node.getId() + " already exists"));
+            this.exceptions.add(new DuplicateScopeException("Script: " + node.getId() + " already exists" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
     //Declares a variable in the symbol table if it does not already exist
     @Override
     public void visit(VarDclNode node){
+        this.visitChildren(node);
+
         if(node.getParent() instanceof StateNode){
             if(this.symbolTable.lookUpStateSymbol(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType());
                 this.symbolTable.insertStateSymbol(node.getId(), attributes);
             }else{
-                this.exceptions.add(new DuplicateSymbolException("State symbol: " + node.getId() + " already exists in Actor: " + this.symbolTable.findActorParent(node)));
+                this.exceptions.add(new DuplicateSymbolException("State symbol: " + node.getId() + " already exists in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
             }
         }else{
             if(this.symbolTable.lookUpSymbolCurrentScope(node.getId()) == null){
                 Attributes attributes = new Attributes(node.getType());
                 this.symbolTable.insertSymbol(node.getId(), attributes);
             }else{
-                this.exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope"));
+                this.exceptions.add(new DuplicateSymbolException("Symbol " + node.getId() + " already exists in current scope" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
             }
         }
-        this.visitChildren(node);
     }
 
     //Creates a new scope as a while iteration node is a new scope and leaves it after visiting the children
@@ -112,7 +113,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
             this.symbolTable.leaveScope();
         } else {
-            this.exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId() + " in Actor: " + this.symbolTable.findActorParent(node)));
+            this.exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId() + " in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
@@ -128,7 +129,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             Attributes attributes = new Attributes(paramNode.getType());
             attributes.setScope(scopeName);
             if(!this.symbolTable.insertParams(paramNode.getName(), attributes)){
-                this.exceptions.add(new DuplicateSymbolException("Param: " + paramNode.getName() + " already exists in current scope"));
+                this.exceptions.add(new DuplicateSymbolException("Param: " + paramNode.getName() + " already exists in current scope" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
             }
         }
     }
@@ -141,7 +142,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             //Leaves the scope after visiting the children, as the variables in the Actor node are not available outside the Actor node
             this.symbolTable.leaveScope();
         }else{
-            this.exceptions.add(new DuplicateScopeException("Actor: " + node.getId() + " already exists"));
+            this.exceptions.add(new DuplicateScopeException("Actor: " + node.getId() + " already exists" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
@@ -165,15 +166,17 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
-        if(node.getParent().getParent() instanceof StateNode){
-            if(this.symbolTable.lookUpStateSymbol(node.getName()) == null){
-                this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
-            }
-        //Ensures that we do not search for IdentifierNodes for method calls
-        }else if (!(node.getParent() instanceof MethodCallNode)){
-            if(this.symbolTable.lookUpSymbol(node.getName()) == null){
-                this.exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found"));
+        if(!(node.getParent() instanceof VarDclNode)){
+            //Checks whether a symbol is a State, Knows or normal symbol and searches the appropriate list
+            if(node.getParent().getParent() instanceof StateNode){
+                if(this.symbolTable.lookUpStateSymbol(node.getName()) == null){
+                    this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getName() + " not found in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+                }
+                //Ensures that we do not search for IdentifierNodes for method calls
+            }else if (!(node.getParent() instanceof MethodCallNode)){
+                if(this.symbolTable.lookUpSymbol(node.getName()) == null){
+                    this.exceptions.add(new SymbolNotFoundException("Symbol: "  + node.getName() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+                }
             }
         }
     }
@@ -181,21 +184,21 @@ public class SymbolTableVisitor implements NodeVisitor {
     @Override
     public void visit(StateAccessNode node) {
         if(this.symbolTable.lookUpStateSymbol(node.getAccessIdentifier()) == null){
-            this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
+            this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
     @Override
     public void visit(ArrayAccessNode node) {
         if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) == null){
-            this.exceptions.add(new SymbolNotFoundException("Array symbol: "  + node.getAccessIdentifier() + " not found"));
+            this.exceptions.add(new SymbolNotFoundException("Array symbol: "  + node.getAccessIdentifier() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
     @Override
     public void visit(KnowsAccessNode node) {
         if(this.symbolTable.lookUpKnowsSymbol(node.getAccessIdentifier()) == null){
-            this.exceptions.add(new SymbolNotFoundException("Knows symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node)));
+            this.exceptions.add(new SymbolNotFoundException("Knows symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
 
         this.visitChildren(node);
@@ -210,7 +213,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 Attributes attributes = new Attributes(idChildNode.getType());
                 this.symbolTable.insertKnowsSymbol(idChildNode.getName(), attributes);
             }else{
-                this.exceptions.add(new DuplicateScopeException("Duplicate Knows symbol: " + idChildNode.getName() + " found in Actor: " + this.symbolTable.findActorParent(node)));
+                this.exceptions.add(new DuplicateScopeException("Duplicate Knows symbol: " + idChildNode.getName() + " found in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
             }
         }
     }
@@ -232,7 +235,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             //Leaves the scope after visiting the children, as the variables in the method node are not available outside the method node
             this.symbolTable.leaveScope();
         } else {
-            this.exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId() + " in Script: " + this.symbolTable.findActorParent(node)));
+            this.exceptions.add(new DuplicateScopeException("Duplicate Method scope: " + node.getId() + " in Script: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
@@ -243,7 +246,7 @@ public class SymbolTableVisitor implements NodeVisitor {
             this.symbolTable.addActorsFollowingScript(this.symbolTable.findActorParent(node));
             this.symbolTable.leaveScope();
         }else {
-            exceptions.add(new ScopeNotFoundException("Script: " + script.getName() + " not found"));
+            exceptions.add(new ScopeNotFoundException("Script: " + script.getName() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
@@ -349,6 +352,9 @@ public class SymbolTableVisitor implements NodeVisitor {
     public void visit(BoolCompareNode node) {
         this.visitChildren(node);
     }
+
+    @Override
+    public void visit(KillNode node) {}
 
     @Override
     public void visit(ArithExpNode node) {
