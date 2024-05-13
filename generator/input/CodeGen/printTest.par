@@ -9,4 +9,6 @@ Actor Printer{
 main(){
     Printer printer=Spawn Printer();
     printer<-printFunc("Dennis");
+    string s="42"
+    print("print "+s+"fra main");
 }

@@ -544,7 +544,7 @@ public class CodeGenVisitor implements NodeVisitor {
         //append the body of the actor class
         appendBodyOpen(node);
         appendOnReceive(node);
-        stringBuilder.append(" private LoggingAdapter log = Logging.getLogger(getContext().system(), this);");
+        stringBuilder.append("private LoggingAdapter log = Logging.getLogger(getContext().system(), this);\n");
         appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
@@ -848,7 +848,13 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
-        } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
+        } else if(node.getParent() instanceof PrintCallNode){
+            if(symbolTable.findActorParent(node)==null){
+                stringBuilder.append("+"+node.getName());
+            }else {
+                stringBuilder.append("+\"{}\"");
+            }
+        }else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
                 if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
                             .append(" ")
@@ -1084,16 +1090,13 @@ public class CodeGenVisitor implements NodeVisitor {
                 "ActorRef",
                 "Props",
                 "UntypedAbstractActor");
+        appendImports("akka.event","Logging","LoggingAdapter");
         appendImports("java.util","Arrays", "UUID");
 
-        stringBuilder
-                .append(javaE.PUBLIC.getValue())
-                .append(javaE.CLASS.getValue())
-                .append("Main")
-                .append(" {\n");
+        appendClassDefinition(javaE.PUBLIC.getValue(), parLangE.MAIN.getValue(),null);
+        stringBuilder.append(" {\n");
         codeOutput.add(getLine());
         localIndent++;
-        stringBuilder.append(" private LoggingAdapter log = Logging.getLogger(getContext().system(), this);");
         //public static void main(String[] args) {
         //      ActorSystem system = ActorSystem.create("system");
         //} //end of main method
@@ -1190,7 +1193,12 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
-        stringBuilder.append("log.info(");
+        boolean calledInMain;
+        if(calledInMain=symbolTable.findActorParent(node)==null){
+            stringBuilder.append("System.out.println(");
+        }else{
+            stringBuilder.append("log.info(");
+        }
         if(isTwoDimensionalArray(node)){
             printTwoDimensionalArray(node);
         }
@@ -1200,19 +1208,11 @@ public class CodeGenVisitor implements NodeVisitor {
         else{
             visitChild(node.getChildren().get(0));
         }
-        visitPrintChildrenFromChildOne(node);
+        visitPrintChildrenFromChildOne(node,calledInMain);
         stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
         codeOutput.add(getLine());
     }
 
-    private void createLogString(PrintCallNode node){
-        StringBuilder localStringBuilder=new StringBuilder();
-        int size=node.getChildren().size();
-        for(int i=+0;i<size; i++){
-
-        }
-
-    }
 
     //Check if the print call node is a one dimensional array
     private boolean isOneDimensionalArray(PrintCallNode node) {
@@ -1236,7 +1236,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     //Visit all the children of the print call node except the first one
-    private void visitPrintChildrenFromChildOne(PrintCallNode node) {
+    private void visitPrintChildrenFromChildOne(PrintCallNode node, boolean calledInMain) {
         String variables="";
         int size=node.getChildren().size();
         if( size > 1){
@@ -1248,12 +1248,11 @@ public class CodeGenVisitor implements NodeVisitor {
                     } else {
                         variables += idChild.getName() +", ";
                     }
-                    stringBuilder.append("+\" { } \"");
                 }
                 visitChild(node.getChildren().get(i));
             }
         }
-        if(!variables.isEmpty()){
+        if(!variables.isEmpty()&&!calledInMain){
             stringBuilder.append(", "+variables);
         }
     }
