@@ -60,25 +60,28 @@ public class ParLang {
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
 
+        if (!symbolTableVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in scope checking creating symboltable");
+            printExceptions(symbolTableVisitor.getExceptions());
+            System.exit(1);
+        }
+
         MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
         methodVisitor.visit(ast);
+
+        if (!methodVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in scope checking visiting methods");
+            printExceptions(methodVisitor.getExceptions());
+            System.exit(1);
+        }
 
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);
         printAST(ast, args);
 
-        if(!symbolTableVisitor.getExceptions().isEmpty() || !typeVisitor.getExceptions().isEmpty() || !methodVisitor.getExceptions().isEmpty()) {
-            System.err.println("Errors detected in scope checking or type checking.");
-
-            System.out.println("\nSymbolTableVisitor");
-            printExceptions(symbolTableVisitor.getExceptions());
-
-            System.out.println("\nMethodVisitor");
-            printExceptions(methodVisitor.getExceptions());
-
-            System.out.println("\nType Checking");
+        if(!typeVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in type checking.");
             printExceptions(typeVisitor.getExceptions());
-
             System.exit(1);
         }
 
