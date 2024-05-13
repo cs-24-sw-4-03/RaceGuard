@@ -1,0 +1,12 @@
+Actor Printer{
+    State{}
+    Knows{}
+    Spawn(){}
+    on printFunc(string s){
+        print("Jeg hedder "+s);
+    }
+}
+main(){
+    Printer printer=Spawn Printer();
+    printer<-printFunc("Dennis");
+}

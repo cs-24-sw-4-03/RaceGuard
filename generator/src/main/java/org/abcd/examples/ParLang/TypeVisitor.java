@@ -325,10 +325,7 @@ public class TypeVisitor implements NodeVisitor {
                     attributes = symbolTable.lookUpStateSymbol(receiverName.replaceAll("State.","")); //Look up the state symbol
                 }else if(receiverNode instanceof KnowsAccessNode){
                     attributes = symbolTable.lookUpKnowsSymbol(receiverName.replaceAll("Knows.","")); //Look up the knows symbol
-                }else if(receiverNode instanceof SelfNode){
-                    String actorName = symbolTable.findActorParent(receiverNode);
-                    attributes = symbolTable.lookUpSymbol(actorName);
-                }else if(receiverNode instanceof IdentifierNode){
+                } else if(receiverNode instanceof IdentifierNode){
                     attributes = symbolTable.lookUpSymbol(receiverName);
                 }
                 if(receiverNode instanceof SelfNode){

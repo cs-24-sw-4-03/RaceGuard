@@ -544,6 +544,7 @@ public class CodeGenVisitor implements NodeVisitor {
         //append the body of the actor class
         appendBodyOpen(node);
         appendOnReceive(node);
+        stringBuilder.append(" private LoggingAdapter log = Logging.getLogger(getContext().system(), this);");
         appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
@@ -1092,6 +1093,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(" {\n");
         codeOutput.add(getLine());
         localIndent++;
+        stringBuilder.append(" private LoggingAdapter log = Logging.getLogger(getContext().system(), this);");
         //public static void main(String[] args) {
         //      ActorSystem system = ActorSystem.create("system");
         //} //end of main method
@@ -1188,7 +1190,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
-        stringBuilder.append("System.out.println(");
+        stringBuilder.append("log.info(");
         if(isTwoDimensionalArray(node)){
             printTwoDimensionalArray(node);
         }
@@ -1202,6 +1204,16 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
         codeOutput.add(getLine());
     }
+
+    private void createLogString(PrintCallNode node){
+        StringBuilder localStringBuilder=new StringBuilder();
+        int size=node.getChildren().size();
+        for(int i=+0;i<size; i++){
+
+        }
+
+    }
+
     //Check if the print call node is a one dimensional array
     private boolean isOneDimensionalArray(PrintCallNode node) {
        return node.getChildren().get(0).getType().contains("[]");
@@ -1222,13 +1234,27 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
     }
+
     //Visit all the children of the print call node except the first one
     private void visitPrintChildrenFromChildOne(PrintCallNode node) {
-        if(node.getChildren().size() > 1){
-            for(int i = 1; i < node.getChildren().size(); i++){
-                stringBuilder.append(" + ");
+        String variables="";
+        int size=node.getChildren().size();
+        if( size > 1){
+            for(int i = 1; i < size; i++){
+                AstNode child= node.getChildren().get(i);
+                if(child instanceof IdentifierNode idChild){
+                    if(i==size-1){
+                        variables+= idChild.getName();
+                    } else {
+                        variables += idChild.getName() +", ";
+                    }
+                    stringBuilder.append("+\" { } \"");
+                }
                 visitChild(node.getChildren().get(i));
             }
+        }
+        if(!variables.isEmpty()){
+            stringBuilder.append(", "+variables);
         }
     }
 
