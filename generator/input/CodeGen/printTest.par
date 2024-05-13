@@ -19,7 +19,7 @@ Actor Printer{
         print("private: "+army[0]);
         print(army[0]+" private");
         print(x);
-        print(x+x);
+        print(x+x);//should print "22"
         print("int: "+x);
         print(x+" int");
         print(d);
@@ -53,12 +53,10 @@ main(){
     print("private: "+army[0]);
     print(army[0]+" private");
     print(x);
-    print(x+x);
+    print(x+x);//should print "22".
     print("int: "+x);
     print(x+" int");
     print(d);
     print("double :"+d);
     print(d+" double");
-
-
 }
