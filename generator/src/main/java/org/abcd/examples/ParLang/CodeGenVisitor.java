@@ -1192,13 +1192,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 if(!isArray(child) && child instanceof IdentifierNode idChild){
                         variables+=", "+ idChild.getName();
                 }
-                if(calledInMain){
-                    stringBuilder.append("String.valueOf(");
-                }
+                stringBuilder.append("String.valueOf(");
                 visitChild(node.getChildren().get(i));
-                if (calledInMain) {
-                    stringBuilder.append(")");
-                }
+                stringBuilder.append(")");
+
                 if(!(i==size-1)){
                     stringBuilder.append(" + ");
                 }
