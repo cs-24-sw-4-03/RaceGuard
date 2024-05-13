@@ -7,7 +7,7 @@ Actor testActor follows test{
     State {}
     Knows {}
     Spawn(){}
-    on someMethod(int e, double y){}
+    on someMethod(int e, double y){} //Wrong name for argument
 }
 
 main(){}

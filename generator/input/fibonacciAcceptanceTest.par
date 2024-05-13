@@ -26,7 +26,7 @@ Actor FibCalculator follows Fib{
         int result = 0;
         bool resultReceived = FALSE;
     }
-    Knows{Fib parent}
+    Knows{Fib parent;}
 
     Spawn(Fib parent, int number){
         Knows.parent = parent;
@@ -52,7 +52,7 @@ Actor FibCalculator follows Fib{
             KILL;
         }else{
             State.resultReceived = TRUE;
-            State.result = result
+            State.result = result;
         }
     }
 }
