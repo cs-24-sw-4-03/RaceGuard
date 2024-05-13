@@ -89,7 +89,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 if(useActorRef){
                     String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
                     if(substrings.length>1){
-                        javaType=javaE.ACTORREF.getValue()+substrings[1];
+                        String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];
+                        javaType=actorRefNoSpace+substrings[1]+" ";
                     }else{
                         javaType=javaE.ACTORREF.getValue();
                     }
@@ -303,7 +304,6 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendOnReceive(ActorDclNode node){
         String actorName=node.getId();
         Scope actorScope=symbolTable.lookUpScope(actorName);//Get the scope of the actor.
-        Set<String> onMethodsList= actorScope.getDeclaredOnMethods().keySet();
         Iterator<String> onMethods= actorScope.getDeclaredOnMethods().keySet().iterator();//get an iterator over the on methods of the actor.
         String methodName;
         String className;
@@ -321,14 +321,20 @@ public class CodeGenVisitor implements NodeVisitor {
         //The body is an if-els chain.
         if(onMethods.hasNext()) {//The first on-methods results in an if-statement.
             methodName = onMethods.next();
-            className = getclassName(node, methodName);
-            Iterator<String> params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet().iterator();
-            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params));
+            className = getClassName(node, methodName);//Get protocol class. If the method is in a script, this class will be the static protocol class in the Script-class.
+            Set<String> params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet();
+            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params.iterator()));
+            if(className.contains(".")){//If first protocol class is from a script (i.e. GreeterScript.Greet), then we also add a receiver for the protocol class in the actor (i.e "Greet")
+                appendIfElseChainLink("else if",getOnReceiveIfCondition(capitalizeFirstLetter(methodName),methodName),getOnReceiveIfBody(methodName,params.iterator()));
+            }
             while (onMethods.hasNext()) {//The remaining on-methods results in if-else statements
                 methodName = onMethods.next();
-                className = getclassName(node, methodName);
-                params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet().iterator();
-                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params));
+                className = getClassName(node, methodName);
+                params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet();
+                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params.iterator()));
+                if(className.contains(".")){
+                    appendIfElseChainLink("else if",getOnReceiveIfCondition(capitalizeFirstLetter(methodName),methodName),getOnReceiveIfBody(methodName,params.iterator()));
+                }
             }
             appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
         }else{
@@ -340,7 +346,7 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
     }
 
-    private String getclassName(ActorDclNode node,String methodName){
+    private String getClassName(ActorDclNode node,String methodName){
         MethodDclNode methodNode=null;
         String className=capitalizeFirstLetter(methodName);
 
@@ -536,6 +542,7 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyOpen(node);
         appendOnReceive(node);
         stringBuilder.append("private LoggingAdapter log = Logging.getLogger(getContext().system(), this);\n");
+        codeOutput.add(getLine());
         appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
@@ -680,6 +687,7 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if (node.getParent() instanceof SpawnDclNode) {
             appendBodyOpen(node);
             stringBuilder.append("Reaper.sendWatchMeMessage(this);\n");//All actors register themselves at the reaper when they spawn.
+            codeOutput.add(getLine());
             appendBodyClose();
         } else {
             appendBody(node);
@@ -1309,7 +1317,6 @@ public class CodeGenVisitor implements NodeVisitor {
         appendTellOpen(node);
         appendProtocolArg(node);
         appendTellClose(node);
-
     }
 
     private void appendTellOpen(SendMsgNode node){
@@ -1433,7 +1440,6 @@ public class CodeGenVisitor implements NodeVisitor {
         } else{
             visitChildren(node);
         }
-
 
         //if the parent is not a for node, add a semicolon, else don't
         if(!(node.getParent() instanceof ForNode)){
