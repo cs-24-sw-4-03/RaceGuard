@@ -17,8 +17,8 @@ Actor FactorialMain follows Factorial{
         manager <- calcFactorial(self, requestedFactorial);
     }
 
-    on multiply(int result){
-	    State.result = result;
+    on multiply(int x){
+	    State.result = x;
     }
 }
 
