@@ -532,11 +532,13 @@ public class TypeVisitor implements NodeVisitor {
 
     private void hasCorrectScriptMethods(List<String> scriptNames, String actorName){
         Scope actorScope = symbolTable.lookUpScope(actorName); //Find the scope of the actor
-        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods(); //Get the on methods of the actor
+        HashMap<String, Attributes> actorMethods = new HashMap<>();
+        actorMethods.putAll(actorScope.getDeclaredOnMethods()); //Get the on methods of the actor
         actorMethods.putAll(actorScope.getDeclaredLocalMethods()); //Add the local methods to the actor methods
         for (String scriptName : scriptNames){ //Iterate over the scripts the actor follows
             Scope scope = symbolTable.lookUpScope(scriptName); //Find the scope of the script
-            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods(); //Get the on methods of the script
+            HashMap<String, Attributes> scriptMethods = new HashMap<>();
+            scriptMethods.putAll(scope.getDeclaredOnMethods()); //Get the on methods of the script
             scriptMethods.putAll(scope.getDeclaredLocalMethods()); //Add the local methods to the script methods
             for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){ //Iterate over the methods of the script
                 String method = scriptMethod.getKey();
