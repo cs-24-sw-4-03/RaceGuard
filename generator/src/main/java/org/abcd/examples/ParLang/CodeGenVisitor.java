@@ -917,9 +917,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
         appendPackage();
         //imports necessary for most akka actor classes
-        appendImports("akka.actor", "ActorRef", "ActorSystem", "Props", "UntypedAbstractActor", "ActorSelection");
+        appendImports("akka.actor", "*");
         appendImports("akka.event", "Logging", "LoggingAdapter");
-        appendImports("java.util","Arrays","Set","HashSet","UUID");
+        appendImports("java.util","Set","HashSet");
 
         String actorName=parLangE.REAPER.getValue();
         appendClassDefinition(javaE.PUBLIC.getValue(),actorName, "UntypedAbstractActor");
@@ -927,7 +927,6 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine() );
         localIndent++;
         appendSendWatchMeMessage();//a static method used by other actors for sending a WatchMe message to the reaper
-        appendSendTerminatedMessage();/// a static method used by other actors for sending a Temrinated Message to the reaper
 
         stringBuilder.append("private final Set<ActorRef> watches = new HashSet<>();\n");//The set of actors the reaper watches. when they have all terminated, the reaper kills the system.
 
@@ -948,10 +947,7 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
         appendBodyClose();
 
-        //Protocol class for the Terminated message
-        appendStaticFinalClassDef(javaE.PUBLIC.getValue(), "Terminated");
-        stringBuilder.append("{}\n");
-        codeOutput.add(getLine());
+        //We use protocol class Terminated from akka.actor package
 
         //private onTerminated method which is executed when the reaper receives a Terminated message
         stringBuilder.append("private void onTerminated(){\n");
@@ -1001,17 +997,6 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("reaper.tell(new WatchMe(), actor.getSelf());\n");
         appendBodyClose();
     }
-
-    private void appendSendTerminatedMessage(){
-        stringBuilder.append("public static void sendTerminatedMessage(UntypedAbstractActor actor) { \n");
-        codeOutput.add(getLine());
-        localIndent++;
-        stringBuilder
-                .append("ActorSelection reaper = actor.getContext().getSystem().actorSelection(\"/user/\" + \"reaper\");\n")
-                .append("reaper.tell(new Terminated(), actor.getSelf());\n");
-        appendBodyClose();
-    }
-
 
     @Override
     public void visit(IntegerNode node) {
@@ -1490,8 +1475,8 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(KillNode node) {
         stringBuilder
-                .append("Reaper.sendTerminatedMessage(this);\n")//The actor informs the reaper that it is dead.
                 .append("getContext().stop(getSelf());\n");//The actor kills itself.
+                //Because the Reaper watches the actor, it informs the reaper that it is dead. And sends Terminated message to the reaper.
         codeOutput.add(getLine());
     }
 }

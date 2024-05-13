@@ -7,7 +7,6 @@ main(){
     Spawn FibManager(5);
 }
 
-
 Actor FibManager follows Fib{
     State{}
     Knows{}
@@ -46,7 +45,6 @@ Actor FibCalculator follows Fib{
             Spawn FibCalculator(self, number - 2);
         }
     }
-
 
     on result(int result){
         if(State.numOfKids <= 1){
