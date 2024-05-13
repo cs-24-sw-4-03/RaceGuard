@@ -4,7 +4,7 @@ on result(int result);
 }
 
 main(){
-    Spawn FibManager(10);
+    Spawn FibManager(5);
 }
 
 
