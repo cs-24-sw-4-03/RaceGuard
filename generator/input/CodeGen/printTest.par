@@ -4,15 +4,17 @@ Actor Printer{
     Spawn(){}
     on printFunc(string s){
         int[3][3] a = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        int[3] b={1,2,3};
+        print("Actor:")
         print("Jeg hedder "+s);
-        print("array fra actor :"+a);
-        print(a);
+        print("array a :"+a);
+        print("array b :"+b);
+        print("arrays a+b: "a+b);
+        print("arrays b+a: "b+a);
         print(a+" det var det");
-
 
         int x=2;
         double d=2.71;
-
         string[3] army ={"ryan","bo","gorm"};
 
         print(army[0]);
@@ -40,6 +42,7 @@ main(){
     printer<-printFunc("Dennis");
     string s="42";
     int[3][3] a = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    print("Main:")
     print(s+" fra main");
     print("array fra main: "+a);
     print(a+" det var det");

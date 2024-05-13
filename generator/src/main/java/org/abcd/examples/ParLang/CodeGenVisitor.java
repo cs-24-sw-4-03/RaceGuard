@@ -50,7 +50,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.LONG.getValue();
                 break;
             case "int[]" :
-                javaType=javaE.LONG_ARRAY.getValue();
+                javaType="Integer[]";//Converting the array to an object array allows for printing it.
                 break;
             case "int[][]":
                 javaType=javaE.LONG_ARRAY_2D.getValue();
@@ -59,7 +59,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.DOUBLE.getValue();
                 break;
             case "double[]" :
-                javaType=javaE.DOUBLE_ARRAY.getValue();
+                javaType=javaE.OBJECT_ARRAY.getValue();
                 break;
             case "double[][]":
                 javaType=javaE.DOUBLE_ARRAY_2D.getValue();
@@ -68,7 +68,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.BOOLEAN.getValue();
                 break;
             case "bool[]" :
-                javaType=javaE.BOOLEAN_ARRAY.getValue();
+                javaType=javaE.OBJECT_ARRAY.getValue();
                 break;
             case "bool[][]":
                 javaType=javaE.BOOLEAN_ARRAY_2D.getValue();
@@ -846,31 +846,31 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append("\"{}\"");
             }
         }else if(isArray(node)&& node.getParent() instanceof PrintCallNode){
+            stringBuilder.append("Arrays.deepToString(");
             stringBuilder
-                    .append("Arrays.deepToString(")
-                            .append(node.getName())
+                    .append(node.getName())
                     .append(")");
         } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
                 if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(" ")
                             .append(node.getName());
                     stringBuilder
                             .append(" = ")
                             .append(javaE.NEW.getValue())
                             .append(VarTypeConverter(node.getType(),true,true));
+                    stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove unnecessary space
                     } else {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(" ")
                             .append(node.getName())
-                            .append(" = new ").append(VarTypeConverter(node.getType(),true, false));
+                            .append(" = new ")
+                            .append(VarTypeConverter(node.getType(),true, false));
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
             String type;
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
             }else{
-                type= VarTypeConverter(node.getType(),false,false)+" ";
+                type= VarTypeConverter(node.getType(),false,false);
             }
             stringBuilder
                     .append(type)
@@ -1445,7 +1445,6 @@ public class CodeGenVisitor implements NodeVisitor {
 
         } else{
             visitChildren(node);
-
         }
 
 

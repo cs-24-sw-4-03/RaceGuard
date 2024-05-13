@@ -39,6 +39,7 @@ public enum javaE {
     BOOLEAN("boolean "),
     BOOLEAN_ARRAY("boolean[] "),
     BOOLEAN_ARRAY_2D("boolean[][] "),
+    OBJECT_ARRAY("Object[]"),
     TELL("tell"),
     NEW("new "),
     GET_SELF("getSelf()"),
