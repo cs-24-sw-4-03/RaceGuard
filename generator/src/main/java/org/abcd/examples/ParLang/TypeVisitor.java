@@ -165,7 +165,6 @@ public class TypeVisitor implements NodeVisitor {
                 node.setType(attributes.getVariableType()); //Set the type of the node to the type of the symbol
             }
             else {
-                System.out.println("Symbol: " + node.getName());
                 if (hasParent(node, StateNode.class)) { //If the parent is a StateNode lookup in stateSymbols
                     node.setType(this.symbolTable.lookUpStateSymbol(node.getName()).getVariableType());
                 }
@@ -177,7 +176,6 @@ public class TypeVisitor implements NodeVisitor {
                 }
                 else {
                     //If the parent is not a StateNode, KnowsNode, or followsNode lookup in the symbol table
-                    System.out.println("Normal Symbol: " + node.getName());
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
             }
