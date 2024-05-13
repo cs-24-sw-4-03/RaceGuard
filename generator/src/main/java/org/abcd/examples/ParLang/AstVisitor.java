@@ -711,9 +711,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if(ctx.arithExp(1) !=null){ //Access second child - Two dimensions
             node.addChild(visit(ctx.arithExp(1))); //visit and add the arithmetic expression as a child
         }
-
         return node;
     }
+
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
         methodBodyNode.setLineNumber(ctx.getStart().getLine());

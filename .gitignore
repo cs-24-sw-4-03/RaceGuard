@@ -1,5 +1,5 @@
 .idea
 generator/target/
-generator/output/
+output/src/main/java/output/*
+output/target/
 .vscode
-/output/src/main/java/output/

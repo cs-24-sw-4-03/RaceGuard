@@ -331,13 +331,18 @@ public class TypeVisitor implements NodeVisitor {
                 }else if(receiverNode instanceof IdentifierNode){
                     attributes = symbolTable.lookUpSymbol(receiverName);
                 }
-
-                if (attributes != null) {
-                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                if(receiverNode instanceof SelfNode){
+                    Scope methodScope=symbolTable.lookUpScope(methodName+symbolTable.findActorParent(receiverNode));
                     params = methodScope.getParams();
                     checkArgTypes(node, params, methodName); //Check the arguments against the parameters
-                }else{ //If the attributes are null, throw an exception
-                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found " + node.getLineNumber() + ":" + node.getColumnNumber());
+                }else {
+                    if (attributes != null) {
+                        Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                        params = methodScope.getParams();
+                        checkArgTypes(node, params, methodName); //Check the arguments against the parameters
+                    }else{ //If the attributes are null, throw an exception
+                        throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found " + node.getLineNumber() + ":" + node.getColumnNumber());
+                    }
                 }
             }else { //If the parent is not a method call, spawn actor or send message node, throw an exception
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node " + node.getLineNumber() + ":" + node.getColumnNumber());
