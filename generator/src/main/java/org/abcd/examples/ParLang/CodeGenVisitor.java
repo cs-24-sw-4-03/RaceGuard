@@ -50,7 +50,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.LONG.getValue();
                 break;
             case "int[]" :
-                javaType="Integer[]";//Converting the array to an object array allows for printing it.
+                javaType="Long[]";//Converting the array to an object array allows for printing it.
                 break;
             case "int[][]":
                 javaType=javaE.LONG_ARRAY_2D.getValue();
