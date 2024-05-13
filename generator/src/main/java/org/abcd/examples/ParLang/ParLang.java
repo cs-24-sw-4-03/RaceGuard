@@ -55,7 +55,6 @@ public class ParLang {
         printAST(ast, args);
         printCST(tree, parser);
 
-        System.out.println("\nScoping");
         SymbolTable symbolTable = new SymbolTable();
 
         System.out.println("\nSymbolTableVisitor");
