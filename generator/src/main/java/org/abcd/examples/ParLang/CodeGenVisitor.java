@@ -1008,8 +1008,8 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append(node.getValue());
         } else{
             stringBuilder
-                    .append(node.getValue())
-                    .append("L"); //java interprets integer literals as int by default. This converts it to long in the target code.
+                    .append(node.getValue());
+                    //No need to append L as this is handled in the VarTypeConverter method
         }
 
     }
