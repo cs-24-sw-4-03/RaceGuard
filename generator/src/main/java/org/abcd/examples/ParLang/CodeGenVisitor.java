@@ -50,7 +50,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.LONG.getValue();
                 break;
             case "int[]" :
-                javaType=javaE.LONG_ARRAY.getValue();
+                javaType=javaE.LONG_ARRAY.getValue();;//Converting the array to an object array allows for printing it.
                 break;
             case "int[][]":
                 javaType=javaE.LONG_ARRAY_2D.getValue();
@@ -81,18 +81,21 @@ public class CodeGenVisitor implements NodeVisitor {
                 break;
             case "string[][]":
                 javaType=javaE.STRING_ARRAY_2D.getValue();
+                break;
             case "void":
                 javaType=javaE.VOID.getValue();
+                break;
             default:
                 if(useActorRef){
-                    javaType=javaE.ACTORREF.getValue();
                     String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
                     if(substrings.length>1){
-                        String[] actorRefNoSpace=javaType.split(" ");
-                        javaType=actorRefNoSpace[0]+substrings[1];
+                        String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];
+                        javaType=actorRefNoSpace+substrings[1]+" ";
+                    }else{
+                        javaType=javaE.ACTORREF.getValue();
                     }
                 }else {
-                    javaType=parlangType;
+                    javaType=parlangType+" ";
                 }
         }
         if(removeBrackets){
@@ -318,14 +321,20 @@ public class CodeGenVisitor implements NodeVisitor {
         //The body is an if-els chain.
         if(onMethods.hasNext()) {//The first on-methods results in an if-statement.
             methodName = onMethods.next();
-            className = getclassName(node, methodName);
-            Iterator<String> params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet().iterator();
-            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params));
+            className = getClassName(node, methodName);//Get protocol class. If the method is in a script, this class will be the static protocol class in the Script-class.
+            Set<String> params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet();
+            appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params.iterator()));
+            if(className.contains(".")){//If first protocol class is from a script (i.e. GreeterScript.Greet), then we also add a receiver for the protocol class in the actor (i.e "Greet")
+                appendIfElseChainLink("else if",getOnReceiveIfCondition(capitalizeFirstLetter(methodName),methodName),getOnReceiveIfBody(methodName,params.iterator()));
+            }
             while (onMethods.hasNext()) {//The remaining on-methods results in if-else statements
                 methodName = onMethods.next();
-                className = getclassName(node, methodName);
-                params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet().iterator();
-                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params));
+                className = getClassName(node, methodName);
+                params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet();
+                appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params.iterator()));
+                if(className.contains(".")){
+                    appendIfElseChainLink("else if",getOnReceiveIfCondition(capitalizeFirstLetter(methodName),methodName),getOnReceiveIfBody(methodName,params.iterator()));
+                }
             }
             appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
         }else{
@@ -337,7 +346,7 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
     }
 
-    private String getclassName(ActorDclNode node,String methodName){
+    private String getClassName(ActorDclNode node,String methodName){
         MethodDclNode methodNode=null;
         String className=capitalizeFirstLetter(methodName);
 
@@ -448,20 +457,19 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ArrayAccessNode node){
         stringBuilder.append(node.getAccessIdentifier());
-        if(accessArrayDimensions(node) == 1){
+        if(node.getChildren().size() == 1){
                 stringBuilder.append("[");
-                if(node.getChildren().get(0) instanceof IdentifierNode){
+                if(node.getChildren().getFirst() instanceof IdentifierNode){
                     typeCastArrayAccessNode(node,0);
                 }
-                visitChild(node.getChildren().get(0));
+                visitChild(node.getChildren().getFirst());
                 stringBuilder.append("]");
-            }
-            else{
+            } else if (node.getChildren().size()==2){
                 stringBuilder.append("[");
-                if(node.getChildren().get(0) instanceof IdentifierNode){
+                if(node.getChildren().getFirst() instanceof IdentifierNode){
                     typeCastArrayAccessNode(node,0);
                 }
-                visitChild(node.getChildren().get(0));
+                visitChild(node.getChildren().getFirst());
                 stringBuilder.append("]");
                 stringBuilder.append("[");
                 if(node.getChildren().get(1) instanceof IdentifierNode){
@@ -477,14 +485,6 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    //Check if the array access node is a 1D array or 2D array
-    private int accessArrayDimensions(AstNode node) {
-      if (node.getParent().getChildren().get(0).getChildren().size() == 1) {
-            return 1;
-        } else {
-            return 2;
-        }
-    }
     private void resetStringBuilder(StringBuilder sb) {
         sb.setLength(0);
     }
@@ -541,6 +541,8 @@ public class CodeGenVisitor implements NodeVisitor {
         //append the body of the actor class
         appendBodyOpen(node);
         appendOnReceive(node);
+        stringBuilder.append("private LoggingAdapter log = Logging.getLogger(getContext().system(), this);\n");
+        codeOutput.add(getLine());
         appendBodyClose();
 
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
@@ -685,6 +687,7 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if (node.getParent() instanceof SpawnDclNode) {
             appendBodyOpen(node);
             stringBuilder.append("Reaper.sendWatchMeMessage(this);\n");//All actors register themselves at the reaper when they spawn.
+            codeOutput.add(getLine());
             appendBodyClose();
         } else {
             appendBody(node);
@@ -844,40 +847,38 @@ public class CodeGenVisitor implements NodeVisitor {
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
+        } else if(!isArray(node) && node.getParent() instanceof PrintCallNode){
+            if(symbolTable.findActorParent(node)==null){
+                stringBuilder.append(node.getName());
+            }else {
+                stringBuilder.append("\"{}\"");
+            }
+        }else if(isArray(node)&& node.getParent() instanceof PrintCallNode){
+            stringBuilder.append("Arrays.deepToString(");
+            stringBuilder
+                    .append(node.getName())
+                    .append(")");
         } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
                 if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(" ")
                             .append(node.getName());
                     stringBuilder
                             .append(" = ")
                             .append(javaE.NEW.getValue())
                             .append(VarTypeConverter(node.getType(),true,true));
-                    /*
-                            .append("[")
-                            .append(((IntegerNode) node.getParent().getChildren().get(1)).getValue())
-                            .append("]");
-                    if(node.getParent().getChildren().size()==3){
-                        stringBuilder
-                                .append("[")
-                                .append(((IntegerNode) node.getParent().getChildren().get(1)).getValue())
-                                .append("]");
-                    }
-                    */
-
-
-                } else {
+                    stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove unnecessary space
+                    } else {
                     stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(" ")
                             .append(node.getName())
-                            .append(" = new ").append(VarTypeConverter(node.getType(),true, false));
+                            .append(" = new ")
+                            .append(VarTypeConverter(node.getType(),true, false));
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
             String type;
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
             }else{
-                type= VarTypeConverter(node.getType(),false,false)+" ";
+                type= VarTypeConverter(node.getType(),false,false);
             }
             stringBuilder
                     .append(type)
@@ -1009,7 +1010,9 @@ public class CodeGenVisitor implements NodeVisitor {
         } else{
             stringBuilder
                     .append(node.getValue());
-                    //No need to append L as this is handled in the VarTypeConverter method
+            if(node.getParent().getParent() instanceof InitializationNode && node.getParent().getParent().getType().contains("[") ){
+                stringBuilder.append("L");//append L when Integer is in an array. Necessary since array would be of type Long[] or Long[][].
+            }
         }
 
     }
@@ -1065,13 +1068,11 @@ public class CodeGenVisitor implements NodeVisitor {
                 "ActorRef",
                 "Props",
                 "UntypedAbstractActor");
+        appendImports("akka.event","Logging","LoggingAdapter");
         appendImports("java.util","Arrays", "UUID");
 
-        stringBuilder
-                .append(javaE.PUBLIC.getValue())
-                .append(javaE.CLASS.getValue())
-                .append("Main")
-                .append(" {\n");
+        appendClassDefinition(javaE.PUBLIC.getValue(), parLangE.MAIN.getValue(),null);
+        stringBuilder.append(" {\n");
         codeOutput.add(getLine());
         localIndent++;
         //public static void main(String[] args) {
@@ -1113,7 +1114,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
             //To be done
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
-            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),false,false)+" ",node.getId());
+            appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),true,false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
             visit((LocalMethodBodyNode) node.getBodyNode()); //append the method's body in the target code.
         }
@@ -1170,47 +1171,38 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(PrintCallNode node) {
-        stringBuilder.append("System.out.println(");
-        if(isTwoDimensionalArray(node)){
-            printTwoDimensionalArray(node);
+        boolean calledInMain;
+        if(calledInMain=symbolTable.findActorParent(node)==null){
+            stringBuilder.append("System.out.println(");
+        }else{
+            stringBuilder.append("log.info(");
         }
-        else if(isOneDimensionalArray(node)){
-            printOneDimensionalArray(node);
-        }
-        else{
-            visitChild(node.getChildren().get(0));
-        }
-        visitPrintChildrenFromChildOne(node);
+
+        visitPrintChildrenFromChildOne(node,calledInMain);
         stringBuilder.append(")").append(javaE.SEMICOLON.getValue());
         codeOutput.add(getLine());
     }
-    //Check if the print call node is a one dimensional array
-    private boolean isOneDimensionalArray(PrintCallNode node) {
-       return node.getChildren().get(0).getType().contains("[]");
-    }
-    //Check if the print call node is a two dimensional array
-    private boolean isTwoDimensionalArray(PrintCallNode node) {
-        return node.getChildren().get(0).getType().contains("[][]");
-    }
-    //Print the one dimensional array
-    private void printOneDimensionalArray(PrintCallNode node){
-        stringBuilder.append("Arrays.toString(");
-        visitChild(node.getChildren().get(0));
-        stringBuilder.append(")");
-    }
-    //Print the two dimensional array
-    private void printTwoDimensionalArray(PrintCallNode node){
-        stringBuilder.append("Arrays.deepToString(");
-        visitChild(node.getChildren().get(0));
-        stringBuilder.append(")");
-    }
+
     //Visit all the children of the print call node except the first one
-    private void visitPrintChildrenFromChildOne(PrintCallNode node) {
-        if(node.getChildren().size() > 1){
-            for(int i = 1; i < node.getChildren().size(); i++){
-                stringBuilder.append(" + ");
+    private void visitPrintChildrenFromChildOne(PrintCallNode node, boolean calledInMain) {
+        String variables="";
+        int size=node.getChildren().size();
+            for(int i = 0; i < size; i++){
+                AstNode child= node.getChildren().get(i);
+                if(!isArray(child) && child instanceof IdentifierNode idChild){
+                        variables+=", "+ idChild.getName();
+                }
+                stringBuilder.append("String.valueOf(");
                 visitChild(node.getChildren().get(i));
+                stringBuilder.append(")");
+
+                if(!(i==size-1)){
+                    stringBuilder.append(" + ");
+                }
             }
+
+        if(!variables.isEmpty()&&!calledInMain){
+            stringBuilder.append(variables);
         }
     }
 
@@ -1322,7 +1314,6 @@ public class CodeGenVisitor implements NodeVisitor {
         appendTellOpen(node);
         appendProtocolArg(node);
         appendTellClose(node);
-
     }
 
     private void appendTellOpen(SendMsgNode node){
@@ -1445,9 +1436,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
         } else{
             visitChildren(node);
-
         }
-
 
         //if the parent is not a for node, add a semicolon, else don't
         if(!(node.getParent() instanceof ForNode)){

@@ -1,6 +1,5 @@
-
-Script HelloWorld {
-    on greet(String name);
+Script HelloWorldScript {
+    on greet(string name);
 }
 
 main() {
@@ -8,16 +7,14 @@ main() {
     gm <- greet("World");
 }
 
-Actor GreeterMain follows HelloWorld {
+Actor GreeterMain follows HelloWorldScript {
     State {int i = 0; int j = 0;}
     Knows {}
-
     Spawn() {
         print("HelloWorld actor started");
-
     }
 
-    on greet(String name) {
+    on greet(string name) {
         print("Hello " + name + "!");
     }
 }

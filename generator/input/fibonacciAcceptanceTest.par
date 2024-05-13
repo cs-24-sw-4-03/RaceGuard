@@ -4,7 +4,7 @@ on result(int result);
 }
 
 main(){
-    Spawn FibManager(5);
+    Spawn FibManager(6);
 }
 
 Actor FibManager follows Fib{
