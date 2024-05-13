@@ -4,5 +4,13 @@ Script TestScript{
     on testMethod4();
     local localMethod(String s):int;
 }
+
+Actor actor{
+    State{}
+    Knows{}
+    Spawn(){}
+}
+
+
 main(){}
 

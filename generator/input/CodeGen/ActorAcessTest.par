@@ -16,6 +16,7 @@ Actor Person{
     }
     local setFeeling(string s):void{
         State.feeling=s;
+        return;
     }
     on birthDay(){
         State.age=State.age+1;

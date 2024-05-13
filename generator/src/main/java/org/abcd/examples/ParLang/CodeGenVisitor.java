@@ -95,7 +95,7 @@ public class CodeGenVisitor implements NodeVisitor {
                         javaType=javaE.ACTORREF.getValue();
                     }
                 }else {
-                    javaType=parlangType;
+                    javaType=parlangType+" ";
                 }
         }
         if(removeBrackets){
