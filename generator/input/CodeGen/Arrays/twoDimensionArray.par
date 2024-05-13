@@ -9,5 +9,4 @@ main(){
             }
         }
        print(b);
-
 }

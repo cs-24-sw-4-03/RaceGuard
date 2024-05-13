@@ -3,12 +3,62 @@ Actor Printer{
     Knows{}
     Spawn(){}
     on printFunc(string s){
+        int[3][3] a = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
         print("Jeg hedder "+s);
+        print("array fra actor :"+a);
+        print(a);
+        print(a+" det var det");
+
+
+        int x=2;
+        double d=2.71;
+
+        string[3] army ={"ryan","bo","gorm"};
+
+        print(army[0]);
+        print("private: "+army[0]);
+        print(army[0]+" private");
+        print(x);
+        print(x+x);
+        print("int: "+x);
+        print(x+" int");
+        print(d);
+        print("double :"+d);
+        print(d+" double");
+
     }
 }
+
+Actor Soldier{
+    State{}
+    Knows{}
+    Spawn(){}
+}
+
 main(){
     Printer printer=Spawn Printer();
     printer<-printFunc("Dennis");
-    string s="42"
-    print("print "+s+"fra main");
+    string s="42";
+    int[3][3] a = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    print(s+" fra main");
+    print("array fra main: "+a);
+    print(a+" det var det");
+
+    int x=2;
+    double d=2.71;
+
+    string[3] army ={"ryan","bo","gorm"};
+
+    print(army[0]);
+    print("private: "+army[0]);
+    print(army[0]+" private");
+    print(x);
+    print(x+x);
+    print("int: "+x);
+    print(x+" int");
+    print(d);
+    print("double :"+d);
+    print(d+" double");
+
+
 }
