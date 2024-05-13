@@ -50,7 +50,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.LONG.getValue();
                 break;
             case "int[]" :
-                javaType="Long[]";//Converting the array to an object array allows for printing it.
+                javaType=javaE.LONG_ARRAY.getValue();;//Converting the array to an object array allows for printing it.
                 break;
             case "int[][]":
                 javaType=javaE.LONG_ARRAY_2D.getValue();
@@ -59,7 +59,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.DOUBLE.getValue();
                 break;
             case "double[]" :
-                javaType=javaE.OBJECT_ARRAY.getValue();
+                javaType=javaE.DOUBLE_ARRAY.getValue();
                 break;
             case "double[][]":
                 javaType=javaE.DOUBLE_ARRAY_2D.getValue();
@@ -68,7 +68,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.BOOLEAN.getValue();
                 break;
             case "bool[]" :
-                javaType=javaE.OBJECT_ARRAY.getValue();
+                javaType=javaE.BOOLEAN_ARRAY.getValue();
                 break;
             case "bool[][]":
                 javaType=javaE.BOOLEAN_ARRAY_2D.getValue();
@@ -1002,7 +1002,9 @@ public class CodeGenVisitor implements NodeVisitor {
         } else{
             stringBuilder
                     .append(node.getValue());
-                    //No need to append L as this is handled in the VarTypeConverter method
+            if(node.getParent().getParent() instanceof InitializationNode && node.getParent().getParent().getType().contains("[") ){
+                stringBuilder.append("L");//append L when Integer is in an array. Necessary since array would be of type Long[] or Long[][].
+            }
         }
 
     }
