@@ -88,7 +88,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(ScriptDclNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             if (node.getId() == null) { //If the id is null, throw an exception (node not created correctly)
@@ -96,18 +96,18 @@ public class TypeVisitor implements NodeVisitor {
             }
             node.setType(node.getId());
             this.symbolTable.leaveScope();
-        /*}
+        }
         catch (ScriptDclException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ScriptDclException(e.getMessage() + " in ScriptDclNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ScriptMethodNode node) {
-        /*try {*/
+        try {
         symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
         this.visitChildren(node);
             if (node.getType() == null) { //If the type is null, throw an exception (node not created correctly)
@@ -117,26 +117,26 @@ public class TypeVisitor implements NodeVisitor {
                 throw new ScriptMethodException("(on/local) Method type is not defined for script method node " + node.getId() + " line: " + node.getLineNumber() + " column: " + node.getColumnNumber());
             }
         symbolTable.leaveScope();
-       /* }
+        }
         catch (ScriptMethodException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ScriptMethodException(e.getMessage() + " in ScriptMethodNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(SendMsgNode node) {
-        /*try {*/
+        try {
             this.visitChildren(node);
-       /* }
+        }
         catch (MethodCallException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new MethodCallException(e.getMessage() + " in SendMsgNode"));
-        }*/
+        }
     }
 
     @Override
@@ -153,7 +153,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        /*try { */
+        try {
             if((node.getParent() instanceof MethodCallNode)) {
                 String Name = node.getName();
                 Attributes attributes = symbolTable.getDeclaredLocalMethods().get(Name); //Get the attributes of the method
@@ -181,28 +181,28 @@ public class TypeVisitor implements NodeVisitor {
                     node.setType(this.symbolTable.lookUpSymbol(node.getName()).getVariableType());
                 }
             }
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode"));
-        }*/
+        }
     }
 
 
 
     @Override
     public void visit(ParametersNode node) {
-        /*try {*/
+        try {
             this.visitChildren(node);
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in ParametersNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ReturnStatementNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
         AstNode parent = node.getParent();
         while (!(parent instanceof MethodDclNode)){ //Find the parent MethodDclNode
             parent = parent.getParent();
@@ -221,18 +221,18 @@ public class TypeVisitor implements NodeVisitor {
                 throw new ReturnNodeException("return type is not void for void-returning local method: " + ((MethodDclNode)parent).getId() + "line: " + node.getLineNumber() + "column: " + node.getColumnNumber() );
             }
         }
-        /*}
+        }
         catch (ReturnNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ReturnNodeException(e.getMessage() + " in ReturnStatementNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(SpawnActorNode node) {
-        /*try {*/
+        try {
             this.visitChildren(node);
             if (node.getType() == null) {
                 throw new SpawnActorException("Type is not defined for spawn actor node " + node.getLineNumber() + ":" + node.getColumnNumber());
@@ -240,18 +240,18 @@ public class TypeVisitor implements NodeVisitor {
             if (symbolTable.declaredScripts.contains(node.getType())) {
                 throw new SpawnActorException("scripts cannot be spawned " + node.getType() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
-       /* }
+        }
         catch (SpawnActorException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new SpawnActorException(e.getMessage() + " in SpawnActorNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(MethodCallNode node) {
-        /*try {*/
+        try {
             if (!symbolTable.getDeclaredLocalMethods().containsKey(node.getMethodName())) {
                 // if the method is not declared in the local methods, throw an exception
                 throw new MethodCallException("Method: " + node.getMethodName() + " not found " + node.getLineNumber() + ":" + node.getColumnNumber());
@@ -260,19 +260,19 @@ public class TypeVisitor implements NodeVisitor {
                 node.setType(symbolTable.getDeclaredLocalMethods().get(node.getMethodName()).getVariableType());
             }
             this.visitChildren(node);
-        /*}
+        }
         catch (MethodCallException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new MethodCallException(e.getMessage() + " in MethodCallNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(LocalMethodBodyNode node) {
         this.visitChildren(node);
-        /*try{*/
+        try{
         if(!node.getParent().getType().equals(parLangE.VOID.getValue())){ //If the method does not return void
             if(!node.getChildren().isEmpty()&&(node.getChildren().getLast()instanceof ReturnStatementNode)){
                 // node has children and the last child is return statement
@@ -283,18 +283,18 @@ public class TypeVisitor implements NodeVisitor {
         }else{
             node.setType(parLangE.VOID.getValue());//If there is a return statement, it is checked in visit(ReturnStatement node) that it is "return;". So an erro should already have been produced
         }
-        /*}
+        }
         catch (LocalMethodBodyNodeException e) {
         exceptions.add(e);
         }
         catch (Exception e) {
         exceptions.add(new LocalMethodBodyNodeException(e.getMessage() + " in LocalMethodBodyNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ArgumentsNode node) {
-        /*try {*/
+        try {
             this.visitChildren(node);
             LinkedHashMap<String, Attributes> params; //The parameters are used to check the arguments against
             AstNode parent = node.getParent();
@@ -342,13 +342,13 @@ public class TypeVisitor implements NodeVisitor {
             }else { //If the parent is not a method call, spawn actor or send message node, throw an exception
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
-        /*}
+        }
         catch (ArgumentsException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ArgumentsException(e.getMessage() + " in ArgumentsNode"));
-        }*/
+        }
     }
     private void checkArgTypes(ArgumentsNode node, LinkedHashMap<String, Attributes> params, String msgName){
         int size = node.getChildren().size();
@@ -367,7 +367,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(AssignNode node) {
-        /*try {*/
+        try {
             this.visitChildren(node);
             String identifierType = node.getChildren().get(0).getType();
             String assignType = node.getChildren().get(1).getType();
@@ -375,37 +375,37 @@ public class TypeVisitor implements NodeVisitor {
                 throw new AssignExecption("Type mismatch in assignment between " + identifierType + " and " + assignType + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             node.setType(identifierType);
-        /*}
+        }
         catch (AssignExecption e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new AssignExecption(e.getMessage() + " in AssignNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(InitializationNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             String childType = node.getChildren().get(0).getType();
             if (childType == null) { //If the type of the child is null typechecking cannot be done, thus throw exception
                 throw new InitializationNodeException("Type is not defined for initialization node " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             node.setType(childType);
-       /* }
+        }
         catch (InitializationNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new InitializationNodeException(e.getMessage() + " in InitializationNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ListNode node) {
         this.visitChildren(node);
-        /*try{*/
+        try{
             String listType = node.getChildren().get(0).getType();
             for (AstNode child : node.getChildren()) {
                 if (!canConvert(listType, child.getType())) { //If the types do not match, throw an exception
@@ -413,19 +413,19 @@ public class TypeVisitor implements NodeVisitor {
                 }
             }
             node.setType(listType + "[]");
-        /*}
+        }
         catch (ListNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ListNodeException(e.getMessage() + " in ListNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(VarDclNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
             if (!node.isInitialized()) {
@@ -437,26 +437,26 @@ public class TypeVisitor implements NodeVisitor {
                 throw new varDclNodeExeption("Type mismatch in declaration and initialization of variable " + node.getId() + " of type " + idType + " and " + initType);
             }
             node.setType(idType); //If the types match, the type is the same as the id
-       /* }
+        }
         catch (varDclNodeExeption e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new varDclNodeExeption(e.getMessage() + " in VarDclNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ActorDclNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getId());
             this.visitChildren(node);
             node.setType(node.getId());
             this.symbolTable.leaveScope();
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in ActorDclNode"));
-        }*/
+        }
     }
     @Override
     public void visit(SelfNode node) {
@@ -470,20 +470,20 @@ public class TypeVisitor implements NodeVisitor {
     @Override
     public void visit(BoolCompareNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.BOOL.getValue())) { //If the children are not of type bool, throw an exception
                     throw new BoolCompareException("all BoolCompareNode children does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(parLangE.BOOL.getValue());
-        /*}
+        }
         catch (BoolCompareException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new BoolCompareException(e.getMessage() + " in BoolCompareNode"));
-        }*/
+        }
     }
 
     @Override
@@ -502,7 +502,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-        /*try {*/
+        try {
             this.visitChildren(node);
             for (AstNode child : node.getChildren()) {
                 if (child.getType() == null) { //If the type of the child is null, throw an exception
@@ -516,13 +516,13 @@ public class TypeVisitor implements NodeVisitor {
                 errorMessage += child.getType() + ", "; //Add the script to the error message
             }
             hasCorrectScriptMethods(scripts, ((ActorDclNode) node.getParent()).getId()); //Check if the actor has the correct methods from the script
-       /* }
+        }
         catch (FollowsNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new FollowsNodeException(e.getMessage() + " in FollowsNode"));
-        }*/
+        }
     }
 
     private void hasCorrectScriptMethods(List<String> scriptNames, String actorName){
@@ -566,7 +566,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(MethodDclNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getId() + symbolTable.findActorParent(node));
             this.visitChildren(node);
             if (node.getMethodType().equals(parLangE.LOCAL.getValue())){ //If the method type is local
@@ -585,38 +585,38 @@ public class TypeVisitor implements NodeVisitor {
                 throw new MethodCallException("Method type is not local or on of method: " + node.getId() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             this.symbolTable.leaveScope();
-        /*}
+        }
         catch (MethodDclNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new MethodDclNodeException(e.getMessage() + " in MethodDclNode"));
-        }*/
+        }
     }
 
 
     @Override
     public void visit(MainDclNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
-       /* }
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in MainDclNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(SpawnDclNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in SpawnDclNode"));
-        }*/
+        }
     }
 
     @Override
@@ -627,94 +627,94 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(IntegerNode node) {
-        /*try {*/
+        try {
             if (node.getValue() == null) {
                 throw new IntegerNodeException("IntegerNode value is null " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.INT.getValue());
-        /*}
+        }
         catch (IntegerNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new IntegerNodeException(e.getMessage() + " in IntegerNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(DoubleNode node) {
-        /*try {*/
+        try {
             if (node.getValue() == null) {
                 throw new DoubleNodeException("DoubleNode value is null " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.DOUBLE.getValue());
-        /*}
+        }
         catch (DoubleNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new DoubleNodeException(e.getMessage() + " in DoubleNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(StringNode node) {
-        /*try {*/
+        try {
             if (node.getValue() == null) {
                 throw new StringNodeException("StringNode value is null " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.STRING.getValue());
-       /* }
+        }
         catch (StringNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new StringNodeException(e.getMessage() + " in StringNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(BoolAndExpNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolExpException("all BoolAndExpNode children does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(parLangE.BOOL.getValue());
-        /*}
+        }
         catch (BoolExpException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new BoolExpException(e.getMessage() + " in BoolAndExpNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(BoolExpNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.BOOL.getValue())) {
                     throw new BoolExpException("all BoolExpNode children does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
             node.setType(parLangE.BOOL.getValue());
-        /*}
+        }
         catch (BoolExpException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new BoolExpException(e.getMessage() + " in BoolExpNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ArithExpNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             //A child can either be a IntegerNode, DoubleNode, IdentifierNode, or ArithExpNode
             String leftType = node.getChildren().get(0).getType();
             String rightType = node.getChildren().get(1).getType();
@@ -723,53 +723,53 @@ public class TypeVisitor implements NodeVisitor {
                 throw new ArithExpException("Types do not match for ArithExp: " + leftType + " <--> " + rightType + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
             node.setType(resultType);
-        /*}
+        }
         catch (ArithExpException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ArithExpException(e.getMessage() + " in ArithExpNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(NegatedBoolNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             if (node.getChildren().get(0).getType().equals(parLangE.BOOL.getValue())) { //If the child is of type bool
                 node.setType(parLangE.BOOL.getValue());
             } else {
                 throw new BoolNodeException("NegatedBoolNode does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
-        /*}
+        }
         catch (BoolNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new BoolNodeException(e.getMessage() + " in NegatedBoolNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(BoolNode node) {
-        /*try {*/
+        try {
             if (((BoolNode) node).getValue() == null) { //If the value of the node is null, throw an exception
                 throw new BoolNodeException("BoolNode does not have type bool " + node.getLineNumber() + ":" + node.getColumnNumber() );
             }
             node.setType(parLangE.BOOL.getValue());
-       /* }
+        }
         catch (BoolNodeException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new BoolNodeException(e.getMessage() + " in BoolNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(CompareExpNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             AstNode leftChild = node.getChildren().get(0);
             AstNode rightChild = node.getChildren().get(1);
             if (compareExpTypeMatching(node.getOperator(), leftChild.getType(), rightChild.getType())) { //If the types match
@@ -777,13 +777,13 @@ public class TypeVisitor implements NodeVisitor {
             } else {
                 throw new CompareTypeMatchingException("Type mismatch in comparison expression between " + leftChild.getType() + " and " + rightChild.getType() + " " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
-       /* }
+        }
         catch (CompareTypeMatchingException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new CompareTypeMatchingException(e.getMessage() + " in CompareExpNode"));
-        }*/
+        }
     }
 
     private boolean compareExpTypeMatching(String operator, String leftType, String rightType){
@@ -806,26 +806,26 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(WhileNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in WhileNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ForNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
-       /* }
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in ForNode"));
-        }*/
+        }
     }
 
     @Override
@@ -836,19 +836,19 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(SelectionNode node) {
-        /*try {*/
+        try {
             this.symbolTable.enterScope(node.getNodeHash());
             this.visitChildren(node);
             this.symbolTable.leaveScope();
-        /*}
+        }
         catch (Exception e) {
             exceptions.add(new RuntimeException(e.getMessage() + " in SelectionNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(ArrayAccessNode node) {
-        /*try{*/
+        try{
             this.visitChildren(node);
             String id = node.getAccessIdentifier();
             Attributes attributes;
@@ -868,13 +868,13 @@ public class TypeVisitor implements NodeVisitor {
             }
             String accessType = removeBrackets(identifierType);
             node.setType(accessType);
-        /*}
+        }
         catch (ArrayAccessException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new ArrayAccessException(e.getMessage() + " in ArrayAccessNode"));
-        }*/
+        }
     }
 
     private int countBracketPairs(String arrayType){
@@ -898,7 +898,7 @@ public class TypeVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateAccessNode node) {
-        /*try{*/
+        try{
             if (!hasParent(node, ActorDclNode.class)){ //A StateAccessNode is only allowed to be a child of an ActorDclNode
                 throw new StateAccessException("StateAccessNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
@@ -914,18 +914,18 @@ public class TypeVisitor implements NodeVisitor {
                 }
                 node.setType(attributes.getVariableType());
             }
-        /*}
+        }
         catch (StateAccessException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new StateAccessException(e.getMessage() + " in StateAccessNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(KnowsAccessNode node) {
-        /*try {*/
+        try {
             if (!hasParent(node, ActorDclNode.class)) { //A KnowsAccessNode is only allowed to be a child of an ActorDclNode
                 throw new KnowsAccessException("KnowsAccessNode is not a child of ActorDclNode " + node.getLineNumber() + ":" + node.getColumnNumber());
             }
@@ -933,19 +933,19 @@ public class TypeVisitor implements NodeVisitor {
             String id = node.getAccessIdentifier();
             Attributes attributes = symbolTable.lookUpKnowsSymbol(id);
             node.setType(attributes.getVariableType());
-        /*}
+        }
         catch (KnowsAccessException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new KnowsAccessException(e.getMessage() + " in KnowsAccessNode"));
-        }*/
+        }
     }
 
     @Override
     public void visit(PrintCallNode node) {
         this.visitChildren(node);
-        /*try {*/
+        try {
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.STRING.getValue())) { //If the child is not of type string
                     if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue())) { //If the child is of type int or double we cn convert it to string
@@ -954,13 +954,13 @@ public class TypeVisitor implements NodeVisitor {
                     throw new PrintException("Print statement only accepts string arguments " + node.getLineNumber() + ":" + node.getColumnNumber() );
                 }
             }
-        /*}
+        }
         catch (PrintException e) {
             exceptions.add(e);
         }
         catch (Exception e) {
             exceptions.add(new PrintException(e.getMessage() + " in PrintCallNode"));
-        }*/
+        }
     }
 
     private boolean hasParent(AstNode node, Class<?> parentClass) {
