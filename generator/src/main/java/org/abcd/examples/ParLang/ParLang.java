@@ -43,6 +43,11 @@ public class ParLang {
         ParLangParser parser = new ParLangParser(tokens);   // Create a parser that feeds off the tokens buffer
         ParseTree tree = parser.init(); // Begin parsing at init node
 
+        if (parser.getNumberOfSyntaxErrors() > 0) {
+            System.err.println("Syntax errors detected.");
+            System.exit(1);
+        }
+
         TypeContainer typeContainer = new TypeContainer();
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
         InitNode ast=(InitNode) tree.accept(visitor);
@@ -50,26 +55,32 @@ public class ParLang {
         printAST(ast, args);
         printCST(tree, parser);
 
-        System.out.println("\nScoping");
         SymbolTable symbolTable = new SymbolTable();
 
-
-        System.out.println("\nSymbolTableVisitor");
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         symbolTableVisitor.visit(ast);
-        printExceptions(symbolTableVisitor.getExceptions());
 
-        System.out.println("\nMethodVisitor");
         MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
         methodVisitor.visit(ast);
-        printExceptions(methodVisitor.getExceptions());
 
-       //generateCode(ast);
-
-        System.out.println("\nType Checking");
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         typeVisitor.visit(ast);
         printAST(ast, args);
+
+        if(!symbolTableVisitor.getExceptions().isEmpty() || !typeVisitor.getExceptions().isEmpty() || !methodVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in scope checking or type checking.");
+
+            System.out.println("\nSymbolTableVisitor");
+            printExceptions(symbolTableVisitor.getExceptions());
+
+            System.out.println("\nMethodVisitor");
+            printExceptions(methodVisitor.getExceptions());
+
+            System.out.println("\nType Checking");
+            printExceptions(typeVisitor.getExceptions());
+
+            System.exit(1);
+        }
 
     }
     private static void validateSource(Path source) throws IOException {
