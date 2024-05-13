@@ -10,4 +10,11 @@ Actor testActor follows test{
     on someMethod(double x, double y){}
 }
 
+Actor testActor2 follows test{
+    State {}
+    Knows {}
+    Spawn(){}
+    on someMethod(double x, double y){}
+}
+
 main(){}
