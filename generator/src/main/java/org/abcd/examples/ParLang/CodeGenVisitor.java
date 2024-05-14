@@ -22,13 +22,13 @@ public class CodeGenVisitor implements NodeVisitor {
     private String parentDirPath = new File(System.getProperty("user.dir")).getParent();
     private String dirPath = parentDirPath + "/output/src/main/java/output";
 
-
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
     private int localIndent = 0; // indent for file generated. 4 spaces per indent
 
     /**
-     * @return the current line with the correct indentation.
+     * Generates correct indentation for the StringBuilder. 4 spaces per indent.
+     * @return the current string from StringBuilder with the correct indentation.
      */
     private String getLine() {
         String line = stringBuilder.toString().indent(localIndent* 4);
@@ -36,12 +36,25 @@ public class CodeGenVisitor implements NodeVisitor {
         return line;
     }
 
+    /**
+     * Resets the stringBuilder, codeOutput and sets indent to 0.
+     * Most commonly used before generating a new file.
+     */
     private void resetStringBuilder(){
         stringBuilder.setLength(0);
         codeOutput.clear();
         localIndent = 0;
     }
 
+    /**
+     * <p>Writes the generated code to a file. </p>
+     * The method creates a new file with the given name in the specified directory (dirPath).
+     * Each string in codeOutput is written as a new line in the file.
+     * If the file already exists, it will be overwritten.
+     *
+     * @param fileName the name of the file to be created (e.g. "FactorialMain")
+     * @param codeOutput an ArrayList of Strings containing the generated code
+     */
     private void writeToFile(String fileName, ArrayList<String> codeOutput) {
         try {
             File dir = new File(dirPath);
@@ -61,9 +74,16 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+
     public void visitChild(AstNode node){
         node.accept(this);
     }
+
+    /**
+     * <p>Visits all children of a given AST node</p>
+     * Used to traverse the AST by iterating over all children of a node and accepts each one.
+     * @param node the AST node whose children are to visit.
+     */
     @Override
     public void visitChildren(AstNode node) {
         for (AstNode childNode : node.getChildren()) {
@@ -71,7 +91,14 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    //An alternative version of visitChildren where the Strings before and after is appended before and after the result of visiting the child node
+    /**
+     * Overloaded version of visitChildren, where the Strings before and after is appended before and after the result
+     * of visiting the child node. Also casts the actual parameters of the child node to the correct type if necessary.
+     * @param node the AST node whose children are to visit.
+     * @param before the string to append before the result of visiting the child node.
+     * @param after the string to append after the result of visiting the child node.
+     * @param parameterTypes If children are actual parameters in a call ect, we need formal parameter types to determine if we need to cast the value
+     */
     public void visitChildren(AstNode node, String before, String after, ArrayList<String> parameterTypes){
         int index = 0;
         for (AstNode childNode : node.getChildren()) {
@@ -81,7 +108,6 @@ public class CodeGenVisitor implements NodeVisitor {
             if(parameterTypes != null){
                 stringBuilder.append(determineValue(parameterTypes.get(index)));
             }
-
             childNode.accept(this);
 
             //If we have parameters and the type is either Int or Double, otherwise determineValue returns empty string
@@ -93,6 +119,11 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    /**
+     * Helper method, to convert int and double to correct type for Akka
+     * @param type int, double or empty string
+     * @return the correct type for Akka
+     */
     private String determineValue(String type){
         return switch (type) {
             case "int" -> "Long.valueOf(";
@@ -106,7 +137,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(node.getAccessIdentifier());
         if(node.getChildren().size() == 1){
                 stringBuilder.append("[");
-                if(node.getChildren().getFirst() instanceof IdentifierNode){
+                if(node.getChildren().getFirst() instanceof IdentifierNode){ // TODO AJ Denne linje kan vel fjernes? Indgår i typeCastArrayAccessNode
                     typeCastArrayAccessNode(node,0);
                 }
                 visitChild(node.getChildren().getFirst());
@@ -126,23 +157,24 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append("]");
             }
     }
+
+    /**
+     * Helper method, to cast index of array to an int. index cannot be a long.
+     * @param node the ArrayAccessNode
+     * @param childIndex the index of the child node (typically 0 or 1)
+     */
     private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
         if(node.getChildren().get(childIndex) instanceof IdentifierNode){
             stringBuilder.append("(int) ");
         }
     }
 
-    //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
-    //1. Reset StringBuilder and CodeOutput
-    //2. Create new File dependent on the node.getId()
-    //3. visit children
-    //4. Write the file
     @Override
     public void visit(ActorDclNode node) {
         this.symbolTable.enterScope(node.getId());
         resetStringBuilder();
 
-        appendPackage();
+        appendPackage(javaE.PACKAGE_NAME.getValue());
 
         //imports necessary for most akka actor classes
         appendImports("akka.actor",
@@ -556,7 +588,7 @@ public class CodeGenVisitor implements NodeVisitor {
     private void createReaper(){
         resetStringBuilder();
 
-        appendPackage();
+        appendPackage(javaE.PACKAGE_NAME.getValue());
         //imports necessary for most akka actor classes
         appendImports("akka.actor", "*");
         appendImports("akka.event", "Logging", "LoggingAdapter");
@@ -699,7 +731,7 @@ public class CodeGenVisitor implements NodeVisitor {
         this.symbolTable.enterScope(node.getNodeHash());
         resetStringBuilder();
 
-        appendPackage();
+        appendPackage(javaE.PACKAGE_NAME.getValue());
         //public class Main {
         appendImports("akka.actor",
                 "ActorSystem",
@@ -853,7 +885,7 @@ public class CodeGenVisitor implements NodeVisitor {
         this.symbolTable.enterScope(node.getId());
         resetStringBuilder();
 
-        appendPackage();
+        appendPackage(javaE.PACKAGE_NAME.getValue());
 
         //We crate a public class for the script with the same name as the script.
         appendImports("akka.actor","ActorRef");
@@ -1068,7 +1100,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolCompareNode node){ //AJ Bør denne ikke udfyldes?
+    public void visit(BoolCompareNode node){ //TODO AJ Bør denne ikke udfyldes?
     }
 
     @Override
@@ -1255,8 +1287,14 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine() );
     }
 
-    private void appendPackage(){
-        stringBuilder.append("package output;\n \n");
+    /**
+     * Appends package naming to be able to use the classes in the same package.
+     * @param packageName The name of the package (e.g. "output")
+     */
+    private void appendPackage(String packageName){
+        stringBuilder.append("package ")
+                .append(packageName)
+                .append("; \n \n");
     }
 
     private void appendConstructor(String className,List<IdentifierNode> params){

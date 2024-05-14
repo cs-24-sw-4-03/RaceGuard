@@ -2,6 +2,7 @@ package org.abcd.examples.ParLang;
 
 //Java and Akka keywords used for generating target code. Notice there is a space after each keyword
 public enum javaE {
+    PACKAGE_NAME("output"), //No space after package name
     CLASS("class "),
     PUBLIC("public "),
     PRIVATE("private "),
