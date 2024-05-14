@@ -10,6 +10,7 @@ main(){
     Soldier gorm=Spawn Soldier();
 
     Soldier[3] army = {ryan,bo,gorm};
+    Soldier[5] largerArmy;
 
     Soldier sven=Spawn Soldier();
 

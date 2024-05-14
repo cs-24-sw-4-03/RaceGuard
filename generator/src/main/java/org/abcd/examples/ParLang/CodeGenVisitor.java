@@ -517,48 +517,41 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        if (node.getParent() instanceof KnowsNode) {
+        if (node.getParent() instanceof KnowsNode) { //Knows nodes become private instance fields
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
                     .append(javaE.ACTORREF.getValue())
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
-        } else if(!isArray(node) && node.getParent() instanceof PrintCallNode){
-            if(symbolTable.findActorParent(node)==null){
-                stringBuilder.append(node.getName());
-            } else {
-                stringBuilder.append("\"{}\"");
+        } else if(node.getParent() instanceof PrintCallNode){
+            if(isArray(node)){
+                stringBuilder
+                        .append("Arrays.deepToString(")
+                        .append(node.getName())
+                        .append(")");
+            }else if(symbolTable.findActorParent(node)==null){//If print call is in main we use System.out.println() => The identifier name can be directly inserted.
+                    stringBuilder.append(node.getName());
+            } else { //If print call is in actor we use log.info() meaning that we have to use pattern matching for the identifier. (see akka log docs)
+                    stringBuilder.append("\"{}\"");
             }
-        } else if(isArray(node)&& node.getParent() instanceof PrintCallNode){
-            stringBuilder.append("Arrays.deepToString(");
+        } else if (isArray(node)) {
+            //We have to do almost the same if the array is initialized or not.
+            //Initialized: "ActorRef[] army = new ActorRef[] {ryan, bo, gorm};" ("{ryan, bo, gorm}" is handled in visit(ListNode node))
+            //No initialized: "ActorRef[] largerArmy = new ActorRef[5]; (On the right hand side of "=" the "[5]" comes from visit(IntegerNode node) and the "[]" in "ActorRef[]" is removed ).
+            boolean isInitialized=node.getParent().getChildren().get(1) instanceof InitializationNode;
             stringBuilder
-                    .append(node.getName())
-                    .append(")");
-        } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
-                if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
-                    stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(node.getName());
-                    stringBuilder
-                            .append(" = ")
-                            .append(javaE.NEW.getValue())
-                            .append(VarTypeConverter(node.getType(),true,true));
-                    stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove unnecessary space
-                    } else {
-                    stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(node.getName())
-                            .append(" = new ")
-                            .append(VarTypeConverter(node.getType(),true, false));
+                    .append(VarTypeConverter(node.getType(),true,false)) //Append array type
+                    .append(node.getName())//Append name
+                    .append(" = ")
+                    .append(javaE.NEW.getValue())
+                    .append(VarTypeConverter(node.getType(),true,!isInitialized));//Remove brackets in the array type if it is not initialized.
+            if(!isInitialized ){ //If array is initialized there is an unnecessary space
+                    stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove space
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
-            String type;
-            if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
-                type=javaE.ACTORREF.getValue();
-            } else {
-                type= VarTypeConverter(node.getType(),false,false);
-            }
             stringBuilder
-                    .append(type)
+                    .append(VarTypeConverter(node.getType(),true,false))
                     .append(node.getName());
         }  else {
             stringBuilder.append(node.getName());
@@ -945,9 +938,10 @@ public class CodeGenVisitor implements NodeVisitor {
      */
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
-        visitChildren(node,"",",", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,". Cannot use javaE.COMMA.getValue() here because of the space.
+        visitChildren(node,"",", ", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,". Cannot use javaE.COMMA.getValue() here because of the space.
         if(node.getChildren().size()>0){
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma and space
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append(")");
     }
