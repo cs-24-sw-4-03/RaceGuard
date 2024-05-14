@@ -23,7 +23,6 @@ public class CodeGenVisitor implements NodeVisitor {
     private String dirPath = parentDirPath + "/output/src/main/java/output";
 
 
-
     StringBuilder stringBuilder = new StringBuilder(); // Used to generate a single line of code. Ends with a \n
     ArrayList<String> codeOutput = new ArrayList<>(); // Used to store lines of code
     private int localIndent = 0; // indent for file generated. 4 spaces per indent
@@ -38,70 +37,28 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     private void resetStringBuilder(){
-        resetStringBuilder(stringBuilder);
-        resetCodeOutput(codeOutput);
+        stringBuilder.setLength(0);
+        codeOutput.clear();
         localIndent = 0;
     }
 
-    private String VarTypeConverter(String parlangType, boolean useActorRef, boolean removeBrackets){
-        String javaType;
-        switch (parlangType) {
-            case "int":
-                javaType=javaE.LONG.getValue();
-                break;
-            case "int[]" :
-                javaType=javaE.LONG_ARRAY.getValue();;//Converting the array to an object array allows for printing it.
-                break;
-            case "int[][]":
-                javaType=javaE.LONG_ARRAY_2D.getValue();
-                break;
-            case "double":
-                javaType=javaE.DOUBLE.getValue();
-                break;
-            case "double[]" :
-                javaType=javaE.DOUBLE_ARRAY.getValue();
-                break;
-            case "double[][]":
-                javaType=javaE.DOUBLE_ARRAY_2D.getValue();
-                break;
-            case "bool":
-                javaType=javaE.BOOLEAN.getValue();
-                break;
-            case "bool[]" :
-                javaType=javaE.BOOLEAN_ARRAY.getValue();
-                break;
-            case "bool[][]":
-                javaType=javaE.BOOLEAN_ARRAY_2D.getValue();
-                break;
-            case "string":
-                javaType=javaE.STRING.getValue();
-                break;
-            case "string[]" :
-                javaType=javaE.STRING_ARRAY.getValue();
-                break;
-            case "string[][]":
-                javaType=javaE.STRING_ARRAY_2D.getValue();
-                break;
-            case "void":
-                javaType=javaE.VOID.getValue();
-                break;
-            default:
-                if(useActorRef){
-                    String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
-                    if(substrings.length>1){
-                        String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];
-                        javaType=actorRefNoSpace+substrings[1]+" ";
-                    }else{
-                        javaType=javaE.ACTORREF.getValue();
-                    }
-                }else {
-                    javaType=parlangType+" ";
+    private void writeToFile(String fileName, ArrayList<String> codeOutput) {
+        try {
+            File dir = new File(dirPath);
+            if(!dir.exists()){
+                dir.mkdirs();
+            }
+
+            File file = new File(dirPath + "/" + fileName + ".java");
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                for (String line : codeOutput) {
+                    fos.write(line.getBytes());
                 }
+                System.out.println("New file was created: " + file.getName());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        if(removeBrackets){
-            javaType=javaType.replaceAll("\\[", "").replaceAll("\\]","");
-        }
-        return javaType;
     }
 
     public void visitChild(AstNode node){
@@ -136,165 +93,81 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
-    /***
-     * Appends class definition string (e.g. "public class MyClass extends OtherClass")
-     * @param access The access modifier of the class (e.g "public")
-     * @param name The name of the class (e.g. "MyClass")
-     * @param superClassName Give null as input here unless the class extends from a superclass. If there
-     */
-    private void appendClassDefinition(String access, String name, String superClassName) {
-        stringBuilder
-                .append(access)
-                .append(javaE.CLASS.getValue())
-                .append(name)
-                .append(" ");
-        if(superClassName!=null){
-            stringBuilder
-                    .append(javaE.EXTENDS.getValue())
-                    .append(superClassName);
-        }
+    private String determineValue(String type){
+        return switch (type) {
+            case "int" -> "Long.valueOf(";
+            case "double" -> "Double.valueOf(";
+            default -> "";
+        };
     }
 
-    /***
-     * Appends static final class definition string
-     * @param access access modifier
-     * @param name name of class
-     */
-
-    private void appendStaticFinalClassDef(String access, String name){
-        stringBuilder
-                .append(access)
-                .append(javaE.STATIC.getValue())
-                .append(javaE.FINAL.getValue())
-                .append(javaE.CLASS.getValue())
-                .append(name);
-    }
-
-
-
-    /***
-     * Append method declaration string (e.g. "private void myMethod")
-     * @param access access modifier (e.g. "private")
-     * @param returnType (e.g. "void")
-     * @param name (e.g. "myMethod")
-     */
-
-    private void appendMethodDefinition(String access, String returnType, String name){
-        stringBuilder
-                .append(access)
-                .append(returnType)
-                .append(name);
-    }
-
-    /***
-     * Appends a series of imports from the same package. e.g.:
-     *
-     *      "import akka.actor.UntypedAbstractActor;
-     *       import akka.actor.ActorRef;
-     *       import akka.event.Logging;"
-     *
-     * @param pack Name of the package (e.g. "akka.actor")
-     * @param firstClassName The name of the first class imported from the package (e.g. "UntypedAbstractActor")
-     * @param additionalClassNames The names of the remaining class names (e.g. "ActorRef" and "Logging")
-     */
-    private void appendImports(String pack, String firstClassName, String...additionalClassNames){
-        appendImport(pack,firstClassName);// append import of the first class
-        for(String className:additionalClassNames){ //append imports of the remaining classes
-            appendImport(pack,className);
-        }
-        stringBuilder.append("\n");
-    }
-
-    /***2
-     * Appends a single import statement (e.g. "import akka.actor.UntypedAbstractActor;")
-     * @param pack Name of the package (e.g. "akka.actor")
-     * @param className Name of the class (e.g. "UntypedAbstractActor")
-     */
-
-    private void appendImport(String pack,String className){
-        stringBuilder
-                .append(javaE.IMPORT.getValue())
-                .append(pack)
-                .append(".")
-                .append(className)
-                .append(javaE.SEMICOLON.getValue());
-    }
-
-    /***
-     * Used to append a body of e.g. a class or a method.
-     * Can be used if all the information required to produce the content of the body is present in the children of the node parameter.
-     * @param node The children of this AST node constitutes all the body to be appended in the target code.
-     */
-    private void appendBody(AstNode node){
-        appendBodyOpen(node);
-        appendBodyClose();
-    }
-
-    /***
-     * Can be used if something has to be added after visting the children.
-     * @param node the parent of the body.
-     */
-    private void appendBodyOpen(AstNode node){
-        appendBodyOpen(node,"","");
-    }
-
-    private void appendBodyOpen(AstNode node,String before,String after){
-        stringBuilder.append( " {\n");
-        codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
-        localIndent++; //content of the body is indented
-        visitChildren(node,before,after, null);//append the content of the body by visiting the children of @param node.
-    }
-
-    /**
-     * Used to finish a body after appending what is needed.
-     */
-
-    private void appendBodyClose(){
-        localIndent--;
-        stringBuilder.append( "}\n");
-        codeOutput.add(getLine() );
-    }
-
-    private void appendConstructor(String className,List<IdentifierNode> params){
-        stringBuilder
-                .append(javaE.PUBLIC.getValue())
-                .append(className)
-                .append("(");
-        if(!params.isEmpty()){
-            for(IdentifierNode param:params){
-                String javaType;
-                if(symbolTable.lookUpScope(param.getType())!=null){
-                    javaType=javaE.ACTORREF.getValue();
-                }else{
-                    javaType= VarTypeConverter(param.getType(),false,false)+" ";
+    @Override
+    public void visit(ArrayAccessNode node){
+        stringBuilder.append(node.getAccessIdentifier());
+        if(node.getChildren().size() == 1){
+                stringBuilder.append("[");
+                if(node.getChildren().getFirst() instanceof IdentifierNode){
+                    typeCastArrayAccessNode(node,0);
                 }
-                stringBuilder
-                        .append(javaType)
-                        .append(param.getName())
-                        .append(", ");
+                visitChild(node.getChildren().getFirst());
+                stringBuilder.append("]");
+            } else if (node.getChildren().size()==2){
+                stringBuilder.append("[");
+                if(node.getChildren().getFirst() instanceof IdentifierNode){
+                    typeCastArrayAccessNode(node,0);
+                }
+                visitChild(node.getChildren().getFirst());
+                stringBuilder.append("]");
+                stringBuilder.append("[");
+                if(node.getChildren().get(1) instanceof IdentifierNode){
+                    typeCastArrayAccessNode(node,1);
+                }
+                visitChild(node.getChildren().get(1));
+                stringBuilder.append("]");
             }
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+    }
+    private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
+        if(node.getChildren().get(childIndex) instanceof IdentifierNode){
+            stringBuilder.append("(int) ");
         }
+    }
 
-        stringBuilder.append(") {\n");
+    //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
+    //1. Reset StringBuilder and CodeOutput
+    //2. Create new File dependent on the node.getId()
+    //3. visit children
+    //4. Write the file
+    @Override
+    public void visit(ActorDclNode node) {
+        this.symbolTable.enterScope(node.getId());
+        resetStringBuilder();
+
+        appendPackage();
+
+        //imports necessary for most akka actor classes
+        appendImports("akka.actor",
+                "ActorRef",
+                "ActorSystem",
+                "Props",
+                "UntypedAbstractActor"
+        );
+        appendImports("akka.event",
+                "Logging",
+                "LoggingAdapter"
+        );
+        appendImports("java.util","Arrays","UUID");
+
+        appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
+
+        //append the body of the actor class
+        appendBodyOpen(node);
+        appendOnReceive(node);
+        stringBuilder.append("private LoggingAdapter log = Logging.getLogger(getContext().system(), this);\n");
         codeOutput.add(getLine());
-        localIndent++;
-        if(params!=null){
-            for(IdentifierNode param:params){
-                stringBuilder
-                        .append(javaE.THIS.getValue())
-                        .append(".")
-                        .append(param.getName())
-                        .append(javaE.EQUALS.getValue())
-                        .append(param.getName())
-                        .append(";\n");
-            }
-        }
-        codeOutput.add(getLine());
-        localIndent--;
-        stringBuilder.append("}\n");
-        codeOutput.add(getLine());
+        appendBodyClose();
+
+        writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
+        this.symbolTable.leaveScope();
     }
 
     /***
@@ -344,213 +217,6 @@ public class CodeGenVisitor implements NodeVisitor {
         localIndent--;
         stringBuilder.append("}\n");
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
-    }
-
-    private String getClassName(ActorDclNode node,String methodName){
-        MethodDclNode methodNode=null;
-        String className=capitalizeFirstLetter(methodName);
-
-        for (AstNode childNode: node.getChildren()){
-            if(childNode instanceof MethodDclNode && ((MethodDclNode) childNode).getId().equals(methodName)){
-                methodNode=(MethodDclNode) childNode;
-                break;
-            }
-        }
-        if( methodNode!=null){
-            String scriptName=getMethodInFollowedScript(methodNode);
-            if(scriptName!=null){
-                className=scriptName+"."+className;
-            }
-        }
-        return className;
-    }
-
-    /**
-     * Appends a single if of if-else statement in an if-else chain.
-     * @param type must have values of either "if" or "if else"
-     * @param condition The condition of the if/if-else statement
-     * @param body the body of the if/if-else statement
-     */
-    private void appendIfElseChainLink(String type,String condition,String body){
-        String keyword;
-        if(type.equals("if")){
-            keyword=javaE.IF.getValue();
-        }else if(type.equals("else if")) {
-            keyword=javaE.ELSEIF.getValue();
-        }else{
-            throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
-        }
-        stringBuilder
-                .append(keyword)
-                .append("(")
-                .append(condition)
-                .append(") {\n");
-        codeOutput.add(getLine());//get line before indentation changes.
-        localIndent++;
-        stringBuilder.append(body);
-        codeOutput.add(getLine());//get line before indentation changes.
-        localIndent--;
-        stringBuilder.append("}");
-    }
-
-    /**
-     * Appends an else statement after an if-else chain.
-     * @param body The body of the else statement
-     */
-
-    private void appendElse(String body){
-        stringBuilder
-                .append(javaE.ELSE.getValue())
-                .append("{\n");
-        codeOutput.add(getLine());
-        localIndent++;
-        stringBuilder.append(body);
-        codeOutput.add(getLine());
-        localIndent--;
-        stringBuilder.append("}\n");
-        codeOutput.add(getLine());//get the line since indentation might change after calling this method.
-    }
-
-    /**
-     * @param methodName Name of the on-method
-     * @param className class name of the protocol class corresponding to the on-method.
-     * @return A condition for checking if incoming message is of the message type corresponding to the on-method.
-     */
-    private String getOnReceiveIfCondition(String className,String methodName){
-        return "message "+javaE.INSTANCEOF.getValue()+className+" "+methodName+"Msg";
-    }
-
-    /***
-     * @param methodName Name of the on-method
-     * @return A statement which calls a private-method in the actor. This method has the functionality to be executed when the message corresponding to the on-method is received.
-     */
-    private String getOnReceiveIfBody(String methodName, Iterator<String> params){
-        StringBuilder localStringBuilder=new StringBuilder();
-        localStringBuilder
-                .append(parLangE.ON.getValue())
-                .append(capitalizeFirstLetter(methodName))
-                .append("(");
-        while (params.hasNext()){
-            localStringBuilder
-                    .append(methodName)
-                    .append("Msg.")
-                    .append(params.next());
-            if(params.hasNext()){
-                localStringBuilder.append(", ");
-            }
-        }
-        localStringBuilder.append(");");
-        return localStringBuilder.toString();
-    }
-
-    private String capitalizeFirstLetter(String input) {
-        if (input != null && !input.isEmpty()) {
-            return input.substring(0, 1).toUpperCase() + input.substring(1);
-        } else {
-            throw new IllegalArgumentException("Input string is null or empty");
-        }
-    }
-
-
-
-
-    @Override
-    public void visit(ArrayAccessNode node){
-        stringBuilder.append(node.getAccessIdentifier());
-        if(node.getChildren().size() == 1){
-                stringBuilder.append("[");
-                if(node.getChildren().getFirst() instanceof IdentifierNode){
-                    typeCastArrayAccessNode(node,0);
-                }
-                visitChild(node.getChildren().getFirst());
-                stringBuilder.append("]");
-            } else if (node.getChildren().size()==2){
-                stringBuilder.append("[");
-                if(node.getChildren().getFirst() instanceof IdentifierNode){
-                    typeCastArrayAccessNode(node,0);
-                }
-                visitChild(node.getChildren().getFirst());
-                stringBuilder.append("]");
-                stringBuilder.append("[");
-                if(node.getChildren().get(1) instanceof IdentifierNode){
-                    typeCastArrayAccessNode(node,1);
-                }
-                visitChild(node.getChildren().get(1));
-                stringBuilder.append("]");
-            }
-    }
-    private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
-        if(node.getChildren().get(childIndex) instanceof IdentifierNode){
-            stringBuilder.append("(int) ");
-        }
-    }
-
-    private void resetStringBuilder(StringBuilder sb) {
-        sb.setLength(0);
-    }
-    private void resetCodeOutput(ArrayList<String> codeOutput) {
-        codeOutput.clear();
-    }
-
-    private void writeToFile(String fileName, ArrayList<String> codeOutput) {
-        try {
-            File dir = new File(dirPath);
-            if(!dir.exists()){
-                dir.mkdirs();
-            }
-
-            File file = new File(dirPath + "/" + fileName + ".java");
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                for (String line : codeOutput) {
-                    fos.write(line.getBytes());
-                }
-                System.out.println("New file was created: " + file.getName());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //Actor FactorialMain follows Factorial{State{}; Knows{}; Spawn{};}
-    //1. Reset StringBuilder and CodeOutput
-    //2. Create new File dependent on the node.getId()
-    //3. visit children
-    //4. Write the file
-    @Override
-    public void visit(ActorDclNode node) {
-        this.symbolTable.enterScope(node.getId());
-        resetStringBuilder();
-
-        appendPackage();
-
-        //imports necessary for most akka actor classes
-        appendImports("akka.actor",
-                "ActorRef",
-                "ActorSystem",
-                "Props",
-                "UntypedAbstractActor"
-        );
-        appendImports("akka.event",
-                "Logging",
-                "LoggingAdapter"
-        );
-        appendImports("java.util","Arrays","UUID");
-
-        appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
-
-        //append the body of the actor class
-        appendBodyOpen(node);
-        appendOnReceive(node);
-        stringBuilder.append("private LoggingAdapter log = Logging.getLogger(getContext().system(), this);\n");
-        codeOutput.add(getLine());
-        appendBodyClose();
-
-        writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
-        this.symbolTable.leaveScope();
-    }
-
-    private void appendPackage(){
-        stringBuilder.append("package output;\n \n");
     }
 
     //Can either be:
@@ -631,14 +297,6 @@ public class CodeGenVisitor implements NodeVisitor {
         return formalParameterTypes;
     }
 
-    private String determineValue(String type){
-        return switch (type) {
-            case "int" -> "Long.valueOf(";
-            case "double" -> "Double.valueOf(";
-            default -> "";
-        };
-    }
-
     @Override
     public void visit(ArithExpNode node) {
             if(node.getIsParenthesized()) {
@@ -651,7 +309,6 @@ public class CodeGenVisitor implements NodeVisitor {
             if (node.getIsParenthesized()) {
                 stringBuilder.append(")");
             }
-
     }
 
     @Override
@@ -668,7 +325,6 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
             }
-
     }
 
     @Override
@@ -697,7 +353,6 @@ public class CodeGenVisitor implements NodeVisitor {
     private void appendSpawnReaper(){
         appendInlineComment("Create Reaper Actor");
         stringBuilder.append("system.actorOf(Props.create(Reaper.class),\"reaper\");\n");
-
     }
 
     //In FactorialHelper this is: private final int currentValue;
@@ -769,11 +424,9 @@ public class CodeGenVisitor implements NodeVisitor {
          }
     }
 
-
     @Override
     public void visit(DoubleNode node) {
         stringBuilder.append(node.getValue());
-
     }
 
     @Override
@@ -823,19 +476,6 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         codeOutput.add(getLine());
        // this.symbolTable.leaveScope();
-    }
-
-    //HashMap to convert the type of the array to the type of the arraylist
-
-    private boolean isArray(AstNode node){
-        return node.getType().contains("[");
-    }
-    private boolean isParrentArray(AstNode node) {
-        if(node.getParent().getType()!=null){
-            return node.getParent().getType().contains("[");
-        }else{
-            return false;
-        }
     }
 
     @Override
@@ -1014,12 +654,10 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append("L");//append L when Integer is in an array. Necessary since array would be of type Long[] or Long[][].
             }
         }
-
     }
 
     @Override
     public void visit(IterationNode node) {
-
     }
 
     @Override
@@ -1090,7 +728,6 @@ public class CodeGenVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-
     @Override
     public void visit(MethodCallNode node) {
         visit((IdentifierNode) node.getChildren().getFirst());
@@ -1112,7 +749,7 @@ public class CodeGenVisitor implements NodeVisitor {
             appendProtocolClass(node);
             appendBehvaiour(node);
 
-            //To be done
+            //To be done                AJ: Ved du hvad det her er?
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),true,false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
@@ -1127,7 +764,6 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(s);
         }
         stringBuilder.append("\n");
-
     }
 
     private void appendProtocolClass(MethodDclNode node){
@@ -1139,28 +775,11 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
     }
 
-
     private void appendBehvaiour(MethodDclNode node){
         String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
         appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),name);
         appendParameters((ParametersNode) node.getChildren().getFirst());
         appendBody(node.getChildren().get(1));
-    }
-
-    private String getMethodInFollowedScript(MethodDclNode node){
-        //MethodDclNode's parent is always an actor.
-        // If the actor follows a script, a FollowsNode is the first child of this actor
-        AstNode firstChildOfActor=node.getParent().getChildren().getFirst();
-        if(firstChildOfActor instanceof FollowsNode followsNode){
-            List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
-            for(IdentifierNode script:followedScripts){
-                HashMap<String, Attributes> scriptOnMethods=symbolTable.lookUpScope(script.getName()).getDeclaredOnMethods();
-                if(scriptOnMethods.containsKey(node.getId())){
-                    return script.getName();
-                }
-            }
-        }
-        return null;
     }
 
     @Override
@@ -1229,9 +848,6 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
     }
 
-
-
-
     @Override
     public void visit(ScriptDclNode node) {
         this.symbolTable.enterScope(node.getId());
@@ -1291,8 +907,6 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         stringBuilder.append(")");
     }
-
-
 
     //Standard selection node construction with if and else statements
     @Override
@@ -1368,7 +982,6 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("UUID.randomUUID().toString()");
     }
 
-
     //					SpawnActorNode : HelloWorldMain with type: HelloWorldMain
     //						ArgumentsNode
     //							IntegerNode : 10 with type: int
@@ -1407,8 +1020,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(ExpNode node) {//abstract
-
+    public void visit(ExpNode node) { //abstract class
     }
 
     @Override
@@ -1423,7 +1035,6 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(StringNode node) {
         stringBuilder.append(node.getValue());
     }
-
 
     @Override
     public void visit(VarDclNode node) {
@@ -1457,8 +1068,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolCompareNode node){
-
+    public void visit(BoolCompareNode node){ //AJ Bør denne ikke udfyldes?
     }
 
     @Override
@@ -1468,4 +1078,360 @@ public class CodeGenVisitor implements NodeVisitor {
                 //Because the Reaper watches the actor, it informs the reaper that it is dead. And sends Terminated message to the reaper.
         codeOutput.add(getLine());
     }
+
+    /* ------------------- -------------------
+     *              HELPER METHODS
+     * ------------------- ------------------- */
+
+    private String VarTypeConverter(String parlangType, boolean useActorRef, boolean removeBrackets){
+        String javaType;
+        switch (parlangType) {
+            case "int":
+                javaType=javaE.LONG.getValue();
+                break;
+            case "int[]" :
+                javaType=javaE.LONG_ARRAY.getValue();;//Converting the array to an object array allows for printing it.
+                break;
+            case "int[][]":
+                javaType=javaE.LONG_ARRAY_2D.getValue();
+                break;
+            case "double":
+                javaType=javaE.DOUBLE.getValue();
+                break;
+            case "double[]" :
+                javaType=javaE.DOUBLE_ARRAY.getValue();
+                break;
+            case "double[][]":
+                javaType=javaE.DOUBLE_ARRAY_2D.getValue();
+                break;
+            case "bool":
+                javaType=javaE.BOOLEAN.getValue();
+                break;
+            case "bool[]" :
+                javaType=javaE.BOOLEAN_ARRAY.getValue();
+                break;
+            case "bool[][]":
+                javaType=javaE.BOOLEAN_ARRAY_2D.getValue();
+                break;
+            case "string":
+                javaType=javaE.STRING.getValue();
+                break;
+            case "string[]" :
+                javaType=javaE.STRING_ARRAY.getValue();
+                break;
+            case "string[][]":
+                javaType=javaE.STRING_ARRAY_2D.getValue();
+                break;
+            case "void":
+                javaType=javaE.VOID.getValue();
+                break;
+            default:
+                if(useActorRef){
+                    String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
+                    if(substrings.length>1){
+                        String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];
+                        javaType=actorRefNoSpace+substrings[1]+" ";
+                    }else{
+                        javaType=javaE.ACTORREF.getValue();
+                    }
+                }else {
+                    javaType=parlangType+" ";
+                }
+        }
+        if(removeBrackets){
+            javaType=javaType.replaceAll("\\[", "").replaceAll("\\]","");
+        }
+        return javaType;
+    }
+    /***
+     * Appends class definition string (e.g. "public class MyClass extends OtherClass")
+     * @param access The access modifier of the class (e.g "public")
+     * @param name The name of the class (e.g. "MyClass")
+     * @param superClassName Give null as input here unless the class extends from a superclass. If there
+     */
+    private void appendClassDefinition(String access, String name, String superClassName) {
+        stringBuilder
+                .append(access)
+                .append(javaE.CLASS.getValue())
+                .append(name)
+                .append(" ");
+        if(superClassName!=null){
+            stringBuilder
+                    .append(javaE.EXTENDS.getValue())
+                    .append(superClassName);
+        }
+    }
+
+    /***
+     * Appends static final class definition string
+     * @param access access modifier
+     * @param name name of class
+     */
+    private void appendStaticFinalClassDef(String access, String name){
+        stringBuilder
+                .append(access)
+                .append(javaE.STATIC.getValue())
+                .append(javaE.FINAL.getValue())
+                .append(javaE.CLASS.getValue())
+                .append(name);
+    }
+
+    /***
+     * Append method declaration string (e.g. "private void myMethod")
+     * @param access access modifier (e.g. "private")
+     * @param returnType (e.g. "void")
+     * @param name (e.g. "myMethod")
+     */
+    private void appendMethodDefinition(String access, String returnType, String name){
+        stringBuilder
+                .append(access)
+                .append(returnType)
+                .append(name);
+    }
+
+    /***
+     * Appends a series of imports from the same package. e.g.:
+     *      "import akka.actor.UntypedAbstractActor;
+     *       import akka.actor.ActorRef;
+     *       import akka.event.Logging;"
+     *
+     * @param pack Name of the package (e.g. "akka.actor")
+     * @param firstClassName The name of the first class imported from the package (e.g. "UntypedAbstractActor")
+     * @param additionalClassNames The names of the remaining class names (e.g. "ActorRef" and "Logging")
+     */
+    private void appendImports(String pack, String firstClassName, String...additionalClassNames){
+        appendImport(pack,firstClassName);// append import of the first class
+        for(String className:additionalClassNames){ //append imports of the remaining classes
+            appendImport(pack,className);
+        }
+        stringBuilder.append("\n");
+    }
+
+    /***
+     * Appends a single import statement (e.g. "import akka.actor.UntypedAbstractActor;")
+     * @param pack Name of the package (e.g. "akka.actor")
+     * @param className Name of the class (e.g. "UntypedAbstractActor")
+     */
+    private void appendImport(String pack,String className){
+        stringBuilder
+                .append(javaE.IMPORT.getValue())
+                .append(pack)
+                .append(".")
+                .append(className)
+                .append(javaE.SEMICOLON.getValue());
+    }
+
+    /***
+     * Used to append a body of e.g. a class or a method.
+     * Can be used if all the information required to produce the content of the body is present in the children of the node parameter.
+     * @param node The children of this AST node constitutes all the body to be appended in the target code.
+     */
+    private void appendBody(AstNode node){
+        appendBodyOpen(node);
+        appendBodyClose();
+    }
+
+    /***
+     * Can be used if something has to be added after visting the children.
+     * @param node the parent of the body.
+     */
+    private void appendBodyOpen(AstNode node){
+        appendBodyOpen(node,"","");
+    }
+
+    private void appendBodyOpen(AstNode node,String before,String after){
+        stringBuilder.append( " {\n");
+        codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
+        localIndent++; //content of the body is indented
+        visitChildren(node,before,after, null);//append the content of the body by visiting the children of @param node.
+    }
+
+    /**
+     * Used to finish a body after appending what is needed.
+     */
+    private void appendBodyClose(){
+        localIndent--;
+        stringBuilder.append( "}\n");
+        codeOutput.add(getLine() );
+    }
+
+    private void appendPackage(){
+        stringBuilder.append("package output;\n \n");
+    }
+
+    private void appendConstructor(String className,List<IdentifierNode> params){
+        stringBuilder
+                .append(javaE.PUBLIC.getValue())
+                .append(className)
+                .append("(");
+        if(!params.isEmpty()){
+            for(IdentifierNode param:params){
+                String javaType;
+                if(symbolTable.lookUpScope(param.getType())!=null){
+                    javaType=javaE.ACTORREF.getValue();
+                }else{
+                    javaType= VarTypeConverter(param.getType(),false,false)+" ";
+                }
+                stringBuilder
+                        .append(javaType)
+                        .append(param.getName())
+                        .append(", ");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+
+        stringBuilder.append(") {\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        if(params!=null){
+            for(IdentifierNode param:params){
+                stringBuilder
+                        .append(javaE.THIS.getValue())
+                        .append(".")
+                        .append(param.getName())
+                        .append(javaE.EQUALS.getValue())
+                        .append(param.getName())
+                        .append(";\n");
+            }
+        }
+        codeOutput.add(getLine());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLine());
+    }
+
+    private String getClassName(ActorDclNode node,String methodName){
+        MethodDclNode methodNode=null;
+        String className=capitalizeFirstLetter(methodName);
+
+        for (AstNode childNode: node.getChildren()){
+            if(childNode instanceof MethodDclNode && ((MethodDclNode) childNode).getId().equals(methodName)){
+                methodNode=(MethodDclNode) childNode;
+                break;
+            }
+        }
+        if( methodNode!=null){
+            String scriptName=getMethodInFollowedScript(methodNode);
+            if(scriptName!=null){
+                className=scriptName+"."+className;
+            }
+        }
+        return className;
+    }
+
+    private String getMethodInFollowedScript(MethodDclNode node){
+        //MethodDclNode's parent is always an actor.
+        // If the actor follows a script, a FollowsNode is the first child of this actor
+        AstNode firstChildOfActor=node.getParent().getChildren().getFirst();
+        if(firstChildOfActor instanceof FollowsNode followsNode){
+            List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
+            for(IdentifierNode script:followedScripts){
+                HashMap<String, Attributes> scriptOnMethods=symbolTable.lookUpScope(script.getName()).getDeclaredOnMethods();
+                if(scriptOnMethods.containsKey(node.getId())){
+                    return script.getName();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Appends a single if of if-else statement in an if-else chain.
+     * @param type must have values of either "if" or "if else"
+     * @param condition The condition of the if/if-else statement
+     * @param body the body of the if/if-else statement
+     */
+    private void appendIfElseChainLink(String type,String condition,String body){
+        String keyword;
+        if(type.equals("if")){
+            keyword=javaE.IF.getValue();
+        }else if(type.equals("else if")) {
+            keyword=javaE.ELSEIF.getValue();
+        }else{
+            throw new IllegalArgumentException("argument type is not 'if' or 'if else'.");
+        }
+        stringBuilder
+                .append(keyword)
+                .append("(")
+                .append(condition)
+                .append(") {\n");
+        codeOutput.add(getLine());//get line before indentation changes.
+        localIndent++;
+        stringBuilder.append(body);
+        codeOutput.add(getLine());//get line before indentation changes.
+        localIndent--;
+        stringBuilder.append("}");
+    }
+
+    /**
+     * Appends an else statement after an if-else chain.
+     * @param body The body of the else statement
+     */
+
+    private void appendElse(String body){
+        stringBuilder
+                .append(javaE.ELSE.getValue())
+                .append("{\n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder.append(body);
+        codeOutput.add(getLine());
+        localIndent--;
+        stringBuilder.append("}\n");
+        codeOutput.add(getLine());//get the line since indentation might change after calling this method.
+    }
+
+    /**
+     * @param methodName Name of the on-method
+     * @param className class name of the protocol class corresponding to the on-method.
+     * @return A condition for checking if incoming message is of the message type corresponding to the on-method.
+     */
+    private String getOnReceiveIfCondition(String className,String methodName){
+        return "message "+javaE.INSTANCEOF.getValue()+className+" "+methodName+"Msg";
+    }
+
+    /***
+     * @param methodName Name of the on-method
+     * @return A statement which calls a private-method in the actor. This method has the functionality to be executed when the message corresponding to the on-method is received.
+     */
+    private String getOnReceiveIfBody(String methodName, Iterator<String> params){
+        StringBuilder localStringBuilder=new StringBuilder();
+        localStringBuilder
+                .append(parLangE.ON.getValue())
+                .append(capitalizeFirstLetter(methodName))
+                .append("(");
+        while (params.hasNext()){
+            localStringBuilder
+                    .append(methodName)
+                    .append("Msg.")
+                    .append(params.next());
+            if(params.hasNext()){
+                localStringBuilder.append(", ");
+            }
+        }
+        localStringBuilder.append(");");
+        return localStringBuilder.toString();
+    }
+
+    private String capitalizeFirstLetter(String input) {
+        if (input != null && !input.isEmpty()) {
+            return input.substring(0, 1).toUpperCase() + input.substring(1);
+        } else {
+            throw new IllegalArgumentException("Input string is null or empty");
+        }
+    }
+    private boolean isArray(AstNode node){
+        return node.getType().contains("[");
+    }
+
+    private boolean isParrentArray(AstNode node) {
+        if(node.getParent().getType()!=null){
+            return node.getParent().getType().contains("[");
+        }else{
+            return false;
+        }
+    }
 }
+
+
