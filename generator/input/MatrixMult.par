@@ -70,7 +70,12 @@ Actor MatrixPrinter{
     Spawn(){}
 
     on printMatrix(int[][] matrix){
-        print(matrix);
+        for(int i = 0; i < 5; i = i+1){
+            for(int j = 0; j < 5; j = j+1){
+                print(matrix[i][j]);
+                print(" ");
+            }
+        }
         KILL;
     }
 }

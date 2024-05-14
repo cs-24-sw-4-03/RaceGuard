@@ -37,7 +37,7 @@ killCall : KILL SEMICOLON;
 actorAccess : stateAccess
     | knowsAccess
     ;
-stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
+stateAccess: STATE DOT IDENTIFIER;
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
