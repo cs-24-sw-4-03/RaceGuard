@@ -4,5 +4,5 @@ main(){
         int x = 5;
     }
 
-    int y = x;
+    int y = x; //x not accessible in this scope as it is declared in a control structure
 }
