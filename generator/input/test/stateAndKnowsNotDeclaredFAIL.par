@@ -7,9 +7,9 @@ Actor Test{
     Spawn(){}
 
     local testMethod():int{
-        State.y = 7;
+        State.y = 7; //y not declared in State
 
-        Knows.testActor = Spawn Test();
+        Knows.testActor = Spawn Test(); //testActor not declared in Knows
         return 2;
     }
 
