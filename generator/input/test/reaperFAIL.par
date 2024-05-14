@@ -1,0 +1,9 @@
+main(){}
+
+Actor Reaper{   //Actor named Reaper not allowed
+State{}
+Knows{}
+
+Spawn(){}
+
+}
