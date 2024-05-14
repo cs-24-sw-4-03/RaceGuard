@@ -124,9 +124,11 @@ Actor ShapesManager follows Shape, ShapeManager{
         double area;
     }
 	Knows{Shape shape1; Shape shape2; Shape shape3; ShapesManager manager;}
-	Spawn(Shape shape1, Shape shape2, Shape shape3){
-		Knows.shape1 = shape1;
-		Knows.shape2 = shape2;
+	Spawn(){}
+
+    on getShapes(Shape shape1, Shape shape2, Shape shape3){
+        Knows.shape1 = shape1;
+        Knows.shape2 = shape2;
         Knows.shape3 = shape3;
     }
 
@@ -155,16 +157,14 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 }
 main(){
-	House house = Spawn House(10, 7);
 	CircleManager circle = Spawn CircleManager(5);
-	Shape shape1 = Spawn House(7,5);
-    Shape shape2 = Spawn House(13,3);
-    Shape shape3 = Spawn Circle(10);
-	ShapesManager manager = Spawn ShapesManager(shape1, shape2, shape3);
-	house <- calcArea();
+	ShapesManager manager = Spawn ShapesManager();
+	Shape shape1 = Spawn House(7,5, manager);
+    Shape shape2 = Spawn House(13,3, manager);
+    Shape shape3 = Spawn Circle(10, manager);
+    manager <- getShapes(shape1, shape2, shape3);
 	circle <- calcArea();
 	manager <- calcArea();
-	house <- printArea();
 	circle <- printArea();
 	manager <- printArea();
 }
