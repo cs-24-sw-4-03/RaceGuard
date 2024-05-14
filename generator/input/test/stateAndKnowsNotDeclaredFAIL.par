@@ -1,0 +1,16 @@
+main(){}
+
+Actor Test{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+    local testMethod():int{
+        State.y = 7;
+
+        Knows.testActor = Spawn Test();
+        return 2;
+    }
+
+}
