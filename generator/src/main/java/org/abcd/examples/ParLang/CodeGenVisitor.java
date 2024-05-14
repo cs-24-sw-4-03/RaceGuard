@@ -517,38 +517,39 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
-        if (node.getParent() instanceof KnowsNode) {
+        if (node.getParent() instanceof KnowsNode) { //Knows nodes become private instance fields
             stringBuilder
                     .append(javaE.PRIVATE.getValue())
                     .append(javaE.ACTORREF.getValue())
                     .append(node.getName())
                     .append(javaE.SEMICOLON.getValue());
             codeOutput.add(getLine());
-        } else if(!isArray(node) && node.getParent() instanceof PrintCallNode){
-            if(symbolTable.findActorParent(node)==null){
-                stringBuilder.append(node.getName());
-            } else {
-                stringBuilder.append("\"{}\"");
+        } else if(node.getParent() instanceof PrintCallNode){
+            if(isArray(node)){
+                stringBuilder
+                        .append("Arrays.deepToString(")
+                        .append(node.getName())
+                        .append(")");
+            }else if(symbolTable.findActorParent(node)==null){//If print call is in main we use System.out.println() => The identifier name can be directly inserted.
+                    stringBuilder.append(node.getName());
+            } else { //I print call is in actor we use log.info() => we use
+                    stringBuilder.append("\"{}\"");
             }
-        } else if(isArray(node)&& node.getParent() instanceof PrintCallNode){
-            stringBuilder.append("Arrays.deepToString(");
-            stringBuilder
-                    .append(node.getName())
-                    .append(")");
-        } else if (isArray(node) && !(node.getParent() instanceof PrintCallNode)) {
-                if(!(node.getParent().getChildren().get(1) instanceof InitializationNode)) {
-                    stringBuilder.append(VarTypeConverter(node.getType(),true,false))
+        } else if (isArray(node)) {
+            if((node.getParent().getChildren().get(1) instanceof InitializationNode)) {
+                stringBuilder.append(VarTypeConverter(node.getType(),true,false))
+                        .append(node.getName())
+                        .append(" = new ")
+                        .append(VarTypeConverter(node.getType(),true, false));
+                } else {
+                    stringBuilder
+                            .append(VarTypeConverter(node.getType(),true,false))
                             .append(node.getName());
                     stringBuilder
                             .append(" = ")
                             .append(javaE.NEW.getValue())
                             .append(VarTypeConverter(node.getType(),true,true));
                     stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove unnecessary space
-                    } else {
-                    stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                            .append(node.getName())
-                            .append(" = new ")
-                            .append(VarTypeConverter(node.getType(),true, false));
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
             String type;
