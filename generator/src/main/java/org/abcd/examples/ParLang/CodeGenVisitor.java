@@ -532,34 +532,26 @@ public class CodeGenVisitor implements NodeVisitor {
                         .append(")");
             }else if(symbolTable.findActorParent(node)==null){//If print call is in main we use System.out.println() => The identifier name can be directly inserted.
                     stringBuilder.append(node.getName());
-            } else { //I print call is in actor we use log.info() => we use
+            } else { //If print call is in actor we use log.info() meaning that we have to use pattern matching for the identifier. (see akka log docs)
                     stringBuilder.append("\"{}\"");
             }
         } else if (isArray(node)) {
-            if((node.getParent().getChildren().get(1) instanceof InitializationNode)) {
-                stringBuilder.append(VarTypeConverter(node.getType(),true,false))
-                        .append(node.getName())
-                        .append(" = new ")
-                        .append(VarTypeConverter(node.getType(),true, false));
-                } else {
-                    stringBuilder
-                            .append(VarTypeConverter(node.getType(),true,false))
-                            .append(node.getName());
-                    stringBuilder
-                            .append(" = ")
-                            .append(javaE.NEW.getValue())
-                            .append(VarTypeConverter(node.getType(),true,true));
-                    stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove unnecessary space
+            //We have to do almost the same if the array is initialized or not.
+            //Initialized: "ActorRef[] army = new ActorRef[] {ryan, bo, gorm};" ("{ryan, bo, gorm}" is handled in visit(ListNode node))
+            //No initialized: "ActorRef[] largerArmy = new ActorRef[5]; (On the right hand side of "=" the "[5]" comes from visit(IntegerNode node) and the "[]" in "ActorRef[]" is removed ).
+            boolean isInitialized=node.getParent().getChildren().get(1) instanceof InitializationNode;
+            stringBuilder
+                    .append(VarTypeConverter(node.getType(),true,false)) //Append array type
+                    .append(node.getName())//Append name
+                    .append(" = ")
+                    .append(javaE.NEW.getValue())
+                    .append(VarTypeConverter(node.getType(),true,!isInitialized));//Remove brackets in the array type if it is not initialized.
+            if(!isInitialized ){ //If array is initialized there is an unnecessary space
+                    stringBuilder.deleteCharAt(stringBuilder.length()-1);//remove space
                 }
         } else if(node.getType()!= null && isChildOfVarDclOrParameters(node)){
-            String type;
-            if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
-                type=javaE.ACTORREF.getValue();
-            } else {
-                type= VarTypeConverter(node.getType(),false,false);
-            }
             stringBuilder
-                    .append(type)
+                    .append(VarTypeConverter(node.getType(),true,false))
                     .append(node.getName());
         }  else {
             stringBuilder.append(node.getName());
@@ -946,9 +938,10 @@ public class CodeGenVisitor implements NodeVisitor {
      */
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
-        visitChildren(node,"",",", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,". Cannot use javaE.COMMA.getValue() here because of the space.
+        visitChildren(node,"",", ", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,". Cannot use javaE.COMMA.getValue() here because of the space.
         if(node.getChildren().size()>0){
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma and space
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append(")");
     }
