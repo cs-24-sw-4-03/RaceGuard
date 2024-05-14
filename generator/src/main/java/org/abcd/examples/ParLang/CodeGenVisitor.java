@@ -29,6 +29,7 @@ public class CodeGenVisitor implements NodeVisitor {
     /**
      * Generates correct indentation for the StringBuilder. 4 spaces per indent.
      * @return the current string from StringBuilder with the correct indentation.
+     *  getLine() is used throughout CodeVisitor like this: "codeOutput.add(getLine());". This gets the current string in the stringBuilder (current line) with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
      */
     private String getLine() {
         String line = stringBuilder.toString().indent(localIndent* 4);
@@ -92,7 +93,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /**
-     * Overloaded version of visitChildren, where the Strings before and after is appended before and after the result
+     * Overloaded version of visitChildren, where the String before and after is appended before and after the result
      * of visiting the child node. Also casts the actual parameters of the child node to the correct type if necessary.
      * @param node the AST node whose children are to visit.
      * @param before the string to append before the result of visiting the child node.
@@ -137,22 +138,17 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(node.getAccessIdentifier());
         if(node.getChildren().size() == 1){
                 stringBuilder.append("[");
-                if(node.getChildren().getFirst() instanceof IdentifierNode){ // TODO AJ Denne linje kan vel fjernes? Indgår i typeCastArrayAccessNode
-                    typeCastArrayAccessNode(node,0);
-                }
+                typeCastArrayAccessNode(node,0);
                 visitChild(node.getChildren().getFirst());
                 stringBuilder.append("]");
             } else if (node.getChildren().size()==2){
                 stringBuilder.append("[");
-                if(node.getChildren().getFirst() instanceof IdentifierNode){
-                    typeCastArrayAccessNode(node,0);
-                }
+                typeCastArrayAccessNode(node,0);
                 visitChild(node.getChildren().getFirst());
                 stringBuilder.append("]");
                 stringBuilder.append("[");
-                if(node.getChildren().get(1) instanceof IdentifierNode){
-                    typeCastArrayAccessNode(node,1);
-                }
+                typeCastArrayAccessNode(node,1);
+
                 visitChild(node.getChildren().get(1));
                 stringBuilder.append("]");
             }
@@ -203,7 +199,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /***
-     * Appends and onReceive() method to the body of an Actor.
+     * Appends onReceive() method to the body of an Actor.
      * @param node The ActorDclNode in the AST which is used to produce the body of the actor in the target code.
      */
     private void appendOnReceive(ActorDclNode node){
@@ -242,7 +238,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 }
             }
             appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
-        }else{
+        } else {
             stringBuilder.append(javaE.UNHANDLED.getValue());
             codeOutput.add(getLine());
         }
@@ -251,24 +247,26 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine()); //get line and add to codeOutput since indentation might change after calling this method.
     }
 
-    //Can either be:
-    //value : (primitive | arithExp | boolExp | actorAccess | arrayAccess | SELF | identifier)
     @Override
     public void visit(ArgumentsNode node) {
         ArrayList<String> formalParameters = findFormalParameters(node);
         if (node.getParent() instanceof SpawnActorNode ) {
             visitChildren(node, ", ", "", formalParameters);
-        }else if(node.getParent() instanceof MethodCallNode || node.getParent() instanceof SendMsgNode ) {
+        } else if(node.getParent() instanceof MethodCallNode || node.getParent() instanceof SendMsgNode ) {
             visitChildren(node, "", ",", formalParameters);
             if (node.getChildren().size() > 0) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             }
-        }else {
+        } else {
             throw  new RuntimeException("Parent of ArgumentsNode is not SpawnActorNode, MethodCallNode or SendMsgNode");
         }
-        //if instance is method call
     }
 
+    /**
+     * Finds the formal parameters of the method that the actual parameters are used in.
+     * @param node The ArgumentsNode
+     * @return A list of the formal parameter types for the method that the actual parameters are used in.
+     */
     private ArrayList<String> findFormalParameters(ArgumentsNode node){
         LinkedHashMap<String, Attributes> params = null;
         ArrayList<String> formalParameterTypes = new ArrayList<>();
@@ -336,7 +334,7 @@ public class CodeGenVisitor implements NodeVisitor {
             }
 
             visitChild(node.getChildren().get(0));
-            stringBuilder.append(" " + node.getOpType().getValue() + " ");
+            stringBuilder.append(" ").append(node.getOpType().getValue()).append(" ");
             visitChild(node.getChildren().get(1));
             if (node.getIsParenthesized()) {
                 stringBuilder.append(")");
@@ -382,12 +380,14 @@ public class CodeGenVisitor implements NodeVisitor {
         }
     }
 
+    /**
+     * Appends the creation of the reaper. (used in e.g. MainDclNode)
+     */
     private void appendSpawnReaper(){
         appendInlineComment("Create Reaper Actor");
         stringBuilder.append("system.actorOf(Props.create(Reaper.class),\"reaper\");\n");
     }
 
-    //In FactorialHelper this is: private final int currentValue;
     @Override
     public void visit(StateNode node) {
         visitChildren(node);
@@ -413,25 +413,31 @@ public class CodeGenVisitor implements NodeVisitor {
         booleanFunction(node, " || ");
     }
 
-    public void booleanFunction(ExpNode node, String string){
+    /**
+     * Helper method for boolean functions. Used for both BoolAndExpNode and BoolExpNode.
+     * It appends the correct string between the children of the node.
+     * @param node the ExpNode to visit
+     * @param logicOperator the operator to append between the children
+     */
+    public void booleanFunction(ExpNode node, String logicOperator){
        for(int i = 0; i < node.getChildren().size(); i ++){
             if(node.getIsParenthesized()) {
                 if (i == 0) {
                     stringBuilder.append("(");
                     visitChild(node.getChildren().get(i));
                 } else {
-                    stringBuilder.append(string);
+                    stringBuilder.append(logicOperator);
                     visitChild(node.getChildren().get(i));
-                    if(node.getChildren().size()-1 == node.getChildren().indexOf(node.getChildren().get(i))){
+                    if(node.getChildren().size()-1 == node.getChildren().indexOf(node.getChildren().get(i))){ //if last element
                         stringBuilder.append(")");
                     }
                 }
             }
-            else {
+            else { //if not parenthesized
                 if (i == 0) {
                     visitChild(node.getChildren().get(i));
                 } else {
-                    stringBuilder.append(string);
+                    stringBuilder.append(logicOperator);
                     visitChild(node.getChildren().get(i));
                 }
             }
@@ -477,17 +483,17 @@ public class CodeGenVisitor implements NodeVisitor {
         //check if the second child is a compare expression and the third child is an assign node
         if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
             visitChild(node.getChildren().get(0));
-            stringBuilder.append("; ");
+            stringBuilder.append(javaE.SEMICOLON.getValue());
             visitChild(node.getChildren().get(1));
-            stringBuilder.append("; ");
+            stringBuilder.append(javaE.SEMICOLON.getValue());
             visitChild(node.getChildren().get(2));
             stringBuilder.append(")");
             visitChild(node.getChildren().get(3));
         } else { //check if the first child is a compare expression
             if (node.getChildren().get(0) instanceof CompareExpNode) {
-                stringBuilder.append("; ");
+                stringBuilder.append(javaE.SEMICOLON.getValue());
                 visitChild(node.getChildren().get(0));
-                stringBuilder.append(" ;");
+                stringBuilder.append(" ;"); //Cannot use javaE.SEMICOLON.getValue() here, because of the space
                 if(!(node.getChildren().get(1) instanceof AssignNode)){ //check if the second child is not an assign node
                     stringBuilder.append(")");
                     visitChild(node.getChildren().get(1));
@@ -507,7 +513,6 @@ public class CodeGenVisitor implements NodeVisitor {
             }
         }
         codeOutput.add(getLine());
-       // this.symbolTable.leaveScope();
     }
 
     @Override
@@ -522,10 +527,10 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if(!isArray(node) && node.getParent() instanceof PrintCallNode){
             if(symbolTable.findActorParent(node)==null){
                 stringBuilder.append(node.getName());
-            }else {
+            } else {
                 stringBuilder.append("\"{}\"");
             }
-        }else if(isArray(node)&& node.getParent() instanceof PrintCallNode){
+        } else if(isArray(node)&& node.getParent() instanceof PrintCallNode){
             stringBuilder.append("Arrays.deepToString(");
             stringBuilder
                     .append(node.getName())
@@ -549,19 +554,19 @@ public class CodeGenVisitor implements NodeVisitor {
             String type;
             if(symbolTable.lookUpScope(node.getType())!=null) {//If there is a scope with the same name as the IdentierfierNode's type, then the type is an actor
                 type=javaE.ACTORREF.getValue();
-            }else{
+            } else {
                 type= VarTypeConverter(node.getType(),false,false);
             }
             stringBuilder
                     .append(type)
                     .append(node.getName());
-        }  else{
+        }  else {
             stringBuilder.append(node.getName());
         }
     }
 
-    /***
-     *
+    /**
+     * Checks if node is child of type VarDcl or Parameters
      * @param node parent must be SendMsgNode
      */
     private boolean isChildOfVarDclOrParameters(IdentifierNode node){
@@ -582,8 +587,8 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChildren(node);
     }
 
-    /***
-     * creates a file named "Reaper" containing the Reaper actor class.
+    /**
+     * creates a seperate file named "Reaper" containing the Reaper actor class.
      */
     private void createReaper(){
         resetStringBuilder();
@@ -661,6 +666,9 @@ public class CodeGenVisitor implements NodeVisitor {
         writeToFile(actorName, codeOutput);//Write the actor class to a separate file.
     }
 
+    /**
+     * Aa static method used by other actors for sending a WatchMe message to the reaper
+     */
     private void appendSendWatchMeMessage(){
         stringBuilder.append("public static void sendWatchMeMessage(UntypedAbstractActor actor) { \n");
         codeOutput.add(getLine());
@@ -689,7 +697,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(IterationNode node) {
+    public void visit(IterationNode node) { // Abstract Class
     }
 
     @Override
@@ -711,12 +719,15 @@ public class CodeGenVisitor implements NodeVisitor {
             separateElementsList(node);
             stringBuilder.append("}");
     }
-    //Separate the elements in the list by a comma
+
+    /**
+     * Separate the elements in the list by a comma
+     */
     private void separateElementsList(ListNode node) {
         for(int i = 0; i < node.getChildren().size(); i++){
             visitChild(node.getChildren().get(i));
             if(i != node.getChildren().size()-1){
-                stringBuilder.append(", ");
+                stringBuilder.append(javaE.COMMA.getValue());
             }
         }
     }
@@ -732,7 +743,6 @@ public class CodeGenVisitor implements NodeVisitor {
         resetStringBuilder();
 
         appendPackage(javaE.PACKAGE_NAME.getValue());
-        //public class Main {
         appendImports("akka.actor",
                 "ActorSystem",
                 "ActorRef",
@@ -742,18 +752,14 @@ public class CodeGenVisitor implements NodeVisitor {
         appendImports("java.util","Arrays", "UUID");
 
         appendClassDefinition(javaE.PUBLIC.getValue(), parLangE.MAIN.getValue(),null);
-        stringBuilder.append(" {\n");
+        stringBuilder.append(javaE.CURLY_OPEN.getValue());
         codeOutput.add(getLine());
         localIndent++;
-        //public static void main(String[] args) {
-        //      ActorSystem system = ActorSystem.create("system");
-        //} //end of main method
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
                 .append(javaE.STATIC.getValue())
                 .append(javaE.VOID.getValue())
                 .append("main(String[] args)");
-        //codeOutput.add(getLineBasic());
         visitChildren(node);
         appendBodyClose();
         writeToFile(capitalizeFirstLetter(node.getId()), codeOutput);
@@ -766,7 +772,7 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("(");
         System.out.println(node.getChildren().size());
         if(node.getChildren().size()>1){
-            visit((ArgumentsNode) node.getChildren().get(1));//ArgumentdNode
+            visit((ArgumentsNode) node.getChildren().get(1));//ArgumentsNode
         }
         stringBuilder.append(")");
         stringBuilder.append(javaE.SEMICOLON.getValue());
@@ -780,8 +786,6 @@ public class CodeGenVisitor implements NodeVisitor {
             appendInlineComment(parLangE.ON.getValue()," method:"," ",node.getId());
             appendProtocolClass(node);
             appendBehvaiour(node);
-
-            //To be done                AJ: Ved du hvad det her er?
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),true,false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
@@ -790,19 +794,15 @@ public class CodeGenVisitor implements NodeVisitor {
         this.symbolTable.leaveScope();
     }
 
-    private void appendInlineComment(String... strings){
-        stringBuilder.append(javaE.INLINE_COMMENT.getValue());
-        for(String s:strings){
-            stringBuilder.append(s);
-        }
-        stringBuilder.append("\n");
-    }
-
+    /**
+     * Appends the protocol class for the on-method
+     * @param node
+     */
     private void appendProtocolClass(MethodDclNode node){
         String className=capitalizeFirstLetter(node.getId());
         appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
         String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
-        appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,";\n");
+        appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,javaE.SEMICOLON.getValue());
         appendConstructor(className,(List<IdentifierNode>)(List<?>) node.getChildren().get(0).getChildren());
         appendBodyClose();
     }
@@ -1115,6 +1115,13 @@ public class CodeGenVisitor implements NodeVisitor {
      *              HELPER METHODS
      * ------------------- ------------------- */
 
+    /**
+     *
+     * @param parlangType The parlang type to be converted
+     * @param useActorRef Actor types are converted to ActorRef if true
+     * @param removeBrackets Brackets are removed from array types if true.
+     * @return The java type to be used in the target code.
+     * */
     private String VarTypeConverter(String parlangType, boolean useActorRef, boolean removeBrackets){
         String javaType;
         switch (parlangType) {
@@ -1122,7 +1129,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.LONG.getValue();
                 break;
             case "int[]" :
-                javaType=javaE.LONG_ARRAY.getValue();;//Converting the array to an object array allows for printing it.
+                javaType=javaE.LONG_ARRAY.getValue();
                 break;
             case "int[][]":
                 javaType=javaE.LONG_ARRAY_2D.getValue();
@@ -1158,13 +1165,13 @@ public class CodeGenVisitor implements NodeVisitor {
                 javaType=javaE.VOID.getValue();
                 break;
             default:
-                if(useActorRef){
-                    String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[".
-                    if(substrings.length>1){
-                        String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];
-                        javaType=actorRefNoSpace+substrings[1]+" ";
+                if(useActorRef){ //If actor type in parlang should be converted to "ActorRef"
+                    String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[". e.g "myActor[]" is split to "myActor" and "[]"
+                    if(substrings.length>1){ //if parlangType is an array (substrings[1] is "[]" or "[][]").
+                        String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];//Delete the space in "ActorRef "
+                        javaType=actorRefNoSpace+substrings[1]+" ";//The java type is the array-part of paralngType appended to "ActorRef"
                     }else{
-                        javaType=javaE.ACTORREF.getValue();
+                        javaType=javaE.ACTORREF.getValue();  //If paralangType is not an array, the java type is "ActorRef "
                     }
                 }else {
                     javaType=parlangType+" ";
@@ -1265,16 +1272,22 @@ public class CodeGenVisitor implements NodeVisitor {
 
     /***
      * Can be used if something has to be added after visting the children.
-     * @param node the parent of the body.
+     * @param node the BodyNode
      */
     private void appendBodyOpen(AstNode node){
         appendBodyOpen(node,"","");
     }
 
+    /***
+     * Allows for appending given strings before and after visiting each child-node of the body
+     * @param node the BodyNode
+     * @param before string appended before each child
+     * @param after string appended after each child
+     */
     private void appendBodyOpen(AstNode node,String before,String after){
         stringBuilder.append( " {\n");
         codeOutput.add(getLine() );//gets current line with indentation given by localIndent at this moment, resets stringBuilder, and adds the line to codeOutput.
-        localIndent++; //content of the body is indented
+        localIndent++;
         visitChildren(node,before,after, null);//append the content of the body by visiting the children of @param node.
     }
 
@@ -1297,6 +1310,11 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("; \n \n");
     }
 
+    /***
+     * appends a simple constructor where the instance fields are set to be equal to the input parameters.
+     * @param className
+     * @param params The input parameters of the constructor.
+     */
     private void appendConstructor(String className,List<IdentifierNode> params){
         stringBuilder
                 .append(javaE.PUBLIC.getValue())
@@ -1469,6 +1487,18 @@ public class CodeGenVisitor implements NodeVisitor {
         }else{
             return false;
         }
+    }
+
+    /**
+     * Appends one line comment to the stringBuilder
+     * @param strings the strings to append to the comment. Can be multiple strings.
+     */
+    private void appendInlineComment(String... strings){
+        stringBuilder.append(javaE.INLINE_COMMENT.getValue());
+        for(String s:strings){
+            stringBuilder.append(s);
+        }
+        stringBuilder.append("\n");
     }
 }
 
