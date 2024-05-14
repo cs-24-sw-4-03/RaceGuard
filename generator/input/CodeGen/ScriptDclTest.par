@@ -1,8 +1,8 @@
 Script TestScript{
     on testMethod1(int p, actor a);
-    on testMethod2(String s);
+    on testMethod2(string s);
     on testMethod4();
-    local localMethod(String s):int;
+    local localMethod(string s):int;
 }
 
 Actor actor{

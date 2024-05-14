@@ -963,9 +963,9 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(SendMsgNode node) {
-        appendTellOpen(node);
-        appendProtocolArg(node);
-        appendTellClose(node);
+        appendTellOpen(node); // ".tell("
+        appendProtocolArg(node); // e.g. "new FibCalculator.Calculate(Long.valueOf(number)),"
+        appendTellClose(node); // e.g. "getSelf());"
     }
 
     /**
@@ -981,7 +981,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /**
-     * Appends the closing of the tell method with the protocol argument. e.g. new Greet("Hello").
+     * Appends the closing of the tell method with the sender of the message.
      * if being sent from main, there's no sender.
      * @param node SendMsgNode
      */
@@ -999,8 +999,8 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /**
-     * Appends the protocol argument of the tell method.
-     * @param node
+     * Appends the protocol argument of the tell method. (e.g. new FibCalculator.Calculate(Long.valueOf(number)),
+     * @param node SendMsgNode
      */
     private void appendProtocolArg(SendMsgNode node){
         String protocolClass=capitalizeFirstLetter(node.getMsgName());
@@ -1014,6 +1014,11 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append("),");
     }
 
+    /**
+     * Visits the receiver of the message.
+     * @param node SendMsgNode
+     * @throws RuntimeException if the receiver is not an IdentifierNode, KnowsAccessNode or SelfNode
+     */
     private void visitReceiver(SendMsgNode node){
         AstNode firstChild=node.getChildren().getFirst();
         if(firstChild instanceof IdentifierNode){
@@ -1021,20 +1026,22 @@ public class CodeGenVisitor implements NodeVisitor {
         }else if (firstChild instanceof  KnowsAccessNode){
             visit((KnowsAccessNode) firstChild); //visit the KnowsAccessNode
         }
-        else if(node.getReceiver().equals("self")){ //receiver is self
+        else if (node.getReceiver().equals("self")){ //receiver is self
             visit((SelfNode) firstChild);
-        }else{
+        } else {
             throw new RuntimeException("Receiver of message is not an IdentifierNode, KnowsAccessNode or selfnode");
         }
     }
-    
+
+    /**
+     * Appends a unique ID to the actor.
+     * Current implementation is using UUID to generate a random ID for actors.
+     * There's no guarantee that these will not be the same, but it's very unlikely.
+     */
     private void getNextUniqueActor() {
         stringBuilder.append("UUID.randomUUID().toString()");
     }
 
-    //					SpawnActorNode : HelloWorldMain with type: HelloWorldMain
-    //						ArgumentsNode
-    //							IntegerNode : 10 with type: int
     @Override
     public void visit(SpawnActorNode node) {
         String outerScopeName = symbolTable.findActorParent(node);
@@ -1048,7 +1055,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(".")
                 .append(javaE.CLASS.getValue());
         visitChildren(node);
-        stringBuilder.append("), ");
+        stringBuilder.append(")").append(javaE.COMMA.getValue());
         getNextUniqueActor();
         stringBuilder.append(")");
         if (!(node.getParent() instanceof InitializationNode ||node.getParent() instanceof  AssignNode)) {
@@ -1088,14 +1095,14 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(VarDclNode node) {
-        if (node.getParent() instanceof StateNode) {
+        if(node.getParent() instanceof StateNode) {
             stringBuilder.append(javaE.PRIVATE.getValue());
         }
         if(isArray(node) && node.getChildren().get(1) instanceof InitializationNode) {
             visitChild(node.getChildren().get(0));
             visitChild(node.getChildren().get(1));
 
-        } else{
+        } else {
             visitChildren(node);
         }
 
@@ -1338,36 +1345,27 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.PUBLIC.getValue())
                 .append(className)
                 .append("(");
-        if(!params.isEmpty()){
+        if(!params.isEmpty()){//append parameters list
             for(IdentifierNode param:params){
-                String javaType;
-                if(symbolTable.lookUpScope(param.getType())!=null){
-                    javaType=javaE.ACTORREF.getValue();
-                }else{
-                    javaType= VarTypeConverter(param.getType(),false,false)+" ";
-                }
                 stringBuilder
-                        .append(javaType)
+                        .append(VarTypeConverter(param.getType(),true,false))
                         .append(param.getName())
                         .append(", ");
             }
-            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);//Remove the surplus ", " from the end of the parameters list
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
-
         stringBuilder.append(") {\n");
         codeOutput.add(getLine());
         localIndent++;
-        if(params!=null){
-            for(IdentifierNode param:params){
-                stringBuilder
-                        .append(javaE.THIS.getValue())
-                        .append(".")
-                        .append(param.getName())
-                        .append(javaE.EQUALS.getValue())
-                        .append(param.getName())
-                        .append(";\n");
-            }
+        for(IdentifierNode param:params){//assign values to the instance fields
+            stringBuilder
+                    .append(javaE.THIS.getValue())
+                    .append(".")
+                    .append(param.getName())
+                    .append(javaE.EQUALS.getValue())
+                    .append(param.getName())
+                    .append(";\n");
         }
         codeOutput.add(getLine());
         localIndent--;
@@ -1375,18 +1373,24 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
     }
 
+    /***
+     *  (e.g. "GreeterScript.Greet")
+     * @param node parent actor of the on method
+     * @param methodName
+     * @return class name of protocol class of an on-method. If the method is in a follows script, this class will be the static protocol class in the Script-class.
+     * If methodName is "greet", then "Greet" is returned if greet() is not in a followed script. However, if greet() is in a follows script, e.g. GreeterScript, then "GreeterScript.Greet" is returned.
+     */
     private String getClassName(ActorDclNode node,String methodName){
         MethodDclNode methodNode=null;
         String className=capitalizeFirstLetter(methodName);
-
-        for (AstNode childNode: node.getChildren()){
+        for (AstNode childNode: node.getChildren()){//find the on-method's MethodDclNode in the parent actor
             if(childNode instanceof MethodDclNode && ((MethodDclNode) childNode).getId().equals(methodName)){
                 methodNode=(MethodDclNode) childNode;
                 break;
             }
         }
         if( methodNode!=null){
-            String scriptName=getMethodInFollowedScript(methodNode);
+            String scriptName=getFollowedScriptName(methodNode);//is null if method is not in followed script
             if(scriptName!=null){
                 className=scriptName+"."+className;
             }
@@ -1394,15 +1398,19 @@ public class CodeGenVisitor implements NodeVisitor {
         return className;
     }
 
-    private String getMethodInFollowedScript(MethodDclNode node){
+    /***
+     * @param node MethodDclNode
+     * @return Script name if the method is in a followed script. Else returns null.
+     */
+    private String getFollowedScriptName(MethodDclNode node){
         //MethodDclNode's parent is always an actor.
         // If the actor follows a script, a FollowsNode is the first child of this actor
         AstNode firstChildOfActor=node.getParent().getChildren().getFirst();
         if(firstChildOfActor instanceof FollowsNode followsNode){
             List<IdentifierNode> followedScripts=(List<IdentifierNode>)(List<?>) followsNode.getChildren();//Casting through intermediate wildcard type in or to be able to cast the list.
-            for(IdentifierNode script:followedScripts){
+            for(IdentifierNode script:followedScripts){ //For each followed script we get all on-methods in it.
                 HashMap<String, Attributes> scriptOnMethods=symbolTable.lookUpScope(script.getName()).getDeclaredOnMethods();
-                if(scriptOnMethods.containsKey(node.getId())){
+                if(scriptOnMethods.containsKey(node.getId())){ //if one of the on-methods match the name of the input MethodDclNode
                     return script.getName();
                 }
             }
