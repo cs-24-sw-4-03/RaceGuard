@@ -667,7 +667,7 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     /**
-     * Aa static method used by other actors for sending a WatchMe message to the reaper
+     * A static method used by other actors for sending a WatchMe message to the reaper
      */
     private void appendSendWatchMeMessage(){
         stringBuilder.append("public static void sendWatchMeMessage(UntypedAbstractActor actor) { \n");
@@ -785,7 +785,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(node.getMethodType().equals(parLangE.ON.getValue())){
             appendInlineComment(parLangE.ON.getValue()," method:"," ",node.getId());
             appendProtocolClass(node);
-            appendBehvaiour(node);
+            appendBehaviour(node);
         } else if (node.getMethodType().equals(parLangE.LOCAL.getValue())) {
             appendMethodDefinition(javaE.PRIVATE.getValue(), VarTypeConverter(node.getType(),true,false),node.getId());
             visit(node.getParametersNode());//append parameters in target code
@@ -796,7 +796,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
     /**
      * Appends the protocol class for the on-method
-     * @param node
+     * @param node The MethodDclNode
      */
     private void appendProtocolClass(MethodDclNode node){
         String className=capitalizeFirstLetter(node.getId());
@@ -807,7 +807,11 @@ public class CodeGenVisitor implements NodeVisitor {
         appendBodyClose();
     }
 
-    private void appendBehvaiour(MethodDclNode node){
+    /**
+     * Appends behaviour class for the on-method (e.g. private void onXXX(xx,xx) )
+     * @param node MethodDclNode
+     */
+    private void appendBehaviour(MethodDclNode node){
         String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
         appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),name);
         appendParameters((ParametersNode) node.getChildren().getFirst());
@@ -834,7 +838,11 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
     }
 
-    //Visit all the children of the print call node except the first one
+    /**
+     * Visit all the children of the print call node except the first one
+     * @param node PrintCallNode
+     * @param calledInMain If not called in main append variables
+     */
     private void visitPrintChildrenFromChildOne(PrintCallNode node, boolean calledInMain) {
         String variables="";
         int size=node.getChildren().size();
@@ -863,17 +871,17 @@ public class CodeGenVisitor implements NodeVisitor {
         AstNode returnee=node.getReturnee();//get the expression which is returned (return <returnee>;)
         if(returnee instanceof IdentifierNode){
             visit((IdentifierNode) returnee);
-        } else if (returnee instanceof ArithExpNode) {
+        } else if(returnee instanceof ArithExpNode) {
             visit((ArithExpNode) returnee);
-        } else if (returnee instanceof BoolExpNode) {
+        } else if(returnee instanceof BoolExpNode) {
             visit((BoolExpNode) returnee);
-        } else if (returnee instanceof StateAccessNode) {
+        } else if(returnee instanceof StateAccessNode) {
             visit((StateAccessNode) returnee);
         } else if(returnee instanceof KnowsAccessNode){
             visit((KnowsAccessNode) returnee);
-        } else if (returnee instanceof LiteralNode){
+        } else if(returnee instanceof LiteralNode){
             stringBuilder.append(((LiteralNode<?>) returnee).getValue());
-        } else if (returnee==null) {//If nothing is returned, delete extra space after "return".
+        } else if(returnee==null) {//If nothing is returned, delete extra space after "return".
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         stringBuilder.append(javaE.SEMICOLON.getValue());
@@ -887,7 +895,7 @@ public class CodeGenVisitor implements NodeVisitor {
 
         appendPackage(javaE.PACKAGE_NAME.getValue());
 
-        //We crate a public class for the script with the same name as the script.
+        //Create a public class for the script with the same name as the script.
         appendImports("akka.actor","ActorRef");
         appendClassDefinition(javaE.PUBLIC.getValue(),node.getId(),null);
         appendBody(node);//The body of the class has a static class for each on-method declared in the script.
@@ -920,20 +928,24 @@ public class CodeGenVisitor implements NodeVisitor {
         if(node.getParent() instanceof MethodDclNode || node.getParent() instanceof SpawnDclNode) {
             //If parameters is part of method declaration in an actor we simply append them to the method declaration in the target code
             appendParameters(node);
-        }else if (node.getParent() instanceof ScriptMethodNode){
+        } else if(node.getParent() instanceof ScriptMethodNode){
             //If the method is declared in a script, the parameters are mapped to fields in the static class representing the method
             localIndent++;
             visitChildren(node, javaE.PUBLIC.getValue(),javaE.SEMICOLON.getValue(), null); //Insterts the parameters ad public fields in the method's static class
             localIndent--;
             codeOutput.add(getLine() );
-        }else{
+        } else {
             throw new RuntimeException("ParametersNode not instance of MethodDclNode, SpawnDclNode or SrciptMethodNode");
         }
     }
 
+    /**
+     * Appends the parameters of a method to the StringBuilder. Also separates args by comma.
+     * @param node The ParametersNode
+     */
     private void appendParameters(ParametersNode node){
         stringBuilder.append("(");
-        visitChildren(node,"",",", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,"
+        visitChildren(node,"",",", null);//appends list of parameters. There is a surplus comma after last parameter: "int p1, int p2,". Cannot use javaE.COMMA.getValue() here because of the space.
         if(node.getChildren().size()>0){
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);//delete the surplus comma
         }
@@ -962,6 +974,10 @@ public class CodeGenVisitor implements NodeVisitor {
         appendTellClose(node);
     }
 
+    /**
+     * Appends the opening of the tell method with the receiver of the message. e.g. .tell(
+     * @param node SendMsgNode
+     */
     private void appendTellOpen(SendMsgNode node){
         visitReceiver(node);
         stringBuilder
@@ -970,6 +986,11 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("(");
     }
 
+    /**
+     * Appends the closing of the tell method with the protocol argument. e.g. new Greet("Hello").
+     * if being sent from main, there's no sender.
+     * @param node SendMsgNode
+     */
     private void appendTellClose(SendMsgNode node){
         String sender;
         if(node.getParent().getParent() instanceof MainDclNode){
@@ -983,6 +1004,10 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
     }
 
+    /**
+     * Appends the protocol argument of the tell method.
+     * @param node
+     */
     private void appendProtocolArg(SendMsgNode node){
         String protocolClass=capitalizeFirstLetter(node.getMsgName());
         stringBuilder
@@ -993,7 +1018,6 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append("(");
         visit((ArgumentsNode) node.getChildren().getLast());//visit the ArgumentsNode
         stringBuilder.append("),");
-
     }
 
     private void visitReceiver(SendMsgNode node){
