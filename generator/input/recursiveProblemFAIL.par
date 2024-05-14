@@ -1,6 +1,7 @@
+//should not compile
 main() {
-    int y = y;
-    int x = 0
+    int y = y; // y not defined
+    int x = 0;
 
 
     for(int i = 0; i < 10; i = i + 1) {

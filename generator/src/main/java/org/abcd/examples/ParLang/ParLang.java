@@ -67,18 +67,21 @@ public class ParLang {
         typeVisitor.visit(ast);
         printAST(ast, args);
 
-        if(!symbolTableVisitor.getExceptions().isEmpty() || !typeVisitor.getExceptions().isEmpty() || !methodVisitor.getExceptions().isEmpty()) {
-            System.err.println("Errors detected in scope checking or type checking.");
-
-            System.out.println("\nSymbolTableVisitor");
+        if (!symbolTableVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in variable scoping");
             printExceptions(symbolTableVisitor.getExceptions());
+            System.exit(1);
+        }
 
-            System.out.println("\nMethodVisitor");
+        if (!methodVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in method scoping");
             printExceptions(methodVisitor.getExceptions());
+            System.exit(1);
+        }
 
-            System.out.println("\nType Checking");
+        if(!typeVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in type checking.");
             printExceptions(typeVisitor.getExceptions());
-
             System.exit(1);
         }
 

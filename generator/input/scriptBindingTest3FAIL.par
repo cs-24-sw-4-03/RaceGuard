@@ -16,12 +16,13 @@ Actor Gorm follows Vaagen, Dvale{
 
     local kaemp():void{
         print("Gorm kaemper");
+        return;
     }
     on gaaIDvale(string s){
         print("Gorm går i dvale");
         print(s);
     }
-    on slaas(){
+    on slaas(){ //wrong number of arguments
         kaemp();
     }
     on sove(int x, int y){

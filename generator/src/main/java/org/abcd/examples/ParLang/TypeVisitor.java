@@ -324,7 +324,10 @@ public class TypeVisitor implements NodeVisitor {
                     attributes = symbolTable.lookUpKnowsSymbol(receiverName.replaceAll("Knows.","")); //Look up the knows symbol
                 }else if(receiverNode instanceof SelfNode){
                     String actorName = symbolTable.findActorParent(receiverNode);
-                    attributes = symbolTable.lookUpSymbol(actorName);
+                    if (actorName == null) { //If the actorName is null, throw an exception
+                        throw new SelfNodeException("SelfNode is not a child of ActorDclNode" + ". Line: " + receiverNode.getLineNumber() + " Column: " + receiverNode.getColumnNumber());
+                    }
+                    attributes = new Attributes(actorName); //Set the attributes to the actorName
                 }else if(receiverNode instanceof IdentifierNode){
                     attributes = symbolTable.lookUpSymbol(receiverName);
                 }
@@ -334,7 +337,7 @@ public class TypeVisitor implements NodeVisitor {
                     params = methodScope.getParams();
                     checkArgTypes(node, params, methodName); //Check the arguments against the parameters
                 }else{ //If the attributes are null, throw an exception
-                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+                    throw new SendMsgException("Attributes of receiver: " + receiverName + " could not be found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
                 }
             }else { //If the parent is not a method call, spawn actor or send message node, throw an exception
                 throw new ArgumentsException("Arguments node parent is not a method call, spawn actor or send message node" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());

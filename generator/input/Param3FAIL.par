@@ -7,7 +7,7 @@ Actor testActor follows test{
     State {}
     Knows {}
     Spawn(){}
-    on someMethod(int x){}
+    on someMethod(int x){} //missing parameter
 }
 
 main(){}

@@ -1,0 +1,20 @@
+//should not compile
+Script test{
+    on someMethod(int x, double y);
+}
+
+Actor testActor follows test{
+    State {}
+    Knows {}
+    Spawn(){}
+    on someMethod(double x, double y){} // wrong type for argument x
+}
+
+Actor testActor2 follows test{
+    State {}
+    Knows {}
+    Spawn(){}
+    on someMethod(double x, double y){} // wrong type for argument x
+}
+
+main(){}
