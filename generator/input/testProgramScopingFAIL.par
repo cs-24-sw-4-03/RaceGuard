@@ -6,8 +6,8 @@ int c = 7;
 Actor Test{
 	State{
 	    int y;
-	    int[] stateArray;
-	    Test testStateActor
+	    int[5] stateArray;
+	    Test testStateActor;
 	}
 	Knows{
 	    Test testActor;
@@ -18,7 +18,7 @@ Actor Test{
 	}
 
 	local testLocal(int z): void{
-	    int[] intArray = {2, 3, 5};
+	    int[3] intArray = {2, 3, 5};
 	    int testArray = intArray[2];
 
 	    Knows.testActor = Spawn Test(5);
@@ -35,8 +35,7 @@ Actor Test{
 		test <- TestOn();
 
 		sender <- TestOn();
-
-
+        return;
 	}
 
 	on TestOn(){
@@ -57,5 +56,6 @@ Actor Test2{
 
     local testLocal(): void{
         int x = 2;
+        return;
     }
 }

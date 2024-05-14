@@ -34,32 +34,56 @@ public class ParLang {
         ParLangParser parser = new ParLangParser(tokens);   // Create a parser that feeds off the tokens buffer
         ParseTree tree = parser.init(); // Begin parsing at init node
 
+        if (parser.getNumberOfSyntaxErrors() > 0) {
+            System.err.println("Syntax errors detected.");
+            System.exit(1);
+        }
+
         TypeContainer typeContainer = new TypeContainer();
         ParLangBaseVisitor<AstNode> visitor = new AstVisitor(typeContainer);
         InitNode ast=(InitNode) tree.accept(visitor);
 
-        //printCST(tree, parser);
+        printAST(ast, args);
+        printCST(tree, parser);
 
-        System.out.println("\nScoping");
         SymbolTable symbolTable = new SymbolTable();
 
-
-        System.out.println("\nSymbolTableVisitor");
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
         ast.accept(symbolTableVisitor);
-        printExceptions(symbolTableVisitor.getExceptions());
 
-        System.out.println("\nMethodVisitor");
         MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
         ast.accept(methodVisitor);
-        printExceptions(methodVisitor.getExceptions());
 
-        printAST(ast, args);
-        System.out.println("\nType Checking");
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
         ast.accept(typeVisitor);
         printAST(ast, args);
+
+
+        boolean hasErrors = false;
+
+        if (!symbolTableVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in variable scoping");
+            printExceptions(symbolTableVisitor.getExceptions());
+            hasErrors = true;
+        }
+
+        if (!methodVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in method scoping");
+            printExceptions(methodVisitor.getExceptions());
+            hasErrors = true;
+        }
+
+        if(!typeVisitor.getExceptions().isEmpty()) {
+            System.err.println("Errors detected in type checking.");
+            printExceptions(typeVisitor.getExceptions());
+            hasErrors = true;
+        }
+        if (hasErrors) {
+            System.exit(1);
+        }
+
         generateCode(ast,symbolTable);
+
     }
     private static void validateSource(Path source) throws IOException {
         if (!Files.exists(source)) {

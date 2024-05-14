@@ -1,5 +1,5 @@
 //should not compile
 main(){
-    int[] a = {1, 2, 3, 4, 5};
+    int[] a = {1, 2, 3, 4, 5}; //Syntax error length of array not specified
     a[2] = 10;
 }

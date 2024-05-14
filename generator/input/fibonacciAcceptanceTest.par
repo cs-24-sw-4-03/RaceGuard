@@ -4,7 +4,7 @@ on result(int result);
 }
 
 main(){
-    Spawn FibManager(6);
+    Spawn FibManager(10);
 }
 
 Actor FibManager follows Fib{
@@ -24,10 +24,9 @@ Actor FibManager follows Fib{
 Actor FibCalculator follows Fib{
     State{
         int result = 0;
-        int numOfKids = 0;
-
+        bool resultReceived = FALSE;
     }
-    Knows{Fib parent}
+    Knows{Fib parent;}
 
     Spawn(Fib parent, int number){
         Knows.parent = parent;
@@ -40,20 +39,19 @@ Actor FibCalculator follows Fib{
             Knows.parent <- result(number);
             KILL;
         } else{
-            State.numOfKids = 2;
             Spawn FibCalculator(self, number - 1);
             Spawn FibCalculator(self, number - 2);
         }
     }
 
     on result(int result){
-        if(State.numOfKids <= 1){
+        if(State.resultReceived){
             State.result = State.result + result;
             Knows.parent <- result(State.result);
             KILL;
         }else{
-            State.numOfKids = State.numOfKids - 1;
-            State.result = State.result + result;
+            State.resultReceived = TRUE;
+            State.result = result;
         }
     }
 }

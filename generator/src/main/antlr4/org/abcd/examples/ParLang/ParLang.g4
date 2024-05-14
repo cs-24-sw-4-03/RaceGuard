@@ -37,7 +37,7 @@ killCall : KILL SEMICOLON;
 actorAccess : stateAccess
     | knowsAccess
     ;
-stateAccess: STATE DOT (IDENTIFIER | arrayAccess);
+stateAccess: STATE DOT IDENTIFIER;
 knowsAccess: KNOWS DOT IDENTIFIER;
 
 printCall : PRINT PARAN_OPEN printBody PARAN_CLOSE SEMICOLON;
@@ -92,6 +92,7 @@ arithExp : term ((PLUS | MINUS) term)* // PLUS and MINUS have lowest precedence 
 term : factor ((MULTIPLY | DIVIDE | MODULUS) factor)*; // MULTIPLY, DIVIDE and MODULUS have highest                                                     // precedence of arithmetic operators
 factor : number
     | methodCall
+    | arrayAccess
     | identifier
     | stateAccess
     | arrayAccess

@@ -196,8 +196,15 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArrayAccessNode node) {
-        if(this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) == null){
-            this.exceptions.add(new SymbolNotFoundException("Array symbol: "  + node.getAccessIdentifier() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+        if (node.getAccessIdentifier().contains("State.")){
+            if (this.symbolTable.lookUpStateSymbol(node.getAccessIdentifier().replace("State.", "")) == null){
+                this.exceptions.add(new SymbolNotFoundException("State symbol: "  + node.getAccessIdentifier() + " not found in Actor: " + this.symbolTable.findActorParent(node) + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+            }
+        }
+        else {
+            if (this.symbolTable.lookUpSymbol(node.getAccessIdentifier()) == null) {
+                this.exceptions.add(new SymbolNotFoundException("Array symbol: " + node.getAccessIdentifier() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+            }
         }
     }
 

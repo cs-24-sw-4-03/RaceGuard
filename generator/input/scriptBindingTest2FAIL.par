@@ -16,6 +16,7 @@ Actor Gorm follows Vaagen, Dvale{
 
     local kaemp():void{
         print("Gorm kaemper");
+        return;
     }
     on gaaIDvale(string s){
         print("Gorm går i dvale");
