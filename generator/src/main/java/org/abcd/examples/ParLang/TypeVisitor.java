@@ -460,11 +460,15 @@ public class TypeVisitor implements NodeVisitor {
     }
     @Override
     public void visit(SelfNode node) {
-        //We do not visit children since this is a leaf node
-        if (!hasParent(node, ActorDclNode.class)){ //A Selfnode is only allowed to be a child of an ActorDclNode
-            throw new SelfNodeException("SelfNode is not a child of ActorDclNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+        try {
+            //We do not visit children since this is a leaf node
+            if (!hasParent(node, ActorDclNode.class)){ //A Selfnode is only allowed to be a child of an ActorDclNode
+                throw new SelfNodeException("SelfNode is not a child of ActorDclNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+            }
+            node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
+        }catch (SelfNodeException e) {
+            exceptions.add(e);
         }
-        node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
     }
 
     @Override
