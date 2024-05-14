@@ -852,8 +852,8 @@ public class TypeVisitor implements NodeVisitor {
             this.visitChildren(node);
             String id = node.getAccessIdentifier();
             Attributes attributes;
-            if (hasParent(node, StateAccessNode.class)){ //If the parent is a StateAccessNode, look up in stateSymbols
-                attributes = symbolTable.lookUpStateSymbol(id);
+            if (id.contains("State.")){ //If the parent is a StateAccessNode, look up in stateSymbols
+                attributes = symbolTable.lookUpStateSymbol(id.split("\\.")[1]);
             }
             else{
                 attributes = symbolTable.lookUpSymbol(id); //Look up in symbol table
