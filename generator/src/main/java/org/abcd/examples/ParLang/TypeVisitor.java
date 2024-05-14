@@ -212,7 +212,9 @@ public class TypeVisitor implements NodeVisitor {
             }else {
                 throw new ReturnNodeException("Type is not defined for return statement in method "+ ((MethodDclNode)parent).getId() + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
             }
-        }else{
+        }else if(((MethodDclNode) parent).getMethodType().equals("on")){
+            throw new ReturnNodeException("on method cannot return: " + ((MethodDclNode)parent).getId() + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+        } else{
             if(node.getChildren().isEmpty()){ //since the the return type is void, the return statement should be empty
                 node.setType(parLangE.VOID.getValue());
             }else {
