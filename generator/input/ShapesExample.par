@@ -141,12 +141,12 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 
     on areaResult(double result){
-        if (State.resultsRecieved > 2){
-            State.area = State.area + result;
-        }
-        else{
+        if (State.resultsRecieved < 3){
             State.area = result;
             State.resultsRecieved = State.resultsRecieved + 1;
+        }
+        else{
+            print("Error: too many results recieved");
         }
     }
 
