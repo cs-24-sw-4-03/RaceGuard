@@ -124,7 +124,9 @@ Actor ShapesManager follows Shape, ShapeManager{
         double area;
     }
 	Knows{Shape shape1; Shape shape2; Shape shape3; ShapesManager manager;}
-	Spawn(){}
+	Spawn(){
+	    State.resultsRecieved = 0;
+	}
 
     on getShapes(Shape shape1, Shape shape2, Shape shape3){
         Knows.shape1 = shape1;
@@ -139,7 +141,7 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 
     on areaResult(double result){
-        if (State.resultsRecieved > 1){
+        if (State.resultsRecieved > 2){
             State.area = State.area + result;
         }
         else{
@@ -157,14 +159,18 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 }
 main(){
+
 	CircleManager circle = Spawn CircleManager(5);
 	ShapesManager manager = Spawn ShapesManager();
 	Shape shape1 = Spawn House(7,5, manager);
     Shape shape2 = Spawn House(13,3, manager);
     Shape shape3 = Spawn Circle(10, manager);
     manager <- getShapes(shape1, shape2, shape3);
+    House house = Spawn House(10, 7, manager);
+	house <- calcArea();
 	circle <- calcArea();
 	manager <- calcArea();
+	house <- printArea();
 	circle <- printArea();
 	manager <- printArea();
 }
