@@ -2,5 +2,4 @@ main(){
     Int x = 0;
 
     self <- test(); //self not allowed in main
-
 }
