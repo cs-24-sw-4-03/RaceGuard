@@ -18,7 +18,7 @@ Actor MatrixCalculator follows MatrixManager{
     Spawn(int[][] matrix1, int[][] matrix2, MatrixPrinter printer){
         Knows.printer = printer;
         for(int i = 0; i < 5; i = i +1){
-            RowCalculator rowCalc = Spawn RowCalculator();
+            RowCalculator rowCalc = Spawn RowCalculator(self);
             int [5] row;
             for (int j = 0; j < 5; j = j+1){
                 row[j] = matrix1[i][j];
@@ -32,11 +32,11 @@ Actor MatrixCalculator follows MatrixManager{
             State.resultMatrix[index][i] = result[i];
         }
         sender <- kill();
-        if (resultsReceived == 4){
-            Knows.printer <- printMatrix(resultMatrix);
+        if (State.resultsReceived == 4){
+            Knows.printer <- printMatrix(State.resultMatrix);
             KILL;
         }
-        State.resultsReceived = resultsReceived + 1;
+        State.resultsReceived = State.resultsReceived + 1;
     }
 }
 
@@ -56,7 +56,7 @@ Actor RowCalculator{
                 State.resultRow[i] = State.resultRow[i] + row[j] * matrix[i][j];
             }
         }
-        Knows.parent <- getResult(resultRow, index, self);
+        Knows.parent <- getResult(State.resultRow, index, self);
     }
 
     on kill(){
@@ -71,5 +71,6 @@ Actor MatrixPrinter{
 
     on printMatrix(int[][] matrix){
         print(matrix);
+        KILL;
     }
 }
