@@ -254,12 +254,14 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(FollowsNode node) {
-        IdentifierNode script = (IdentifierNode) node.getChildren().get(0);
-        if(this.symbolTable.enterScope(script.getName())){
-            this.symbolTable.addActorsFollowingScript(this.symbolTable.findActorParent(node));
-            this.symbolTable.leaveScope();
-        }else {
-            exceptions.add(new ScopeNotFoundException("Script: " + script.getName() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+        for(AstNode script : node.getChildren()){
+            IdentifierNode scriptNode = (IdentifierNode)script;
+            if(this.symbolTable.enterScope(scriptNode.getName())){
+                this.symbolTable.addActorsFollowingScript(this.symbolTable.findActorParent(node));
+                this.symbolTable.leaveScope();
+            }else {
+                exceptions.add(new ScopeNotFoundException("Script: " + scriptNode.getName() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+            }
         }
     }
 
