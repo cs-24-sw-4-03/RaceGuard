@@ -1,0 +1,17 @@
+main(){
+}
+
+Actor Test1{
+    State{}
+    Knows{}
+
+    Spawn(){
+        self <- testMethod(); //Cannot send message to local method
+    }
+
+    local testMethod(): int{
+        return 1;
+
+    }
+
+}

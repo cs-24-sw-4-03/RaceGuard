@@ -1,0 +1,16 @@
+main(){
+}
+
+Actor Test1{
+    State{}
+    Knows{}
+
+    Spawn(){
+        int x = testMethod(7); //Wrong parameter count
+    }
+
+    local testMethod(int x, int y): int{
+        return x + y;
+    }
+
+}
