@@ -1,0 +1,12 @@
+main(){
+    int x = 2.7; //double value cannot be assigned to int variable
+
+    int u = "23"; //string value cannot be assigned to int variable
+
+    string y = 2.5; //double value cannot be assigned to string variable
+
+    string c = 98; //int value cannot be assigned to int variable
+
+    double h = "3.6"; //string value cannot be assigned to double variable
+
+}

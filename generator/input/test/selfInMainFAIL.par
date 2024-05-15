@@ -1,0 +1,5 @@
+main(){
+    int x = 0;
+
+    self <- test(); //self not allowed in main
+}

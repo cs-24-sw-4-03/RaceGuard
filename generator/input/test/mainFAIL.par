@@ -1,0 +1,9 @@
+main(){}
+
+Actor Main{ //Actor named Main not allowed
+State{}
+Knows{}
+
+Spawn(){}
+
+}
