@@ -681,9 +681,10 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if (node.getParent() instanceof ArrayAccessNode) {
                 stringBuilder.append(node.getValue());
         } else{
-            stringBuilder
-                    .append(node.getValue());
-            if(node.getParent().getParent() instanceof InitializationNode && node.getParent().getParent().getType().contains("[") ){
+            boolean isInitializationOfArray=node.getParent().getParent() instanceof InitializationNode && isArray(node.getParent().getParent());// e.g. int[5] a = {1, 2, 3, 4, 5};
+            boolean isAssignedToArrayElement=node.getParent() instanceof AssignNode  && node.getParent().getChildren().getFirst() instanceof ArrayAccessNode;// e.g. a[2] = 10;
+            stringBuilder.append(node.getValue());
+            if(isInitializationOfArray||isAssignedToArrayElement){
                 stringBuilder.append("L");//append L when Integer is in an array. Necessary since array would be of type Long[] or Long[][].
             }
         }
