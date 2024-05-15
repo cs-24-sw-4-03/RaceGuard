@@ -1,3 +1,6 @@
 .idea
 generator/target/
-generator/output/
+output/src/main/java/output
+output/target
+.vscode
+/output/target/classes/output

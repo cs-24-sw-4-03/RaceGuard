@@ -1,0 +1,19 @@
+Script TestScript{
+
+    on testMethod();
+}
+
+main(){}
+
+Actor TestActor{
+    State{}
+    Knows{}
+
+    Spawn(TestScript testScript){
+       testScript <- testMethod();
+       testScript <- testMethod2(); //TestScript does not have this method
+    }
+
+
+
+}

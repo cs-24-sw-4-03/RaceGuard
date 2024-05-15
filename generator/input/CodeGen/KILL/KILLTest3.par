@@ -1,0 +1,39 @@
+Actor Terminator{
+    State{
+        int children;
+    }
+    Knows{Terminator c1; Terminator c2;}
+    Spawn(){}
+    on walkAndSpawn(){
+        print("Nice night for a walk. Spawning 2 companions.");
+        Knows.c1=Spawn Terminator();
+        Knows.c2=Spawn Terminator();
+        Knows.c1<-count(self);
+        State.children=State.children+1;
+        Knows.c2<-count(self);
+        State.children=State.children+1;
+    }
+    on kill(){
+         print("I'll be back");
+         KILL;
+    }
+    on finishedCounting(){
+        State.children=State.children-1;
+        if(State.children<=0){
+            self<-kill();
+        }
+    }
+    on count(Terminator t){
+        for(int i=1; i<11; i=i+1){
+            print(i);
+        }
+        t<-finishedCounting();
+        KILL;
+    }
+}
+
+
+main(){
+    Terminator t=Spawn Terminator();
+    t<-walkAndSpawn();
+}

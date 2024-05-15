@@ -1,0 +1,25 @@
+main(){
+}
+
+Actor Test1{
+    State{}
+    Knows{}
+
+    Spawn(Test2 actor){
+        actor <- testMethod(); //Actor Test2 does not have an on method called testMethod
+    }
+
+    on testMethod(){
+
+    }
+
+}
+
+Actor Test2{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+
+}

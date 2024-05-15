@@ -1,0 +1,17 @@
+Script TestScript{
+
+    on testMethod();
+}
+
+main(){}
+
+Actor TestActor follows TestScript{ //Actor follows TestScript, but does not implement the methods
+    State{}
+    Knows{}
+
+    Spawn(){
+    }
+
+
+
+}

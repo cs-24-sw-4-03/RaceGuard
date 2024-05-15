@@ -1,0 +1,16 @@
+Actor ActorA {
+   	State{int result;}
+    Knows{}
+
+    Spawn(int StartValue) {
+    }
+    on MessageA(double paramD, int paramL) {
+        print(paramD);
+        print(paramL);
+    }
+}
+
+main(){
+    ActorA actorA = Spawn ActorA(0);
+    actorA <- MessageA(7.0, 3);
+}

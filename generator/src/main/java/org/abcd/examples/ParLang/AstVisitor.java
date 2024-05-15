@@ -110,27 +110,19 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitScript(ParLangParser.ScriptContext ctx) {
-        try {
-            String scriptName = ctx.identifier().getText();
-            ScriptDclNode node = new ScriptDclNode(scriptName);
-            node.setLineNumber(ctx.getStart().getLine());
-            node.setColumnNumber(ctx.getStart().getCharPositionInLine());
+        String scriptName = ctx.identifier().getText();
+        ScriptDclNode node = new ScriptDclNode(scriptName);
+        node.setLineNumber(ctx.getStart().getLine());
+        node.setColumnNumber(ctx.getStart().getCharPositionInLine());
 
-            if (typeContainer.hasType(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
-                throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
-            } else {//extend the typeContainer list with new types
-                typeContainer.addType(scriptName);
-            }
-            List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
-            children.remove(1);//remove identifier from list of children
-            return childVisitor(node, children); //visit all children of the script node and add them as children to the scriptNode
-        } catch (DuplicateScriptTypeException e) {
-            System.out.println(e.getMessage());
-            return null;
-        } catch (Exception e) { //if error just return null to continue visiting
-            System.out.println(e.getMessage());
-            return null;
+        if (typeContainer.hasType(scriptName)) {//if another actor is declared with the same name we may have conflicting types.
+            throw new DuplicateScriptTypeException("Actor with name " + scriptName + " already defined");
+        } else {//extend the typeContainer list with new types
+            typeContainer.addType(scriptName);
         }
+        List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
+        children.remove(1);//remove identifier from list of children
+        return childVisitor(node, children); //visit all children of the script node and add them as children to the scriptNode
     }
 
     @Override public AstNode visitScriptMethod(ParLangParser.ScriptMethodContext ctx) {
@@ -157,29 +149,21 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     @Override public AstNode visitActor(ParLangParser.ActorContext ctx) {
-        try {
-            String actorName = ctx.identifier().getText(); //get the name of the actorType
-            if (typeContainer.hasType(actorName)) {
-                //if another actor is declared with the same name we have conflicting types.
-                throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
-            } else {//extend the typeContainer list with new types
-                typeContainer.addType(actorName); //add the actorType to the typeContainer
-            }
-            ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
-            node.setLineNumber(ctx.getStart().getLine());
-            node.setColumnNumber(ctx.getStart().getCharPositionInLine());
-
-            List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
-            children.remove(1);//remove identifier from list of children
-            //visit all children of the actor node and add them as children to the actorNode
-            return childVisitor(node, children);
-        }catch (DuplicateActorTypeException e){ //if error just return null to continue visiting
-            System.out.println(e.getMessage());
-            return null;
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            return null;
+        String actorName = ctx.identifier().getText(); //get the name of the actorType
+        if (typeContainer.hasType(actorName)) {
+            //if another actor is declared with the same name we have conflicting types.
+            throw new DuplicateActorTypeException("Actor with name " + actorName + " already defined");
+        } else {//extend the typeContainer list with new types
+            typeContainer.addType(actorName); //add the actorType to the typeContainer
         }
+        ActorDclNode node = new ActorDclNode(ctx.identifier().getText());
+        node.setLineNumber(ctx.getStart().getLine());
+        node.setColumnNumber(ctx.getStart().getCharPositionInLine());
+
+        List<ParseTree> children = new ArrayList<ParseTree>(ctx.children);
+        children.remove(1);//remove identifier from list of children
+        //visit all children of the actor node and add them as children to the actorNode
+        return childVisitor(node, children);
     }
 
     @Override public AstNode visitFollow(ParLangParser.FollowContext ctx) {
@@ -537,27 +521,19 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
     }
 
     private static ArithExpNode.OpType getArithmeticBinaryOperator(String operator) {
-        try {
-            switch (operator) { //return the operatorType based on the operator
-                case "+":
-                    return ArithExpNode.OpType.PLUS;
-                case "-":
-                    return ArithExpNode.OpType.MINUS;
-                case "*":
-                    return ArithExpNode.OpType.MULTIPLY;
-                case "/":
-                    return ArithExpNode.OpType.DIVIDE;
-                case "%":
-                    return ArithExpNode.OpType.MODULO;
-                default: //If the operator is not recognized
-                    throw new UnsupportedOperationException("Unsupported operator: " + operator);
-            }
-        } catch (UnsupportedOperationException e) { //if exception return unknown to continue visiting
-            System.out.println(e.getMessage());
-            return ArithExpNode.OpType.UNKNOWN;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ArithExpNode.OpType.UNKNOWN;
+        switch (operator) { //return the operatorType based on the operator
+            case "+":
+                return ArithExpNode.OpType.PLUS;
+            case "-":
+                return ArithExpNode.OpType.MINUS;
+            case "*":
+                return ArithExpNode.OpType.MULTIPLY;
+            case "/":
+                return ArithExpNode.OpType.DIVIDE;
+            case "%":
+                return ArithExpNode.OpType.MODULO;
+            default: //If the operator is not recognized
+                throw new UnsupportedOperationException("Unsupported operator: " + operator);
         }
     }
 
@@ -711,9 +687,9 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
         if(ctx.arithExp(1) !=null){ //Access second child - Two dimensions
             node.addChild(visit(ctx.arithExp(1))); //visit and add the arithmetic expression as a child
         }
-
         return node;
     }
+
     @Override public AstNode visitLocalMethodBody(ParLangParser.LocalMethodBodyContext ctx){
         LocalMethodBodyNode methodBodyNode = new LocalMethodBodyNode();
         methodBodyNode.setLineNumber(ctx.getStart().getLine());

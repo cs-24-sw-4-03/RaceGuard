@@ -1,0 +1,29 @@
+//should not compile
+Script Script1{
+    on method1(int x, string y);
+}
+
+Script Script2{
+    on method2();
+}
+
+Actor Sven follows Script1,Script2{
+    State{}
+    Knows{}
+    Spawn(){}
+    on method1(int x, string y){
+        print("ragout");
+    }
+    on method2(){
+        print("hej");
+    }
+    on method3(int x, int y){
+        print("total viking power");
+    }
+    local localm():string{
+        return "s";
+    }
+}
+
+main(){
+}

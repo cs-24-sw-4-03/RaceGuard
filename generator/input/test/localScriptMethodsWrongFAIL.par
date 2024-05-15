@@ -1,0 +1,21 @@
+Script testScript{
+    local test1():int;//wrong number of params
+    local test2(int a):int;//missing param
+    local test3():int;//missing local method
+    local test4(int a):int;//wrong param name
+    local test5(int a):int;//wrong param type
+    on test6();//missing on method
+}
+
+Actor testActor follows testScript{
+    State{}
+    Knows{}
+    Spawn(){}
+    local test1(int a):int{return 0;}
+    local test2():int{return 0;}
+
+    local test4(int x):int{return 0;}
+    local test5(string a):int{return 0;}
+}
+
+main(){}

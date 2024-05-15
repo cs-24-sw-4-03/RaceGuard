@@ -42,6 +42,8 @@ public class ArithExpNode extends ExpNode {
     public boolean isNegative(){
         return this.isNegated;
     }
+
+
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);

@@ -5,6 +5,7 @@ import org.abcd.examples.ParLang.Exceptions.DuplicateScopeException;
 import org.abcd.examples.ParLang.Exceptions.DuplicateSymbolException;
 import org.abcd.examples.ParLang.Exceptions.ScopeNotFoundException;
 import org.abcd.examples.ParLang.Exceptions.SymbolNotFoundException;
+import org.abcd.examples.ParLang.Exceptions.ReservedActorNameException;
 import org.abcd.examples.ParLang.symbols.Attributes;
 import org.abcd.examples.ParLang.symbols.SymbolTable;
 
@@ -136,6 +137,11 @@ public class SymbolTableVisitor implements NodeVisitor {
 
     @Override
     public void visit(ActorDclNode node) {
+        if(node.getId().equals(parLangE.REAPER.getValue())){
+            this.exceptions.add(new ReservedActorNameException("The actor name \""+parLangE.REAPER.getValue()+"\" is reserved. Pick another name for the actor."));
+        } else if (node.getId().equals(parLangE.MAIN.getValue())) {
+            this.exceptions.add(new ReservedActorNameException("The actor name \""+parLangE.MAIN.getValue()+"\" is reserved. Pick another name for the actor."));
+        }
         if(this.symbolTable.addScope(node.getId())){
             //Visits the children of the node to add the symbols to the symbol table
             this.visitChildren(node);
@@ -271,10 +277,6 @@ public class SymbolTableVisitor implements NodeVisitor {
         this.visitChildren(node);
     }
 
-    @Override
-    public void visit(AccessNode node) {
-        this.visitChildren(node);
-    }
 
     @Override
     public void visit(ReturnStatementNode node) {

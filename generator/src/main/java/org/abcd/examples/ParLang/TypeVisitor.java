@@ -212,7 +212,9 @@ public class TypeVisitor implements NodeVisitor {
             }else {
                 throw new ReturnNodeException("Type is not defined for return statement in method "+ ((MethodDclNode)parent).getId() + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
             }
-        }else{
+        }else if(((MethodDclNode) parent).getMethodType().equals("on")){
+            throw new ReturnNodeException("on method cannot return: " + ((MethodDclNode)parent).getId() + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+        } else{
             if(node.getChildren().isEmpty()){ //since the the return type is void, the return statement should be empty
                 node.setType(parLangE.VOID.getValue());
             }else {
@@ -433,6 +435,9 @@ public class TypeVisitor implements NodeVisitor {
         try {
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
+            if (!typeContainer.hasType(idType)){
+                throw new varDclNodeExeption("Type: " + idType + " is not a valid type" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+            }
             if (!node.isInitialized()) {
                 node.setType(idType); //If the variable is not initialized, the type is the same as the id
                 return;
@@ -465,11 +470,15 @@ public class TypeVisitor implements NodeVisitor {
     }
     @Override
     public void visit(SelfNode node) {
-        //We do not visit children since this is a leaf node
-        if (!hasParent(node, ActorDclNode.class)){ //A Selfnode is only allowed to be a child of an ActorDclNode
-            throw new SelfNodeException("SelfNode is not a child of ActorDclNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+        try {
+            //We do not visit children since this is a leaf node
+            if (!hasParent(node, ActorDclNode.class)){ //A Selfnode is only allowed to be a child of an ActorDclNode
+                throw new SelfNodeException("SelfNode is not a child of ActorDclNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+            }
+            node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
+        }catch (SelfNodeException e) {
+            exceptions.add(e);
         }
-        node.setType(symbolTable.findActorParent(node)); //A self node always refers to the actor it is contained within
     }
 
     @Override
@@ -526,37 +535,43 @@ public class TypeVisitor implements NodeVisitor {
             exceptions.add(e);
         }
         catch (Exception e) {
-            exceptions.add(new FollowsNodeException(e.getMessage() + " in FollowsNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+            exceptions.add(new FollowsNodeException(e.getClass() + " " + e.getMessage() + " in FollowsNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 
     private void hasCorrectScriptMethods(List<String> scriptNames, String actorName){
         Scope actorScope = symbolTable.lookUpScope(actorName); //Find the scope of the actor
-        HashMap<String, Attributes> actorMethods = actorScope.getDeclaredOnMethods(); //Get the on methods of the actor
+        HashMap<String, Attributes> actorMethods = new HashMap<>();
+        actorMethods.putAll(actorScope.getDeclaredOnMethods()); //Get the on methods of the actor
         actorMethods.putAll(actorScope.getDeclaredLocalMethods()); //Add the local methods to the actor methods
+
         for (String scriptName : scriptNames){ //Iterate over the scripts the actor follows
             Scope scope = symbolTable.lookUpScope(scriptName); //Find the scope of the script
-            HashMap<String, Attributes> scriptMethods = scope.getDeclaredOnMethods(); //Get the on methods of the script
+            HashMap<String, Attributes> scriptMethods = new HashMap<>();
+            scriptMethods.putAll(scope.getDeclaredOnMethods()); //Get the on methods of the script
             scriptMethods.putAll(scope.getDeclaredLocalMethods()); //Add the local methods to the script methods
+
             for (Map.Entry<String, Attributes> scriptMethod : scriptMethods.entrySet()){ //Iterate over the methods of the script
                 String method = scriptMethod.getKey();
                 if (!actorMethods.containsKey(scriptMethod.getKey())){ //If the actor does not have the method, throw an exception
-                    throw new FollowsNodeException("Actor " + actorName + " does not have method: " + method + "from " + scriptName);
+                    exceptions.add(new FollowsNodeException("Actor " + actorName + " does not have method: " + method + " from " + scriptName));
+                    continue;
                 }
                 LinkedHashMap<String, Attributes> actorParams = symbolTable.lookUpScope(method+actorName).getParams(); //Get the parameters of the method in the actor
                 LinkedHashMap<String, Attributes> scriptParams = symbolTable.lookUpScope(method+scriptName).getParams(); //Get the parameters of the method in the script
                 if (actorParams.size() != scriptParams.size()){ //If the number of parameters do not match, throw an exception
-                    throw new FollowsNodeException("Actor " + actorName + " does not have the same number of parameters as script " + scriptName + " in method " + method);
+                    exceptions.add(new FollowsNodeException("Actor " + actorName + " does not have the same number of parameters as script " + scriptName + " in method " + method));
                 }
                 Set<String> set = scriptParams.keySet();
                 Iterator<String> iter = set.iterator(); //Iterator for the script parameters
+
                 for (Map.Entry<String, Attributes> actorParam : actorParams.entrySet()){ //Iterate over the parameters of the actor and script
                     String scriptKey = iter.next(); //Get the key of the scriptParameter
                     if (!actorParam.getValue().getVariableType().equals(scriptParams.get(scriptKey).getVariableType())){ //If the types do not match, throw an exception
-                        throw new FollowsNodeException("Actor " + actorName + " does not have the same parameter types as script " + scriptName + " in method " + method);
+                        exceptions.add(new FollowsNodeException("Actor " + actorName + " does not have the same parameter types as script " + scriptName + " in method " + method));
                     }
                     if (!actorParam.getKey().equals(scriptKey)){ //If the parameter names do not match, throw an exception
-                        throw new FollowsNodeException("Actor " + actorName + " does not have the same parameter names as script " + scriptName + " in method " + method);
+                        exceptions.add(new FollowsNodeException("Actor " + actorName + " does not have the same parameter names as script " + scriptName + " in method " + method));
                     }
                 }
             }
@@ -833,11 +848,8 @@ public class TypeVisitor implements NodeVisitor {
         }
     }
 
-    @Override
-    public void visit(AccessNode node) {
-        //abstract class
-        this.visitChildren(node);
-    }
+
+
 
     @Override
     public void visit(SelectionNode node) {
@@ -953,7 +965,7 @@ public class TypeVisitor implements NodeVisitor {
         try {
             for (AstNode child : node.getChildren()) {
                 if (!child.getType().equals(parLangE.STRING.getValue())) { //If the child is not of type string
-                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue())) { //If the child is of type int or double we cn convert it to string
+                    if (child.getType().equals(parLangE.INT.getValue()) || child.getType().equals(parLangE.DOUBLE.getValue()) || child.getType().contains("[]")) { //If the child is of type int or double we cn convert it to string
                         continue;
                     }
                     throw new PrintException("Print statement only accepts string arguments" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
