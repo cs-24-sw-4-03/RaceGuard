@@ -518,7 +518,7 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             doubleNode.setColumnNumber(ctx.getStart().getCharPositionInLine());
             return doubleNode; //parse the number as a double
         }else { //If the number is an integer
-            IntegerNode integerNode = new IntegerNode(Integer.parseInt(ctx.getText()));
+            IntegerNode integerNode = new IntegerNode(Long.parseLong(ctx.getText()));
             integerNode.setLineNumber(ctx.getStart().getLine());
             integerNode.setColumnNumber(ctx.getStart().getCharPositionInLine());
             return integerNode; //parse the number as an integer
