@@ -271,7 +271,7 @@ BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 IDENTIFIER : IDSTART IDSTART* ; // Define identifier token, identifier cannot start with a number
 COMMENT : '//' ~[\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
-WS  :   [ \r\n]+ -> skip ; // Define whitespace rule, toss it out
+WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 
 ASSIGN                  : '=';
 COMMA                   : ',';
