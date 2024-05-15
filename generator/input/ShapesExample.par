@@ -14,11 +14,12 @@ Actor House follows Shape, ShapeManager{
         double area;
     }
 	Knows{Shape Square; Shape Triangle; ShapeManager manager;}
-	Spawn(double houseWidth, double houseHeight){
+	Spawn(double houseWidth, double houseHeight, ShapeManager manager){
 		State.resultsRecieved = 0;
 		State.area = 0.0;
         Knows.Square = Spawn Square((2/3) * houseHeight, houseWidth);
         Knows.Triangle = Spawn Triangle((1/3) * houseHeight, houseWidth);
+        Knows.manager = manager;
     }
 
     on calcArea(){
@@ -84,7 +85,7 @@ Actor CircleManager follows Shape, ShapeManager{
 	Knows{Shape circle; ShapeManager manager;}
     Spawn(double radius){
         State.area = 0;
-        Knows.circle = Spawn Circle(radius);
+        Knows.circle = Spawn Circle(radius, self);
     }
 
     on calcArea(){
@@ -109,8 +110,9 @@ Actor Circle follows Shape{
         double radius;
     }
 	Knows{ShapeManager manager;}
-	Spawn(double radius){
+	Spawn(double radius, ShapeManager manager){
         State.radius = radius;
+        Knows.manager = manager;
     }
 
     on getArea(){
@@ -124,9 +126,13 @@ Actor ShapesManager follows Shape, ShapeManager{
         double area;
     }
 	Knows{Shape shape1; Shape shape2; Shape shape3; ShapesManager manager;}
-	Spawn(Shape shape1, Shape shape2, Shape shape3){
-		Knows.shape1 = shape1;
-		Knows.shape2 = shape2;
+	Spawn(){
+	    State.resultsRecieved = 0;
+	}
+
+    on getShapes(Shape shape1, Shape shape2, Shape shape3){
+        Knows.shape1 = shape1;
+        Knows.shape2 = shape2;
         Knows.shape3 = shape3;
     }
 
@@ -137,12 +143,12 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 
     on areaResult(double result){
-        if (State.resultsRecieved > 1){
-            State.area = State.area + result;
-        }
-        else{
+        if (State.resultsRecieved < 3){
             State.area = result;
             State.resultsRecieved = State.resultsRecieved + 1;
+        }
+        else{
+            print("Error: too many results recieved");
         }
     }
 
@@ -155,12 +161,14 @@ Actor ShapesManager follows Shape, ShapeManager{
     }
 }
 main(){
-	House house = Spawn House(10, 7);
+
 	CircleManager circle = Spawn CircleManager(5);
-	Shape shape1 = Spawn House(7,5);
-    Shape shape2 = Spawn House(13,3);
-    Shape shape3 = Spawn Circle(10);
-	ShapesManager manager = Spawn ShapesManager(shape1, shape2, shape3);
+	ShapesManager manager = Spawn ShapesManager();
+	Shape shape1 = Spawn House(7,5, manager);
+    Shape shape2 = Spawn House(13,3, manager);
+    Shape shape3 = Spawn Circle(10, manager);
+    manager <- getShapes(shape1, shape2, shape3);
+    House house = Spawn House(10, 7, manager);
 	house <- calcArea();
 	circle <- calcArea();
 	manager <- calcArea();

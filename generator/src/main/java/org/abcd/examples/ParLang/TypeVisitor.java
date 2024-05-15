@@ -355,13 +355,18 @@ public class TypeVisitor implements NodeVisitor {
         if (params.size() != size){ //If the number of parameters does not match the number of arguments, throw an exception
             throw new ArgumentsException("Number of arguments does not match the number of parameters in: " + msgName + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
         }
+        boolean followsScripts = true; //boolean used to determine if the actor follows scripts, set to true by default
         for (Map.Entry<String, Attributes> parameter : params.entrySet()) { //Iterates over parameters and arguments and matches them against each other
+            followsScripts = false; //if there is arguments set to false before having checked types
             int index = new ArrayList<>(params.keySet()).indexOf(parameter.getKey()); //Find the index of the parameter == index of argument
             String argType = node.getChildren().get(index).getType(); //Type of argument
             String paramType = parameter.getValue().getVariableType(); //Type of parameter
-            if (!canConvert(paramType, argType)){ //If the types do not match, throw an exception
-                throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+            if (canConvert(paramType, argType)){ //If the types do not match, throw an exception
+                followsScripts = true;
             }
+        }
+        if (!followsScripts) {
+            throw new ArgumentsException("Argument type does not match parameter type in method: " + msgName + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
         }
     }
 
