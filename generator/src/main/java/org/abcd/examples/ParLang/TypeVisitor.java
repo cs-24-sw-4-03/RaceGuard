@@ -435,6 +435,9 @@ public class TypeVisitor implements NodeVisitor {
         try {
             int size = node.getChildren().size();
             String idType = node.getChildren().get(0).getType();
+            if (!typeContainer.hasType(idType)){
+                throw new varDclNodeExeption("Type: " + idType + " is not a valid type" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber());
+            }
             if (!node.isInitialized()) {
                 node.setType(idType); //If the variable is not initialized, the type is the same as the id
                 return;
