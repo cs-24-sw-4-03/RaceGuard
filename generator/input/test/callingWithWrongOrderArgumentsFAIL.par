@@ -1,0 +1,13 @@
+Actor testActor{
+    State{}
+    Knows{}
+    Spawn(){
+        test1(2, "hej");
+        self <- test2(2, "hej");
+    }
+    local test1(string a, int b):int{
+        return 0;
+    }
+    on test2(string a, int b){}
+}
+main(){}
