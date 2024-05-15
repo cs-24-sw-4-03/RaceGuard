@@ -1,0 +1,17 @@
+main(){}
+
+Actor Test{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+    local testMethod():int{
+        return 2;
+    }
+
+    local testMethod():int{ //Methods must have unique name
+        return 2;
+    }
+
+}

@@ -1,0 +1,7 @@
+main(){
+
+    int x = 7;
+
+    Int x = 9; //x already declared in scope
+
+}

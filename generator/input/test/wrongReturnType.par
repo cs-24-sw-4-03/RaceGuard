@@ -1,0 +1,13 @@
+Actor testActor{
+    State{}
+    Knows{}
+    Spawn(){}
+    local wrongReturn(): int{
+        return "string";
+    }
+    on willReturn(){
+        return 1;
+    }
+}
+
+main(){}

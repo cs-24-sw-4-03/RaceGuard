@@ -1,0 +1,13 @@
+main(){}
+
+Actor Test{
+    State{}
+    Knows{}
+
+    Spawn(){}
+
+    on testMethod(){}
+
+    on testMethod(){} //Methods must have unique name
+
+}

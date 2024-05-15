@@ -61,7 +61,7 @@ selection : IF PARAN_OPEN boolExp PARAN_CLOSE body (ELSE (selection|body))?;
 declaration: dclTypes identifier (initialization)?;
 initialization:  ASSIGN (arithExp | primitive | list | spawnActor | methodCall | boolExp | arrayAccess | identifier);
 
-//assignment used to assign a value to an already defined variable.
+//assignment used to assignWrongDimArray.par a value to an already defined variable.
 assignment: (arrayAccess | identifier) ASSIGN (arithExp | primitive | list | spawnActor | arrayAccess | methodCall | boolExp | identifier);
 
 // Expression evaluating boolean value of a boolean expression

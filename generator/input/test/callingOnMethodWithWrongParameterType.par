@@ -1,0 +1,16 @@
+main(){
+}
+
+Actor Test1{
+    State{int result;}
+    Knows{}
+
+    Spawn(){
+        self <- testMethod(7, TRUE); //Wrong parameter count
+    }
+
+    on testMethod(int x, int y){
+        State.result = x + y;
+    }
+
+}

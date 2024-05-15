@@ -1,0 +1,9 @@
+Actor testActor{
+    State{}
+    Knows{}
+    Spawn(){}
+    local test1(){
+        return 0;
+    }
+}
+main(){}
