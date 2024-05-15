@@ -1,0 +1,6 @@
+Actor testActor{
+    State{}
+    Knows{testActor[] actors;}
+    Spawn(){}
+}
+main(){}

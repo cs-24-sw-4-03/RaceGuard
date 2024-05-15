@@ -1,0 +1,9 @@
+Actor testActor{
+    State{}
+    Knows{}
+    Spawn(){
+        self <- testMethod();
+    }
+
+}
+main(){}
