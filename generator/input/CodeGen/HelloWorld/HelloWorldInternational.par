@@ -1,0 +1,53 @@
+Script GreeterScript{
+    on greet(string name);
+}
+
+Actor Danish follows GreeterScript{
+    State{int count=0; string name="Danish";}
+    Knows{}
+    Spawn(){}
+    on greet(string name){
+        print("Halløj "+name+"!");
+    }
+}
+
+Actor English follows GreeterScript{
+    State{}
+    Knows{}
+    Spawn(){}
+    on greet(string name){
+        print("Hello "+name+"!");
+    }
+}
+
+Actor International{
+    State{}
+    Knows{}
+    Spawn(){}
+    on internationalGreet(GreeterScript greeter, string name){
+        greeter<-greet(name);
+    }
+}
+
+Actor HelloWorldMain{
+    State{int a;}
+    Knows{Danish danishGreeter; English englishGreeter; International internationalGreeter;}
+    Spawn(int a){
+        State.a = a;
+        Knows.danishGreeter=Spawn Danish();
+        Knows.englishGreeter=Spawn English();
+        Knows.internationalGreeter=Spawn International();
+    }
+    on sayHello(string name){
+        Knows.internationalGreeter<-internationalGreet(Knows.danishGreeter,name);
+        Knows.internationalGreeter<-internationalGreet(Knows.englishGreeter,name);
+    }
+}
+
+main(){
+    HelloWorldMain mainActor = Spawn HelloWorldMain(10);
+    mainActor<-sayHello("World");
+    mainActor<-sayHello("Untyped Akka");
+}
+
+

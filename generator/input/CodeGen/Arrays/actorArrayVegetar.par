@@ -1,0 +1,32 @@
+Script Vegetar {
+    on spis() {
+    }
+}
+
+Actor Frugt follows Vegetar{
+    State{Vegetar[2] kurvFrugt;}
+    Knows{Vegetar frugt1;}
+    Spawn(){
+        State.kurvFrugt[0] = Knows.frugt1;
+    }
+    on spis() {
+        State.kurvFrugt[0] = null;
+    }
+}
+
+Actor Grøntsag follows Vegetar{
+    State{Vegetar[2] kurvGrønt = {0,1};}
+    Knows{Vegetar grøntsag1}
+    Spawn(){
+        State.kurvGrønt[0] = Knows.grøntsag1;
+
+    }
+    on spis(){
+
+    }
+}
+
+main(){
+    Vegetar grøntsag1 = Spawn Grøntsag();
+    Vegetar frugt1 = Spawn Frugt();
+}

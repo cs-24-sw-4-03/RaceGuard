@@ -127,6 +127,9 @@ public class AstPrintVisitor {
                 case "ReturnStatementNode":
                     this.print(localIndent, className + " with type: " + node.getType());
                     break;
+                case "BodyNode":
+                    this.print(localIndent, className);
+                    break;
                 default:
                     this.print(localIndent, className);
                     break;

@@ -1,0 +1,15 @@
+Actor Person{
+    State{}
+    Knows{}
+    Spawn(){}
+    on move(string address){
+        setAddress(address);
+    }
+    local setAddress(string s):void{
+    }
+}
+
+main(){
+    Person per=Spawn Person();
+    per<-move("Amalienborg");
+}

@@ -1,12 +1,3 @@
-/***
- * Excerpted from "The Definitive ANTLR 4 Reference",
- * published by The Pragmatic Bookshelf.
- * Copyrights apply to this code. It may not be used to create training material, 
- * courses, books, articles, and the like. Contact us if you are in doubt.
- * We make no guarantees that this code is fit for any purpose. 
- * Visit http://www.pragmaticprogrammer.com/titles/tpantlr2 for more book information.
-***/
-
 package org.abcd.examples.ParLang;
 // import ANTLR's runtime libraries
 import org.abcd.examples.ParLang.AstNodes.InitNode;
@@ -58,14 +49,15 @@ public class ParLang {
         SymbolTable symbolTable = new SymbolTable();
 
         SymbolTableVisitor symbolTableVisitor = new SymbolTableVisitor(symbolTable);
-        symbolTableVisitor.visit(ast);
+        ast.accept(symbolTableVisitor);
 
         MethodVisitor methodVisitor = new MethodVisitor(symbolTable);
-        methodVisitor.visit(ast);
+        ast.accept(methodVisitor);
 
         TypeVisitor typeVisitor = new TypeVisitor(symbolTable, typeContainer);
-        typeVisitor.visit(ast);
+        ast.accept(typeVisitor);
         printAST(ast, args);
+
 
         boolean hasErrors = false;
 
@@ -89,6 +81,8 @@ public class ParLang {
         if (hasErrors) {
             System.exit(1);
         }
+
+        generateCode(ast,symbolTable);
 
     }
     private static void validateSource(Path source) throws IOException {
@@ -131,11 +125,10 @@ public class ParLang {
         }
 
     }
-/*
-    private static void generateCode(AstNode ast) throws IOException {
-        CodeGenVisitor codeGenVisitor = new CodeGenVisitor();
-        codeGenVisitor.visit(ast);
-        codeGenVisitor.generate();
+
+    private static void generateCode(InitNode ast, SymbolTable symbolTable) throws IOException {
+        CodeGenVisitor codeGenVisitor = new CodeGenVisitor(symbolTable);
+        ast.accept(codeGenVisitor);
     }
-*/
+
 }

@@ -94,6 +94,8 @@ factor : number
     | methodCall
     | arrayAccess
     | identifier
+    | stateAccess
+    | arrayAccess
     | PARAN_OPEN arithExp PARAN_CLOSE// parenthesis have highest precedence when evaluating arithmetic expressions
     | unaryExp
     ;
@@ -173,14 +175,14 @@ allTypes : primitiveType
     | identifier
     ;
 
-dclTypes : primitiveType
-    | arrayDcl
+dclTypes : arrayDcl
+    | primitiveType
     | ACTOR_TYPE
     | VOID_TYPE
     | identifier
     ;
 
-arrayDcl : primitiveType SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
+arrayDcl : (primitiveType|identifier) SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
 
 //can be any primitive type in language
 primitiveType : INT_TYPE

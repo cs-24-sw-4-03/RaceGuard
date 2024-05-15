@@ -183,7 +183,6 @@ public class SymbolTable {
             }else if(parent instanceof ScriptDclNode){
                 return ((ScriptDclNode) parent).getId();
             }
-
             parent = parent.getParent();
         }
         return null;

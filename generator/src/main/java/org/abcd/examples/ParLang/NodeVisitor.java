@@ -30,9 +30,6 @@ public interface NodeVisitor {
     void visit(AssignNode node);
     void visit(InitializationNode node);
 
-
-
-
     void visit(ListNode node);
 
     void visit(KnowsNode node);
@@ -53,7 +50,7 @@ public interface NodeVisitor {
     void visit(WhileNode node);
     void visit(ForNode node);
 
-    void visit(AccessNode node);
+
     void visit(ArrayAccessNode node);
     void visit(StateAccessNode node);
     void visit(KnowsAccessNode node);

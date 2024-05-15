@@ -1,0 +1,18 @@
+Actor Terminator{
+    State{}
+    Knows{}
+    Spawn(){}
+    on walk(){
+        print("Nice night for a walk.");
+    }
+    on kill(){
+        print("I'll be back");
+        KILL;
+    }
+}
+
+main(){
+    Terminator t=Spawn Terminator();
+    t<-walk();
+    t<-kill();
+}

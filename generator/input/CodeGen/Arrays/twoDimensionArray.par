@@ -1,0 +1,12 @@
+main(){
+      int[3][3] a = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+      int[3][3] b;
+      int numRows = 3;
+      int numCols = 3;
+      for (int col = 0; col < numCols; col = col + 1) {
+        for (int row = 0; row < numRows; row = row + 1) {
+            b[row][col] =  a[col][row];
+            }
+        }
+       print(b);
+}

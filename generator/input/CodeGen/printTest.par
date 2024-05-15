@@ -1,0 +1,97 @@
+Actor Printer{
+    State{}
+    Knows{}
+    Spawn(){}
+    on printFunc(string s){
+
+        print("Actor:");
+
+        int[3] ints={1,2,3};
+        int[3][3] ints2d = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        double[3] doubles={2.2,3.4,4.3};
+        double[3][3] doubles2d={{2.2,3.4,4.3},{2.2,3.4,4.3},{2.2,3.4,4.3}};
+        bool[3] booleans={TRUE, TRUE, FALSE};
+        bool[3][3] booleans2d={{TRUE, TRUE, FALSE},{TRUE, TRUE, FALSE},{TRUE, TRUE, FALSE}};
+        string[3] strings={"ryan","bo","gorm"};
+        string[3][3] strings2d={{"ryan","bo","gorm"},{"ryan","bo","gorm"},{"ryan","bo","gorm"}};
+
+        //parameter(type string)
+        print("Jeg hedder "+s);
+
+        //arrays
+        print("array ints:"+ints);
+        print("array ints2d :"+ints2d);
+        print("arrays ints---ints2d: "+ints+"---"+ints2d);
+        print("arrays ints2d---ints: "+ints2d+"---"+ints);
+        print(ints+" det var det");
+
+        print(doubles+"---"+doubles2d);
+        print(booleans+"---"+booleans2d);
+        print(strings+"---"+strings2d);
+
+        //array access, identifiers(type int and double).
+        int x=2;
+        double d=2.71;
+
+        print(strings[0]);
+        print("private: "+strings[0]);
+        print(strings[0]+" private");
+        print(x);
+        print(x+x);//should print "22"
+        print("int: "+x);
+        print(x+" int");
+        print(d);
+        print("double :"+d);
+        print(d+" double");
+    }
+}
+
+Actor Soldier{
+    State{}
+    Knows{}
+    Spawn(){}
+}
+
+main(){
+    Printer printer=Spawn Printer();
+    printer<-printFunc("Dennis");
+    string s="Bob";
+    print("Main:");
+    int[3] ints={1,2,3};
+    int[3][3] ints2d = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    double[3] doubles={2.2,3.4,4.3};
+    double[3][3] doubles2d={{2.2,3.4,4.3},{2.2,3.4,4.3},{2.2,3.4,4.3}};
+    bool[3] booleans={TRUE, TRUE, FALSE};
+    bool[3][3] booleans2d={{TRUE, TRUE, FALSE},{TRUE, TRUE, FALSE},{TRUE, TRUE, FALSE}};
+    string[3] strings={"ryan","bo","gorm"};
+    string[3][3] strings2d={{"ryan","bo","gorm"},{"ryan","bo","gorm"},{"ryan","bo","gorm"}};
+
+     //parameter(type string)
+     print("Jeg hedder "+s);
+
+     //arrays
+     print("array ints:"+ints);
+     print("array ints2d :"+ints2d);
+     print("arrays ints---ints2d: "+ints+"---"+ints2d);
+     print("arrays ints2d---ints: "+ints2d+"---"+ints);
+     print(ints+" det var det");
+
+    print(doubles+"---"+doubles2d);
+    print(booleans+"---"+booleans2d);
+    print(strings+"---"+strings2d);
+
+    //array access, identifiers(type int and double).
+    int x=2;
+    double d=2.71;
+
+    print(strings[0]);
+    print("private: "+strings[0]);
+    print(strings[0]+" private");
+    print(x);
+    print(x+x);//should print "22"
+    print("int: "+x);
+    print(x+" int");
+    print(d);
+    print("double :"+d);
+    print(d+" double");
+}

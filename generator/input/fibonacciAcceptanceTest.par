@@ -7,7 +7,6 @@ main(){
     Spawn FibManager(10);
 }
 
-
 Actor FibManager follows Fib{
     State{}
     Knows{}
@@ -17,7 +16,8 @@ Actor FibManager follows Fib{
     }
 
     on result(int result){
-        print(result);
+        print("result is " + result);
+        KILL;
     }
 }
 
@@ -43,7 +43,6 @@ Actor FibCalculator follows Fib{
             Spawn FibCalculator(self, number - 2);
         }
     }
-
 
     on result(int result){
         if(State.resultReceived){
