@@ -1,0 +1,26 @@
+
+main(){
+    Spawn FibCalculator(10);
+}
+
+
+Actor FibCalculator{
+    State{}
+    Knows{}
+
+    Spawn(int number){
+        self <- startCalculate(number);
+    }
+
+    local calculate(int number): int{
+        if(number <= 1){
+            return number;
+        }
+
+        return calculate(number - 1) + calculate(number - 2);
+    }
+
+    on startCalculate(int number){
+        int result = calculate(number);
+    }
+}
