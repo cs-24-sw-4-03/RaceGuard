@@ -230,8 +230,8 @@ fragment DIGIT : [0-9];
 fragment SMALL_LETTER : [a-z];
 fragment CAP_LETTER : [A-Z];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
-fragment IDSTART : ( LETTER | '_' ); //since identifier cannot start with a digit
-fragment IDPART : IDSTART | DIGIT;
+fragment ID_START : ( LETTER | '_' ); //since identifier cannot start with a digit
+fragment ID_PART : ID_START | DIGIT;
 
 //Types in language
 INT_TYPE : 'int';
@@ -269,7 +269,7 @@ DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 STRING : (DOUBLE_QUOTATION ~[\\"\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\'\t\r\n]* QUOTATION);
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
-IDENTIFIER : IDSTART IDSTART* ; // Define identifier token, identifier cannot start with a number
+IDENTIFIER : ID_START ID_START* ; // Define identifier token, identifier cannot start with a number
 COMMENT : '//' ~[\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 
