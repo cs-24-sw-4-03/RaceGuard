@@ -311,7 +311,7 @@ public class CodeGenVisitor implements NodeVisitor {
                     Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
                     params = methodScope.getParams();
                 }else{
-                    throw new SendMsgException("Attributes of receiver: " + receiverName + "could not be found");
+                    throw new SendMsgException("Attributes of receiver: " + receiverName + " could not be found");
                 }
             }
         }else {
