@@ -478,7 +478,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //for (Empty;CompareExpNode;Empty) {BodyNode}
     @Override
     public void visit(ForNode node) {
-        //this.symbolTable.enterScope(node.getNodeHash());
+        this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder.append(javaE.FOR.getValue()).append("(");
         //check if the second child is a compare expression and the third child is an assign node
         if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
@@ -513,6 +513,7 @@ public class CodeGenVisitor implements NodeVisitor {
             }
         }
         codeOutput.add(getLine());
+        symbolTable.leaveScope();
     }
 
     @Override
@@ -539,7 +540,13 @@ public class CodeGenVisitor implements NodeVisitor {
             //We have to do almost the same if the array is initialized or not.
             //Initialized: "ActorRef[] army = new ActorRef[] {ryan, bo, gorm};" ("{ryan, bo, gorm}" is handled in visit(ListNode node))
             //No initialized: "ActorRef[] largerArmy = new ActorRef[5]; (On the right hand side of "=" the "[5]" comes from visit(IntegerNode node) and the "[]" in "ActorRef[]" is removed ).
-            boolean isInitialized=node.getParent().getChildren().get(1) instanceof InitializationNode;
+
+            boolean isInitialized;
+            if (node.getParent().getChildren().size() > 1) {
+                isInitialized = node.getParent().getChildren().get(1) instanceof InitializationNode;
+            } else {
+                isInitialized = false;
+            }
             stringBuilder
                     .append(VarTypeConverter(node.getType(),true,false)) //Append array type
                     .append(node.getName())//Append name
