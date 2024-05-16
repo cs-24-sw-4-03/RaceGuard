@@ -957,6 +957,7 @@ public class CodeGenVisitor implements NodeVisitor {
     //Standard selection node construction with if and else statements
     @Override
     public void visit(SelectionNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder.append(javaE.IF.getValue()).append("(");
         visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
@@ -967,6 +968,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder.append(javaE.ELSE.getValue());
             visitChild(node.getChildren().get(2));
         }
+        this.symbolTable.leaveScope();
     }
 
     @Override
@@ -1124,12 +1126,14 @@ public class CodeGenVisitor implements NodeVisitor {
     //Standard while loop construction
     @Override
     public void visit(WhileNode node) {
+        this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder.append(javaE.WHILE.getValue()).append("(");
         visitChild(node.getChildren().get(0));
         stringBuilder.append(")");
         visitChild(node.getChildren().get(1));
         stringBuilder.append("\n");
         codeOutput.add(getLine());
+        this.symbolTable.leaveScope();
     }
 
     @Override
