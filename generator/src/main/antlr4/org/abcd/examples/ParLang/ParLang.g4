@@ -227,11 +227,11 @@ returnType : identifier
 
 //fragments used to ease other definitions
 fragment DIGIT : [0-9];
-fragment SMALL_LETTER : [a-zæøå];
-fragment CAP_LETTER : [A-ZÆØÅ];
+fragment SMALL_LETTER : [a-z];
+fragment CAP_LETTER : [A-Z];
 fragment LETTER : SMALL_LETTER | CAP_LETTER;
-fragment IDstart : ( LETTER | '_' ); //since identifier cannot start with a digit
-fragment IDpart : IDstart | DIGIT;
+fragment ID_START : ( LETTER | '_' ); //since identifier cannot start with a digit
+fragment ID_PART : ID_START | DIGIT;
 
 //Types in language
 INT_TYPE : 'int';
@@ -266,11 +266,11 @@ PRINT : 'print';
 INT : DIGIT+ ;  // Define token INT as one or more digits
 DOUBLE : DIGIT* DOT DIGIT+ ; // Define token for decimal number
 //strings are inside either quotation marks or double quotation marks
-STRING : (DOUBLE_QUOTATION ~[\\"\t\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\'\t\r\n]* QUOTATION);
+STRING : (DOUBLE_QUOTATION ~[\\"\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\'\t\r\n]* QUOTATION);
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
-IDENTIFIER : IDstart IDpart* ; // Define identifier token, identifier cannot start with a number
-COMMENT : '//' ~[\t\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
+IDENTIFIER : ID_START ID_START* ; // Define identifier token, identifier cannot start with a number
+COMMENT : '//' ~[\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 
 ASSIGN                  : '=';
