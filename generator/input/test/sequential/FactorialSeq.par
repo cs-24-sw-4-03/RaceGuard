@@ -8,7 +8,7 @@ Actor Factorial{
     }
 
     local calculateFactorial(int n):int{
-        if(n == 1){
+        if(n == 1 || n == 0){
             return 1;
         }
         return n * calculateFactorial(n-1);
