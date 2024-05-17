@@ -22,5 +22,7 @@ Actor FibCalculator{
 
     on startCalculate(int number){
         int result = calculate(number);
+        print(result);
+        KILL;
     }
 }
