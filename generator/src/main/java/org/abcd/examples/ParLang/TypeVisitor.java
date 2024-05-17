@@ -332,10 +332,16 @@ public class TypeVisitor implements NodeVisitor {
                     attributes = new Attributes(actorName); //Set the attributes to the actorName
                 }else if(receiverNode instanceof IdentifierNode){
                     attributes = symbolTable.lookUpSymbol(receiverName);
+                } else if(receiverNode instanceof ArrayAccessNode){
+                    attributes = symbolTable.lookUpSymbol(receiverName);
+                } else {
+                    throw new ArgumentsException("Receiver node is not of type IdentifierNode, StateAccessNode, KnowsAccessNode or SelfNode" + ". Line: " + receiverNode.getLineNumber() + " Column: " + receiverNode.getColumnNumber());
                 }
 
                 if (attributes != null) {
-                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                    System.out.println("Attributes: " + attributes.getVariableType());
+                    System.out.println("Method name: " + methodName );
+                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType().split("\\[]")[0]);
                     params = methodScope.getParams();
                     checkArgTypes(node, params, methodName); //Check the arguments against the parameters
                 }else{ //If the attributes are null, throw an exception

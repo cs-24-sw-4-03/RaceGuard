@@ -301,6 +301,9 @@ public class CodeGenVisitor implements NodeVisitor {
                 attributes = symbolTable.lookUpSymbol(actorName);
             }else if(receiverNode instanceof IdentifierNode){
                 attributes = symbolTable.lookUpSymbol(receiverName);
+            } else if(receiverNode instanceof ArrayAccessNode) {
+                String arrayName = ((ArrayAccessNode) receiverNode).getAccessIdentifier();
+                attributes = symbolTable.lookUpSymbol(arrayName);
             }
 
             if(receiverNode instanceof SelfNode){
@@ -308,7 +311,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 params = methodScope.getParams();
             }else {
                 if (attributes != null) {
-                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType());
+                    Scope methodScope = symbolTable.lookUpScope(methodName + attributes.getVariableType().split("\\[")[0]);
                     params = methodScope.getParams();
                 }else{
                     throw new SendMsgException("Attributes of receiver: " + receiverName + " could not be found");
@@ -1036,6 +1039,8 @@ public class CodeGenVisitor implements NodeVisitor {
             visit((IdentifierNode) firstChild); //visit the IdentifierNode
         }else if (firstChild instanceof  KnowsAccessNode){
             visit((KnowsAccessNode) firstChild); //visit the KnowsAccessNode
+        }else if(firstChild instanceof ArrayAccessNode) {
+            visit((ArrayAccessNode) firstChild); //visit the ArrayAccessNode
         }
         else if (node.getReceiver().equals("self")){ //receiver is self
             visit((SelfNode) firstChild);

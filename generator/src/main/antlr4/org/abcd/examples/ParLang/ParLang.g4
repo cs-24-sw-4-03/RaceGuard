@@ -144,7 +144,7 @@ parameters : PARAN_OPEN (allTypes identifier (COMMA allTypes identifier)*)? PARA
 arguments : PARAN_OPEN (value (COMMA value)*)? PARAN_CLOSE;
 
 //send a message to Actor and request use of method
-sendMsg : (SELF | identifier) SEND_MSG identifier arguments;
+sendMsg : (SELF | arrayAccess | identifier) SEND_MSG identifier arguments;
 
 //way to call a method
 methodCall : identifier arguments;

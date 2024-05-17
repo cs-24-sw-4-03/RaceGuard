@@ -76,6 +76,10 @@ public class AstVisitor extends ParLangBaseVisitor<AstNode> {
             selfNode.setLineNumber(ctx.getStart().getLine());
             selfNode.setColumnNumber(ctx.getStart().getCharPositionInLine());
             sendMsgNode.addChild(selfNode);
+        } else if(receiver.contains("[")){
+            String arrayName = receiver.split("\\[")[0];
+            sendMsgNode = new SendMsgNode(arrayName, msgName);
+            sendMsgNode.addChild(visit(ctx.arrayAccess())); //Add the receiver as a Knows or State child
         } else{
             sendMsgNode.addChild(visit(ctx.identifier(0))); //Add the receiver as a Knows or State child
         }

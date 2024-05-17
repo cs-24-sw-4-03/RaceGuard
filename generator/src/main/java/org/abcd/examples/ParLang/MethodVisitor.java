@@ -52,7 +52,8 @@ public class MethodVisitor implements NodeVisitor {
                 this.symbolTable.enterScope(this.symbolTable.findActorParent(node));
             } else{
                 //Otherwise we look up the symbol in the normal symbol list
-                this.symbolTable.enterScope(this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType());
+                String type = this.symbolTable.lookUpSymbol(node.getReceiver()).getVariableType().split("\\[")[0];
+                this.symbolTable.enterScope(type);
             }
 
             //Then we find the list of messages it can receive
