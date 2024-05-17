@@ -771,13 +771,14 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(MethodCallNode node) {
         visit((IdentifierNode) node.getChildren().getFirst());
         stringBuilder.append("(");
-        System.out.println(node.getChildren().size());
         if(node.getChildren().size()>1){
             visit((ArgumentsNode) node.getChildren().get(1));//ArgumentsNode
         }
         stringBuilder.append(")");
-        stringBuilder.append(javaE.SEMICOLON.getValue());
-        codeOutput.add(getLine());
+        if (!(node.getParent() instanceof ArithExpNode || node.getParent() instanceof InitializationNode)) {
+            stringBuilder.append(javaE.SEMICOLON.getValue());
+            codeOutput.add(getLine());
+        }
     }
 
     @Override
@@ -870,7 +871,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ReturnStatementNode node) {
         stringBuilder.append(javaE.RETURN.getValue());
         AstNode returnee=node.getReturnee();//get the expression which is returned (return <returnee>;)
-        if(returnee instanceof IdentifierNode){
+        if(returnee instanceof IdentifierNode) {
             visit((IdentifierNode) returnee);
         } else if(returnee instanceof ArithExpNode) {
             visit((ArithExpNode) returnee);
