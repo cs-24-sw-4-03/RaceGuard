@@ -181,7 +181,8 @@ public class TypeVisitor implements NodeVisitor {
             }
         }
         catch (Exception e) {
-            exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
+            throw new RuntimeException(Arrays.toString(e.getStackTrace()));
+            //exceptions.add(new RuntimeException(e.getMessage() + " in IdentifierNode" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
         }
     }
 

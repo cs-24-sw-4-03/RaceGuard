@@ -1,0 +1,80 @@
+Script MatrixManager{
+    on getResult(int[][] result, int index, RowCalculator sender);
+}
+
+main(){
+    int n = 500;
+    int[n][n] matrix1;
+    int[n][n] matrix2;
+
+    for(int i = 0; i < n; i = i + 1){
+        for(int j = 0; j < n; j = j + 1){
+            matrix1[i][j] = (i + j) % 9 + 1;
+            matrix2[i][j] = (i + j) % 9 + 1;
+        }
+    }
+    MatrixCalculator matrixCalc = Spawn MatrixCalculator(matrix1, matrix2);
+}
+
+Actor MatrixCalculator follows MatrixManager{
+    State{
+        int[500][500] resultMatrix;
+        int resultsReceived = 0;
+    }
+    Knows{MatrixPrinter printer;}
+    Spawn(int[][] matrix1, int[][] matrix2){
+        RowCalculator[50] rowArr;
+        for(int i = 0; i < 50; i = i +1){
+            RowCalculator rowCalc = Spawn RowCalculator(self);
+            rowArr[i] = rowCalc;
+        }
+        for (int a = 0; a < 50; a = a+1){
+            int[10][500] rows;
+            for(int i = 0; i < 10; i = i + 1){
+                for (int j = 0; j < 500; j = j+1){
+                    rows[a][j] = matrix1[a*10+i][j];
+                }
+            }
+            rowArr[a] <- calculateRow(rows, matrix2, a);
+        }
+    }
+
+    on getResult(int[][] result, int index, RowCalculator sender){
+        for(int a = 0; a < 10; a = a+1){
+            for(int i = 0; i < 500; i = i+1){
+                State.resultMatrix[index*10+a][i] = result[a][i];
+            }
+        }
+        sender <- kill();
+        if (State.resultsReceived == 49){
+            KILL;
+        }
+        State.resultsReceived = State.resultsReceived + 1;
+    }
+}
+
+Actor RowCalculator{
+    State{
+        int[10][500] resultRow;
+    }
+    Knows{MatrixManager parent;}
+    Spawn(MatrixManager parent){
+        Knows.parent = parent;
+    }
+
+    on calculateRow(int[][] row, int[][] matrix, int index){
+        for(int a = 0; a < 10; a = a+1){
+            for(int i = 0; i < 500; i = i+1){
+                State.resultRow[a][i] = 0;
+                for(int j = 0; j < 500; j = j+1){
+                    State.resultRow[a][i] = State.resultRow[a][i] + row[a][j] * matrix[i][j];
+                }
+            }
+        }
+        Knows.parent <- getResult(State.resultRow, index, self);
+    }
+
+    on kill(){
+        KILL;
+    }
+}
