@@ -206,6 +206,7 @@ public class SymbolTableVisitor implements NodeVisitor {
                 this.exceptions.add(new SymbolNotFoundException("Array symbol: " + node.getAccessIdentifier() + " not found" + ". Line: " + node.getLineNumber() + " Column: " + node.getColumnNumber()));
             }
         }
+        visitChildren(node);
     }
 
     @Override
