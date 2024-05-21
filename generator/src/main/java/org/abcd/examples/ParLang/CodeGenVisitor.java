@@ -226,7 +226,7 @@ public class CodeGenVisitor implements NodeVisitor {
             Set<String> params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet();
             appendIfElseChainLink("if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params.iterator()));
             if(className.contains(".")){//If first protocol class is from a script (i.e. GreeterScript.Greet), then we also add a receiver for the protocol class in the actor (i.e "Greet")
-                appendIfElseChainLink("else if",getOnReceiveIfCondition(capitalizeFirstLetter(methodName),methodName),getOnReceiveIfBody(methodName,params.iterator()));
+                appendIfElseChainLink("else if",getOnReceiveIfCondition(methodName, methodName),getOnReceiveIfBody(methodName,params.iterator()));
             }
             while (onMethods.hasNext()) {//The remaining on-methods results in if-else statements
                 methodName = onMethods.next();
@@ -234,7 +234,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 params=symbolTable.lookUpScope(methodName+actorName).getParams().keySet();
                 appendIfElseChainLink("else if", getOnReceiveIfCondition(className, methodName), getOnReceiveIfBody(methodName,params.iterator()));
                 if(className.contains(".")){
-                    appendIfElseChainLink("else if",getOnReceiveIfCondition(capitalizeFirstLetter(methodName),methodName),getOnReceiveIfBody(methodName,params.iterator()));
+                    appendIfElseChainLink("else if",getOnReceiveIfCondition(methodName,methodName),getOnReceiveIfBody(methodName,params.iterator()));
                 }
             }
             appendElse(javaE.UNHANDLED.getValue());//There is always and else statement in the end of the chain handling yet unhandled messages.
@@ -812,7 +812,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node The MethodDclNode
      */
     private void appendProtocolClass(MethodDclNode node){
-        String className=capitalizeFirstLetter(node.getId());
+        String className = node.getId();
         appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//It is important that it is public since other actors must be able to access it.
         String fieldDclProlog=javaE.PUBLIC.getValue()+javaE.FINAL.getValue();
         appendBodyOpen(node.getChildren().getFirst(),fieldDclProlog,javaE.SEMICOLON.getValue());
@@ -920,7 +920,7 @@ public class CodeGenVisitor implements NodeVisitor {
     @Override
     public void visit(ScriptMethodNode node) {
         if(node.getMethodType().equals(parLangE.ON.getValue())){//local methods declared in a script does not need to be handled here.
-            String className=capitalizeFirstLetter(node.getId());
+            String className=node.getId();
             appendStaticFinalClassDef(javaE.PUBLIC.getValue(),className);//Create a static class for the on-method.
 
             //appends opening of the body of the static class and creates public fields for each parameter in the method.
@@ -1025,7 +1025,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node SendMsgNode
      */
     private void appendProtocolArg(SendMsgNode node){
-        String protocolClass=capitalizeFirstLetter(node.getMsgName());
+        String protocolClass=node.getMsgName();
         stringBuilder
                 .append(javaE.NEW.getValue())
                 .append(node.getChildren().getFirst().getType())
@@ -1408,7 +1408,7 @@ public class CodeGenVisitor implements NodeVisitor {
      */
     private String getClassName(ActorDclNode node,String methodName){
         MethodDclNode methodNode=null;
-        String className=capitalizeFirstLetter(methodName);
+        String className = methodName;
         for (AstNode childNode: node.getChildren()){//find the on-method's MethodDclNode in the parent actor
             if(childNode instanceof MethodDclNode && ((MethodDclNode) childNode).getId().equals(methodName)){
                 methodNode=(MethodDclNode) childNode;
