@@ -173,6 +173,8 @@ allTypes : primitiveType
     | ACTOR_TYPE
     | VOID_TYPE
     | identifier
+    | identifier ARRAY_TYPE
+    | identifier ARRAY_TYPE ARRAY_TYPE
     ;
 
 dclTypes : arrayDcl

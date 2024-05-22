@@ -195,6 +195,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 "LoggingAdapter"
         );
         appendImports("java.util","Arrays","UUID");
+        appendImport("java.lang.reflect","Array");
 
         appendClassDefinition(javaE.PUBLIC.getValue(), node.getId(),"UntypedAbstractActor");
 
@@ -203,8 +204,8 @@ public class CodeGenVisitor implements NodeVisitor {
         appendOnReceive(node);
         stringBuilder.append("private LoggingAdapter log = Logging.getLogger(getContext().system(), this);\n");
         codeOutput.add(getLine());
+        appendCloneArray();
         appendBodyClose();
-
         writeToFile(node.getId(), codeOutput);//Write the actor class to a separate file.
         this.symbolTable.leaveScope();
     }
@@ -580,6 +581,7 @@ public class CodeGenVisitor implements NodeVisitor {
                         .append("(int) ")
                         .append(node.getName())
                         .append("]");
+
             }else{
                 stringBuilder
                         .append(VarTypeConverter(node.getType(),true,false))
@@ -589,6 +591,19 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append(VarTypeConverter(node.getType(),true,false))
                     .append(node.getName());
+
+        } else if (node.getParent() instanceof ArgumentsNode && isArray(node)) { //We need to clone arrays
+                if (!(node.getParent().getParent() instanceof SpawnActorNode)) { //the constructor in Akka is only happy with object array. It breaks if we try to cast to the specific array type.
+                    stringBuilder
+                            .append("(")
+                            .append(VarTypeConverter(node.getType(), true, false));
+                    stringBuilder.replace(stringBuilder.length() - 1, stringBuilder.length(), "");//remove space
+                    stringBuilder
+                            .append(") ");
+                }
+            stringBuilder.append("cloneArray(")
+                    .append(node.getName())
+                    .append(")");
         } else {
             stringBuilder.append(node.getName());
         }
@@ -710,7 +725,10 @@ public class CodeGenVisitor implements NodeVisitor {
         } else if (node.getParent() instanceof ArrayAccessNode) {
                 stringBuilder.append(node.getValue());
         } else{
-            boolean isInitializationOfArray=node.getParent().getParent() instanceof InitializationNode && isArray(node.getParent().getParent());// e.g. int[5] a = {1, 2, 3, 4, 5};
+            boolean isInitializationOfArray=node.getParent().getParent() instanceof InitializationNode // One dimensional array
+                    || node.getParent().getParent().getParent() instanceof InitializationNode // Two dimensional array
+                    && isArray(node.getParent().getParent());// e.g. int[5] a = {1L, 2L, 3L, 4L, 5L} or int[2][2] a = {{0L, 1L}, {2L, 3L}}
+
             boolean isAssignedToArrayElement=node.getParent() instanceof AssignNode  && node.getParent().getChildren().getFirst() instanceof ArrayAccessNode;// e.g. a[2] = 10;
             stringBuilder.append(node.getValue());
             if(isInitializationOfArray||isAssignedToArrayElement){
@@ -773,6 +791,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 "UntypedAbstractActor");
         appendImports("akka.event","Logging","LoggingAdapter");
         appendImports("java.util","Arrays", "UUID");
+        appendImport("java.lang.reflect","Array");
 
         appendClassDefinition(javaE.PUBLIC.getValue(), parLangE.MAIN.getValue(),null);
         stringBuilder.append(javaE.CURLY_OPEN.getValue());
@@ -784,6 +803,7 @@ public class CodeGenVisitor implements NodeVisitor {
                 .append(javaE.VOID.getValue())
                 .append("main(String[] args)");
         visitChildren(node);
+        appendCloneArray();
         appendBodyClose();
         writeToFile(capitalizeFirstLetter(node.getId()), codeOutput);
         this.symbolTable.leaveScope();
@@ -1117,11 +1137,88 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(StateAccessNode node) {
-        stringBuilder
-                .append(javaE.THIS.getValue())
-                .append(".")
-                .append(node.getAccessIdentifier());
+        if ((node.getParent() instanceof ArgumentsNode) && isArray(node)) {
+            if (!(node.getParent().getParent() instanceof SpawnActorNode)) { //the constructor in Akka is only happy with object array. It breaks if we try to cast to the specific array type.
+                stringBuilder
+                        .append("(")
+                        .append(VarTypeConverter(node.getType(), true, false));
+                stringBuilder.replace(stringBuilder.length() - 1, stringBuilder.length(), "");//remove surplus space
+                stringBuilder
+                        .append(") ");
+            }
+            stringBuilder
+                    .append(" cloneArray(")
+                    .append(javaE.THIS.getValue())
+                    .append(".")
+                    .append(node.getAccessIdentifier())
+                    .append(")");
+        } else {
+            stringBuilder
+                    .append(javaE.THIS.getValue())
+                    .append(".")
+                    .append(node.getAccessIdentifier());
+        }
     }
+
+    /**
+     * Appends the CloneArray method to the target code.
+     */
+    private void appendCloneArray() {
+        localIndent = 1;
+        stringBuilder
+                .append("private static Object cloneArray(Object array) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("if (array == null) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("return null; \n");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        stringBuilder
+                .append("Class<?> arrayClass = array.getClass(); \n")
+                .append("if (!arrayClass.isArray()) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("throw new IllegalArgumentException(\"Input is not an array\"); \n");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        stringBuilder
+                .append("Class<?> componentType = arrayClass.getComponentType(); \n")
+                .append("if (componentType.isArray()) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("// 2D array case or higher dimensions \n")
+                .append("int length = Array.getLength(array); \n")
+                .append("Object newArray = Array.newInstance(componentType, length); \n")
+                .append("for (int i = 0; i < length; i++) { \n");
+        codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("Array.set(newArray, i, cloneArray(Array.get(array, i))); \n");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        stringBuilder.append("return newArray; \n");
+        codeOutput.add(getLine());
+        appendBodyClose();
+        stringBuilder
+                .append("else { \n");
+                codeOutput.add(getLine());
+        localIndent++;
+        stringBuilder
+                .append("// 1D array case \n")
+                .append("return ((Object[]) array).clone(); \n");
+        codeOutput.add(getLine());
+
+        appendBodyClose();
+        appendBodyClose();
+
+    }
+
 
     @Override
     public void visit(StringNode node) {
@@ -1231,7 +1328,11 @@ public class CodeGenVisitor implements NodeVisitor {
                     String[] substrings=parlangType.split("(?=\\[)");//split at empty string where next string is "[". e.g "myActor[]" is split to "myActor" and "[]"
                     if(substrings.length>1){ //if parlangType is an array (substrings[1] is "[]" or "[][]").
                         String actorRefNoSpace=javaE.ACTORREF.getValue().split(" ")[0];//Delete the space in "ActorRef "
-                        javaType=actorRefNoSpace+substrings[1]+" ";//The java type is the array-part of paralngType appended to "ActorRef"
+                        if (substrings.length>2) {
+                        javaType=actorRefNoSpace+substrings[1]+substrings[2]+" "; //Two dimensional array
+                        } else {
+                            javaType = actorRefNoSpace + substrings[1] + " ";//The java type is the array-part of paralngType appended to "ActorRef"
+                        }
                     }else{
                         javaType=javaE.ACTORREF.getValue();  //If paralangType is not an array, the java type is "ActorRef "
                     }

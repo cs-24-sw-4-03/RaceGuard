@@ -1,0 +1,57 @@
+Actor Manager{
+    State{
+       int[1] arr;
+       int[1][1] arr2;
+    }
+    Knows{}
+    Spawn(){}
+    on manage(int[] arr, int[][] arr2) {
+        State.arr[0] = arr[0];
+        string[1] stringArr = {"1"};
+        int[1] intArr = {1};
+        double[1] doubleArr = {1.0};
+        bool[1] boolArr = {TRUE};
+        Manager[1] actorArr = {self};
+
+        OneDimArray oneActor=Spawn OneDimArray(State.arr, stringArr, intArr, doubleArr, boolArr, self);
+        oneActor <- one(State.arr, stringArr, intArr, doubleArr, boolArr, self);
+
+        State.arr2[0][0] = arr2[0][0];
+        string[1][1] stringArr2 = {{"1"}};
+        int[2][2] intArr2 = {{1, 2}, {3, 4}};
+        double[1][1] doubleArr2 = {{1.0}};
+        bool[1][1] boolArr2 = {{TRUE}};
+        //Manager[1][1] actorArr2 = {{self}}; //DETTE ER ÅBENBART LOVLIGT??
+        Manager[1][1] actorArr2 = {{self}, {self}};
+
+        TwoDimArray twoActor=Spawn TwoDimArray(State.arr2, stringArr2, intArr2, doubleArr2, boolArr2, self);
+        twoActor <- two(State.arr2, stringArr2, intArr2, doubleArr2, boolArr2, self);
+    }
+    on finish(int result) {
+        print("result received: " + result);
+    }
+}
+Actor OneDimArray{
+    State{}
+    Knows{}
+    Spawn(int[] arr, string[] StrArr, int[] intArr, double[] doubleArr, bool[] boolArr, Manager man){}
+    on one(int[] arr, string[] StrArr, int[] intArr, double[] doubleArr, bool[] boolArr, Manager man){
+        man <- finish(arr[0]);
+    }
+}
+Actor TwoDimArray{
+    State{}
+    Knows{}
+    Spawn(int[][] arr, string[][] StrArr, int[][] intArr, double[][] doubleArr, bool[][] boolArr, Manager man) {}
+    on two(int[][] arr, string[][] StrArr, int[][] intArr, double[][] doubleArr, bool[][] boolArr, Manager man) {
+        man <- finish(arr[0][0]);
+    }
+}
+main(){
+    int[1] arr = {0};
+    int[1][1] arr2 = {{0}, {1}};
+    Manager man=Spawn Manager();
+    man <- manage(arr, arr2);
+}
+
+
