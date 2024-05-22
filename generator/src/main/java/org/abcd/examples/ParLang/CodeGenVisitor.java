@@ -825,7 +825,7 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param node MethodDclNode
      */
     private void appendBehaviour(MethodDclNode node){
-        String name=parLangE.ON.getValue()+capitalizeFirstLetter(node.getId());
+        String name=parLangE.ON.getValue()+node.getId();
         appendMethodDefinition(javaE.PRIVATE.getValue(),javaE.VOID.getValue(),name);
         appendParameters((ParametersNode) node.getChildren().getFirst());
         appendBody(node.getChildren().get(1));
@@ -1507,7 +1507,7 @@ public class CodeGenVisitor implements NodeVisitor {
         StringBuilder localStringBuilder=new StringBuilder();
         localStringBuilder
                 .append(parLangE.ON.getValue())
-                .append(capitalizeFirstLetter(methodName))
+                .append(methodName)
                 .append("(");
         while (params.hasNext()){
             localStringBuilder
