@@ -141,12 +141,16 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append("[");
                 typeCastArrayAccessNode(node,0);
                 visitChild(node.getChildren().getFirst());
+                if (node.getChildren().getFirst() instanceof ArrayAccessNode) {
+                    stringBuilder.append(".intValue()");
+                }
                 stringBuilder.append("]");
             } else if (node.getChildren().size()==2){
                 stringBuilder.append("[");
                 typeCastArrayAccessNode(node,0);
                 visitChild(node.getChildren().getFirst());
                 stringBuilder.append("]");
+
                 stringBuilder.append("[");
                 typeCastArrayAccessNode(node,1);
 
