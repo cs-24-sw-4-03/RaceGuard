@@ -3,28 +3,27 @@ Actor Increment{
     Knows{}
     Spawn(){}
     on add(int[] arr, Manager man){
-        for (int i = 0; i < 1000; i = i + 1) {
+        for (int j = 0; j < 1000; j = j + 1) {
             arr[0] = arr[0] + 1;
             }
         man <- finish(arr[0]);
     }
 }
-
 Actor Decrement{
     State{}
     Knows{}
     Spawn(){}
-    on decrease(int[] arr, Manager man){
-
+    on minus(int[] arr, Manager man){
         for (int i = 0; i < 1000; i = i + 1) {
             arr[0] = arr[0] - 1;
          }
         man <- finish(arr[0]);
     }
 }
-
 Actor Manager{
     State{
+       int result1 = 0;
+       int result2 = 0;
        int[1] arr;
        bool f = FALSE;
     }
@@ -35,23 +34,21 @@ Actor Manager{
         Increment in=Spawn Increment();
         Decrement de=Spawn Decrement();
         in <- add(State.arr, self);
-        de <- decrease(State.arr, self);
-
-        }
+        de <- minus(State.arr, self);
+    }
     on finish(int result) {
-        State.arr[0] = State.arr[0] + result;
-        print(result);
+        print("result received: " + result);
         if (!State.f) {
             State.f = TRUE;
+            State.result1 = result;
         }
         else {
-            print(State.arr[0]);
+            print("Arr at result1: " + State.result1 + ", Arr at result2: " + result + ", State.arr[0]: " + State.arr[0]);
         }
     }
 }
 
 main(){
-
     int[1] arr = {0};
     Manager man=Spawn Manager();
     man <- manage(arr);
