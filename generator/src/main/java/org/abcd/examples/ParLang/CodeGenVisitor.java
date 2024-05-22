@@ -135,7 +135,8 @@ public class CodeGenVisitor implements NodeVisitor {
 
     @Override
     public void visit(ArrayAccessNode node){
-        stringBuilder.append(node.getAccessIdentifier());
+        String name = removeBeforeDotAddSelf(node.getAccessIdentifier());
+        stringBuilder.append(name);
         if(node.getChildren().size() == 1){
                 stringBuilder.append("[");
                 typeCastArrayAccessNode(node,0);
@@ -153,7 +154,17 @@ public class CodeGenVisitor implements NodeVisitor {
                 stringBuilder.append("]");
             }
     }
-
+    /**
+     * Helper method, that deletes everything before the "." and replaces it with "this", and returns the string.
+     * There might not be a "." in the string, in which case the string is returned as is.
+     * @param methodName the string to modify
+     */
+    private String removeBeforeDotAddSelf(String methodName) {
+        if(methodName.contains(".")){
+            return "this" + methodName.substring(methodName.indexOf("."));
+        }
+        return methodName;
+    }
     /**
      * Helper method, to cast index of array to an int. index cannot be a long.
      * @param node the ArrayAccessNode
@@ -625,7 +636,7 @@ public class CodeGenVisitor implements NodeVisitor {
         codeOutput.add(getLine());
 
         //private onWatchMe method which is executed when the reaper receives a WatchMe message
-        stringBuilder.append("private void onWatchMe(){\n");
+        stringBuilder.append("private void onwatchMe(){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append("if(this.watches.add(getSender())){\n");
@@ -639,7 +650,7 @@ public class CodeGenVisitor implements NodeVisitor {
         //We use protocol class Terminated from akka.actor package
 
         //private onTerminated method which is executed when the reaper receives a Terminated message
-        stringBuilder.append("private void onTerminated(){\n");
+        stringBuilder.append("private void onterminated(){\n");
         codeOutput.add(getLine());
         localIndent++;
         stringBuilder.append("if(this.watches.remove(getSender())){\n");
