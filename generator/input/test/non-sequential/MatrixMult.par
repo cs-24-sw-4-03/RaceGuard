@@ -1,9 +1,9 @@
 Script MatrixManager{
-    on getResult(int[] result, int index, RowCalculator sender);
+    on getResult(int[][] result, int index, RowCalculator sender);
 }
 
 main(){
-    int n = 100;
+    int n = 1000;
     int[n][n] matrix1;
     int[n][n] matrix2;
 
@@ -18,32 +18,35 @@ main(){
 
 Actor MatrixCalculator follows MatrixManager{
     State{
-        int[100][100] resultMatrix;
+        int[1000][1000] resultMatrix;
         int resultsReceived = 0;
     }
     Knows{MatrixPrinter printer;}
     Spawn(int[][] matrix1, int[][] matrix2){
-        RowCalculator[100] rowArr;
-        for(int i = 0; i < 100; i = i +1){
+        RowCalculator[50] rowArr;
+        for(int i = 0; i < 50; i = i +1){
             RowCalculator rowCalc = Spawn RowCalculator(self);
             rowArr[i] = rowCalc;
         }
-
-        for(int i = 0; i < 100; i = i + 1){
-            int [100] row;
-            for (int j = 0; j < 100; j = j+1){
-                row[j] = matrix1[i][j];
+        for (int a = 0; a < 50; a = a+1){
+            int[20][1000] rows;
+            for(int i = 0; i < 20; i = i + 1){
+                for (int j = 0; j < 1000; j = j+1){
+                    rows[i][j] = matrix1[a*20+i][j];
+                }
             }
-            rowArr[i] <- calculateRow(row, matrix2, i);
+            rowArr[a] <- calculateRow(rows, matrix2, a);
         }
     }
 
-    on getResult(int[] result, int index, RowCalculator sender){
-        for(int i = 0; i < 100; i = i+1){
-            State.resultMatrix[index][i] = result[i];
+    on getResult(int[][] result, int index, RowCalculator sender){
+        for(int a = 0; a < 20; a = a+1){
+            for(int i = 0; i < 1000; i = i+1){
+                State.resultMatrix[index*20+a][i] = result[a][i];
+            }
         }
         sender <- kill();
-        if (State.resultsReceived == 99){
+        if (State.resultsReceived == 49){
             KILL;
         }
         State.resultsReceived = State.resultsReceived + 1;
@@ -52,18 +55,20 @@ Actor MatrixCalculator follows MatrixManager{
 
 Actor RowCalculator{
     State{
-        int[100] resultRow;
+        int[20][1000] resultRow;
     }
     Knows{MatrixManager parent;}
     Spawn(MatrixManager parent){
         Knows.parent = parent;
     }
 
-    on calculateRow(int[] row, int[][] matrix, int index){
-        for(int i = 0; i < 100; i = i+1){
-            State.resultRow[i] = 0;
-            for(int j = 0; j < 100; j = j+1){
-                State.resultRow[i] = State.resultRow[i] + row[j] * matrix[i][j];
+    on calculateRow(int[][] row, int[][] matrix, int index){
+        for(int a = 0; a < 20; a = a+1){
+            for(int i = 0; i < 1000; i = i+1){
+                State.resultRow[a][i] = 0;
+                for(int j = 0; j < 1000; j = j+1){
+                    State.resultRow[a][i] = State.resultRow[a][i] + row[a][j] * matrix[i][j];
+                }
             }
         }
         Knows.parent <- getResult(State.resultRow, index, self);
