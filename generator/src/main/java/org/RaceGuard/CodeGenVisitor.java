@@ -138,25 +138,19 @@ public class CodeGenVisitor implements NodeVisitor {
         String name = removeBeforeDotAddSelf(node.getAccessIdentifier());
         stringBuilder.append(name);
         if(node.getChildren().size() == 1){
-                stringBuilder.append("[");
-                typeCastArrayAccessNode(node,0);
-                visitChild(node.getChildren().getFirst());
-                if (node.getChildren().getFirst() instanceof ArrayAccessNode) {
-                    stringBuilder.append(".intValue()");
-                }
-                stringBuilder.append("]");
-            } else if (node.getChildren().size()==2){
-                stringBuilder.append("[");
-                typeCastArrayAccessNode(node,0);
-                visitChild(node.getChildren().getFirst());
-                stringBuilder.append("]");
+            stringBuilder.append("[");
+            typeCastArrayAccessNode(node,0);
+            stringBuilder.append("]");
 
-                stringBuilder.append("[");
-                typeCastArrayAccessNode(node,1);
+        } else if (node.getChildren().size()==2){
+            stringBuilder.append("[");
+            typeCastArrayAccessNode(node,0);
+            stringBuilder.append("]");
 
-                visitChild(node.getChildren().get(1));
-                stringBuilder.append("]");
-            }
+            stringBuilder.append("[");
+            typeCastArrayAccessNode(node,1);
+            stringBuilder.append("]");
+        }
     }
     /**
      * Helper method, that deletes everything before the "." and replaces it with "this", and returns the string.
@@ -175,8 +169,28 @@ public class CodeGenVisitor implements NodeVisitor {
      * @param childIndex the index of the child node (typically 0 or 1)
      */
     private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
-        if(node.getChildren().get(childIndex) instanceof IdentifierNode){
-            stringBuilder.append("(int) ");
+        AstNode nodeType = node.getChildren().get(childIndex);
+        switch (nodeType) {
+            case IntegerNode integerNode -> {
+                visitChild(node.getChildren().get(childIndex));
+            }
+            case IdentifierNode identifierNode -> {
+                stringBuilder.append("(int) ");
+                visitChild(node.getChildren().get(childIndex));
+            }
+            case ArithExpNode arithExpNode -> {
+                stringBuilder.append("(int) (");
+                visitChild(node.getChildren().get(childIndex));
+                stringBuilder.append(")");
+            }
+            case ArrayAccessNode arrayAccessNode -> {
+                visitChild(node.getChildren().get(childIndex));
+                stringBuilder.append(".intValue()");
+            }
+            default -> {
+                visitChild(node.getChildren().get(childIndex));
+            }
+
         }
     }
 
