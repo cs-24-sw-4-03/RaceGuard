@@ -30,5 +30,4 @@ Actor NumActor follows TestScript{
         return num*num;
     }
 }
-
 main(){}
