@@ -1,17 +1,16 @@
 ﻿# P4-RaceGuard-ParserGenerator
 
 This project involves designing and developing a compiler for a new programming language, RaceGuard, 
-which aims to guarantee the avoidance of race conditions. 
-The implementation uses the Java Compiler Compiler (JavaCC) for parsing,
-and uses ANTLR for creating the Concrete Syntax Tree (CST).
-Further leveraging the visitor pattern to make the Abstract Syntax Tree (AST) and perform type and scope checking. 
-The compiler aims to ensure safe multi-threading by employing the actor model to prevent shared data access between threads,thus eliminating race conditions.
-
+that aims to guarantee the avoidance of race conditions. 
+The implementation uses ANTLR for parsing and creating the Concrete Syntax Tree (CST).
+The visitor pattern is leveraged to construct the Abstract Syntax Tree (AST). Subsequently, the AST is traversed using the visitor pattern to perform scoping, type checking and code generation.
+The code generation process makes use of Untyped Akka to implement the actor model.
+Thus the compiler aims to avoid race conditions by employing the actor model to prevent shared data acess between threads.
 ## Prerequisites
 
 Before you begin, ensure you have met the following requirements:
 
-* You have installed the latest version of Java 21 and Maven 3.5 or later.
+* You have installed Java 21 and Maven 3.5 or later versions.
 
 ## Installing P4-ParserGenerator
 
