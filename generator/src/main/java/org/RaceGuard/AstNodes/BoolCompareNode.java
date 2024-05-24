@@ -8,6 +8,10 @@ public class BoolCompareNode extends AstNode{
     public BoolCompareNode(String opType) {
         this.opType = opType;
     }
+    public String getOpType() {
+        return this.opType;
+    }
+
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);

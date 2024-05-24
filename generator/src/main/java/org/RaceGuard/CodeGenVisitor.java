@@ -1277,7 +1277,10 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolCompareNode node){ //TODO AJ Bør denne ikke udfyldes?
+    public void visit(BoolCompareNode node){
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(node.getOpType());
+        visitChild(node.getChildren().get(1));
     }
 
     @Override
