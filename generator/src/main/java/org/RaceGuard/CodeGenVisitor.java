@@ -170,27 +170,21 @@ public class CodeGenVisitor implements NodeVisitor {
      */
     private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
         AstNode nodeType = node.getChildren().get(childIndex);
-        switch (nodeType) {
-            case IntegerNode integerNode -> {
-                visitChild(node.getChildren().get(childIndex));
-            }
-            case IdentifierNode identifierNode -> {
-                stringBuilder.append("(int) ");
-                visitChild(node.getChildren().get(childIndex));
-            }
-            case ArithExpNode arithExpNode -> {
-                stringBuilder.append("(int) (");
-                visitChild(node.getChildren().get(childIndex));
-                stringBuilder.append(")");
-            }
-            case ArrayAccessNode arrayAccessNode -> {
-                visitChild(node.getChildren().get(childIndex));
-                stringBuilder.append(".intValue()");
-            }
-            default -> {
-                visitChild(node.getChildren().get(childIndex));
-            }
-
+        if (nodeType instanceof IdentifierNode) {
+            stringBuilder.append("(int) ");
+            visitChild(node.getChildren().get(childIndex));
+        }
+        else if (nodeType instanceof ArithExpNode) {
+            stringBuilder.append("(int) (");
+            visitChild(node.getChildren().get(childIndex));
+            stringBuilder.append(")");
+        }
+        else if (nodeType instanceof ArrayAccessNode) {
+            visitChild(node.getChildren().get(childIndex));
+            stringBuilder.append(".intValue()");
+        }
+        else { // IntegerNode is included here.
+            visitChild(node.getChildren().get(childIndex));
         }
     }
 
@@ -599,7 +593,6 @@ public class CodeGenVisitor implements NodeVisitor {
                         .append("(int) ")
                         .append(node.getName())
                         .append("]");
-
             }else{
                 stringBuilder
                         .append(VarTypeConverter(node.getType(),true,false))
@@ -609,7 +602,6 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append(VarTypeConverter(node.getType(),true,false))
                     .append(node.getName());
-
         } else if (node.getParent() instanceof ArgumentsNode && isArray(node)) { //We need to clone arrays
                 if (!(node.getParent().getParent() instanceof SpawnActorNode)) { //the constructor in Akka is only happy with object array. It breaks if we try to cast to the specific array type.
                     stringBuilder
