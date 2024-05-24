@@ -526,9 +526,9 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChild(node.getChildren().get(3));
         } else { //check if the first child is a compare expression
             if (node.getChildren().get(0) instanceof CompareExpNode) {
-                stringBuilder.append(javaE.SEMICOLON.getValue());
+                stringBuilder.append("; ");
                 visitChild(node.getChildren().get(0));
-                stringBuilder.append(" ;"); //Cannot use javaE.SEMICOLON.getValue() here, because of the space
+                stringBuilder.append("; "); //Cannot use javaE.SEMICOLON.getValue() here, because of the space
                 if(!(node.getChildren().get(1) instanceof AssignNode)){ //check if the second child is not an assign node
                     stringBuilder.append(")");
                     visitChild(node.getChildren().get(1));
