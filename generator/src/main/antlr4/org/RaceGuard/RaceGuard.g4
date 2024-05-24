@@ -272,7 +272,7 @@ STRING : (DOUBLE_QUOTATION ~[\\"\r\n]* DOUBLE_QUOTATION) | (QUOTATION ~[\\'\t\r\
 BOOL_TRUE : 'TRUE' ; // define value of boolean TRUE
 BOOL_FALSE : 'FALSE' ; // define value of boolean FALSE
 IDENTIFIER : ID_START ID_PART* ; // Define identifier token, identifier cannot start with a number
-COMMENT : '//' ~[\r\n]* '\t'? '\r'? '\n' -> skip ; //Define comment rule, skip comments
+COMMENT : '//' ~[\r\n]*  (EOF|'\r'? '\n') -> skip ; //Define comment rule, skip comments
 WS  :   [ \t\r\n]+ -> skip ; // Define whitespace rule, toss it out
 
 ASSIGN                  : '=';
