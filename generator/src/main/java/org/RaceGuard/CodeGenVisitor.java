@@ -185,7 +185,7 @@ public class CodeGenVisitor implements NodeVisitor {
             }
             case ArrayAccessNode arrayAccessNode -> {
                 visitChild(node.getChildren().get(childIndex));
-                stringBuilder.append(".intValue()");
+                stringBuilder.append(".intValue()"); //In case of nested arrays, we need to cast the value to int, as the index of an array cannot be a long.
             }
             default -> {
                 visitChild(node.getChildren().get(childIndex));
@@ -1259,8 +1259,7 @@ public class CodeGenVisitor implements NodeVisitor {
             visitChild(node.getChildren().get(0));
             visitChild(node.getChildren().get(1));
         }
-        //if the parent is not a for node, add a semicolon, else don't
-        else if(node.getParent() instanceof ForNode){
+        else if(node.getParent() instanceof ForNode){ // We don't want the semicolon in a forNode
             visitChildren(node);
         }
         else {
