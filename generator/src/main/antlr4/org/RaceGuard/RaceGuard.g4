@@ -177,7 +177,6 @@ allTypes : primitiveType
     ;
 
 dclTypes : arrayDcl
-    | VOID_TYPE
     | primitiveType
     | identifier
     ;
