@@ -170,7 +170,6 @@ identifier : IDENTIFIER
 allTypes : primitiveType
     | primitiveType ARRAY_TYPE
     | primitiveType ARRAY_TYPE ARRAY_TYPE
-    | ACTOR_TYPE
     | VOID_TYPE
     | identifier
     | identifier ARRAY_TYPE
@@ -178,7 +177,6 @@ allTypes : primitiveType
     ;
 
 dclTypes : arrayDcl
-    | ACTOR_TYPE
     | VOID_TYPE
     | primitiveType
     | identifier
