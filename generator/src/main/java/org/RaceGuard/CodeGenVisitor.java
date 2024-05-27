@@ -484,7 +484,7 @@ public class CodeGenVisitor implements NodeVisitor {
         visitChild(node.getChildren().get(0));
         stringBuilder.append(node.getOperator());
         visitChild(node.getChildren().get(1));
-       if(node.getIsParenthesized()){
+        if(node.getIsParenthesized()){
               stringBuilder.append(")");
          }
     }
@@ -507,20 +507,22 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ForNode node) {
         this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder.append(javaE.FOR.getValue()).append("(");
-        //check if the second child is a compare expression and the third child is an assign node
-        if (node.getChildren().get(1) instanceof CompareExpNode && node.getChildren().get(2) instanceof AssignNode) {
+        //check if the second child is a compare expression and the third child is an assign node or sendMessage node
+        if (node.getChildren().get(1) instanceof CompareExpNode &&
+            node.getChildren().get(2) instanceof AssignNode ||
+            node.getChildren().get(2) instanceof SendMsgNode) {
             visitChild(node.getChildren().get(0));
-            stringBuilder.append(javaE.SEMICOLON.getValue());
+            stringBuilder.append("; "); //Can't use javaE.SEMICOLON.getValue() here, because of the \n
             visitChild(node.getChildren().get(1));
-            stringBuilder.append(javaE.SEMICOLON.getValue());
+            stringBuilder.append("; ");
             visitChild(node.getChildren().get(2));
             stringBuilder.append(")");
             visitChild(node.getChildren().get(3));
         } else { //check if the first child is a compare expression
             if (node.getChildren().get(0) instanceof CompareExpNode) {
-                stringBuilder.append(javaE.SEMICOLON.getValue());
+                stringBuilder.append("; ");
                 visitChild(node.getChildren().get(0));
-                stringBuilder.append(" ;"); //Cannot use javaE.SEMICOLON.getValue() here, because of the space
+                stringBuilder.append("; "); //Cannot use javaE.SEMICOLON.getValue() here, because of the space
                 if(!(node.getChildren().get(1) instanceof AssignNode)){ //check if the second child is not an assign node
                     stringBuilder.append(")");
                     visitChild(node.getChildren().get(1));
@@ -1059,8 +1061,11 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         stringBuilder
                 .append(sender)
-                .append(");");
-        codeOutput.add(getLine());
+                .append(")");
+        if (!(node.getParent() instanceof ForNode)) {
+            stringBuilder.append(javaE.SEMICOLON.getValue());
+            codeOutput.add(getLine());
+        }
     }
 
     /**
@@ -1125,7 +1130,9 @@ public class CodeGenVisitor implements NodeVisitor {
         stringBuilder.append(")").append(javaE.COMMA.getValue());
         getNextUniqueActor();
         stringBuilder.append(")");
-        if (!(node.getParent() instanceof InitializationNode ||node.getParent() instanceof  AssignNode)) {
+        if (!(node.getParent() instanceof InitializationNode ||
+            node.getParent() instanceof  AssignNode ||
+            node.getParent() instanceof ForNode)) {
             stringBuilder.append(javaE.SEMICOLON.getValue());
         }
     }
@@ -1245,16 +1252,15 @@ public class CodeGenVisitor implements NodeVisitor {
         if(isArray(node) && node.getChildren().get(1) instanceof InitializationNode) {
             visitChild(node.getChildren().get(0));
             visitChild(node.getChildren().get(1));
-
-        } else {
+        }
+        else if(node.getParent() instanceof ForNode){ // We don't want the semicolon in a forNode
             visitChildren(node);
         }
-
-        //if the parent is not a for node, add a semicolon, else don't
-        if(!(node.getParent() instanceof ForNode)){
-                stringBuilder.append(javaE.SEMICOLON.getValue());
-                codeOutput.add(getLine());
-            }
+        else {
+            visitChildren(node);
+            stringBuilder.append(javaE.SEMICOLON.getValue());
+            codeOutput.add(getLine());
+        }
     }
 
     //Standard while loop construction
@@ -1271,7 +1277,10 @@ public class CodeGenVisitor implements NodeVisitor {
     }
 
     @Override
-    public void visit(BoolCompareNode node){ //TODO AJ Bør denne ikke udfyldes?
+    public void visit(BoolCompareNode node){
+        visitChild(node.getChildren().get(0));
+        stringBuilder.append(node.getOpType());
+        visitChild(node.getChildren().get(1));
     }
 
     @Override
