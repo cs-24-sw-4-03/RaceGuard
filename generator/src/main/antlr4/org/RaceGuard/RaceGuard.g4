@@ -167,13 +167,8 @@ identifier : IDENTIFIER
     ;
 
 // can be any type defined in language
-allTypes : primitiveType
-    | primitiveType ARRAY_TYPE
-    | primitiveType ARRAY_TYPE ARRAY_TYPE
+allTypes : (primitiveType | identifier) ARRAY_TYPE? ARRAY_TYPE?
     | VOID_TYPE
-    | identifier
-    | identifier ARRAY_TYPE
-    | identifier ARRAY_TYPE ARRAY_TYPE
     ;
 
 dclTypes : arrayDcl
