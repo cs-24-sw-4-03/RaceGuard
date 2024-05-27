@@ -167,24 +167,18 @@ identifier : IDENTIFIER
     ;
 
 // can be any type defined in language
-allTypes : primitiveType
-    | primitiveType ARRAY_TYPE
-    | primitiveType ARRAY_TYPE ARRAY_TYPE
-    | ACTOR_TYPE
+allTypes : (primitiveType | identifier) ARRAY_TYPE? ARRAY_TYPE?
     | VOID_TYPE
-    | identifier
-    | identifier ARRAY_TYPE
-    | identifier ARRAY_TYPE ARRAY_TYPE
     ;
 
 dclTypes : arrayDcl
     | primitiveType
-    | ACTOR_TYPE
-    | VOID_TYPE
     | identifier
     ;
 
-arrayDcl : (primitiveType|identifier) SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?;
+arrayDcl : (primitiveType|identifier) ARRAY_TYPE ARRAY_TYPE?
+    | (primitiveType|identifier) SQUARE_OPEN arithExp SQUARE_CLOSE (SQUARE_OPEN arithExp SQUARE_CLOSE)?
+    ;
 
 //can be any primitive type in language
 primitiveType : INT_TYPE

@@ -1252,6 +1252,7 @@ public class CodeGenVisitor implements NodeVisitor {
         if(isArray(node) && node.getChildren().get(1) instanceof InitializationNode) {
             visitChild(node.getChildren().get(0));
             visitChild(node.getChildren().get(1));
+            stringBuilder.append(javaE.SEMICOLON.getValue());
         }
         else if(node.getParent() instanceof ForNode){ // We don't want the semicolon in a forNode
             visitChildren(node);

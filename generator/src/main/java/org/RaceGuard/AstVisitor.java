@@ -4,6 +4,7 @@ import org.RaceGuard.AstNodes.AstNode;
 import org.RaceGuard.AstNodes.*;
 import org.RaceGuard.Exceptions.DuplicateActorTypeException;
 import org.RaceGuard.Exceptions.DuplicateScriptTypeException;
+import org.RaceGuard.Exceptions.varDclNodeExeption;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.ArrayList;
@@ -346,13 +347,18 @@ public class AstVisitor extends RaceGuardBaseVisitor<AstNode> {
             dclNode.addChild(initializationNode); //add initializationNode as child
         }
         if (ctx.dclTypes().arrayDcl() != null){
-            if (ctx.dclTypes().arrayDcl().arithExp(1) != null){
-                dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(0)));
-                dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(1)));
+            if (ctx.dclTypes().arrayDcl().arithExp(0) != null) {
+                if (dclNode.isInitialized()) {
+                    throw new varDclNodeExeption("Array declaration cannot both have defined a length and be initialized");
+                }
+                if (ctx.dclTypes().arrayDcl().arithExp(1) != null) {
+                    dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(0)));
+                    dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(1)));
+                } else {
+                    dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(0)));
+                }
             }
-            else {
-                dclNode.addChild(visit(ctx.dclTypes().arrayDcl().arithExp(0)));
-            }
+
         }
         return dclNode; //return the dclNode with identifier and initialization added as children
     }
