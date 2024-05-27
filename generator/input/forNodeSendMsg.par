@@ -1,0 +1,38 @@
+Script TestScript{
+    on getSquared(int x);
+
+    on willNotHave();
+}
+
+
+Actor NumActor follows TestScript{
+    State{
+        double number;
+        int i;
+    }
+    Knows{
+    NumActor testActor;
+    }
+    Spawn(int x){
+        State.number = x;
+
+        for(int i = 0; i < 10; self <- willNotHave()){
+            i = i+1;
+        }
+        for (;State.i<10; State.i = State.i+1){
+            self <- willNotHave();
+        }
+    }
+    on getSquared(int x){
+        TestScript getSquaredActor = Spawn NumActor(x);
+        double result;
+        result = squared(x);
+        getSquaredActor <- getSquared(x);
+    }
+    on willNotHave(){}
+
+    local squared(int num): double{
+        return num*num;
+    }
+}
+main(){}

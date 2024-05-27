@@ -181,7 +181,7 @@ public class CodeGenVisitor implements NodeVisitor {
         }
         else if (nodeType instanceof ArrayAccessNode) {
             visitChild(node.getChildren().get(childIndex));
-            stringBuilder.append(".intValue()");
+            stringBuilder.append(".intValue()"); //In case of nested arrays, we need to cast the value to int, as the index of an array cannot be a long.
         }
         else { // IntegerNode is included here.
             visitChild(node.getChildren().get(childIndex));
@@ -593,6 +593,7 @@ public class CodeGenVisitor implements NodeVisitor {
                         .append("(int) ")
                         .append(node.getName())
                         .append("]");
+
             }else{
                 stringBuilder
                         .append(VarTypeConverter(node.getType(),true,false))
@@ -602,6 +603,7 @@ public class CodeGenVisitor implements NodeVisitor {
             stringBuilder
                     .append(VarTypeConverter(node.getType(),true,false))
                     .append(node.getName());
+
         } else if (node.getParent() instanceof ArgumentsNode && isArray(node)) { //We need to clone arrays
                 if (!(node.getParent().getParent() instanceof SpawnActorNode)) { //the constructor in Akka is only happy with object array. It breaks if we try to cast to the specific array type.
                     stringBuilder

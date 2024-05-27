@@ -6,7 +6,7 @@ main(){
 
     if (a == b){
     }
-    else if (a == TRUE){
+    else if (a == TRUE && b == FALSE){
     }
     else if (x+y > 1){
     }
