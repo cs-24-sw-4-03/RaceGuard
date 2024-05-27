@@ -170,27 +170,21 @@ public class CodeGenVisitor implements NodeVisitor {
      */
     private void typeCastArrayAccessNode(ArrayAccessNode node, int childIndex){
         AstNode nodeType = node.getChildren().get(childIndex);
-        switch (nodeType) {
-            case IntegerNode integerNode -> {
-                visitChild(node.getChildren().get(childIndex));
-            }
-            case IdentifierNode identifierNode -> {
-                stringBuilder.append("(int) ");
-                visitChild(node.getChildren().get(childIndex));
-            }
-            case ArithExpNode arithExpNode -> {
-                stringBuilder.append("(int) (");
-                visitChild(node.getChildren().get(childIndex));
-                stringBuilder.append(")");
-            }
-            case ArrayAccessNode arrayAccessNode -> {
-                visitChild(node.getChildren().get(childIndex));
-                stringBuilder.append(".intValue()"); //In case of nested arrays, we need to cast the value to int, as the index of an array cannot be a long.
-            }
-            default -> {
-                visitChild(node.getChildren().get(childIndex));
-            }
-
+        if (nodeType instanceof IdentifierNode) {
+            stringBuilder.append("(int) ");
+            visitChild(node.getChildren().get(childIndex));
+        }
+        else if (nodeType instanceof ArithExpNode) {
+            stringBuilder.append("(int) (");
+            visitChild(node.getChildren().get(childIndex));
+            stringBuilder.append(")");
+        }
+        else if (nodeType instanceof ArrayAccessNode) {
+            visitChild(node.getChildren().get(childIndex));
+            stringBuilder.append(".intValue()"); //In case of nested arrays, we need to cast the value to int, as the index of an array cannot be a long.
+        }
+        else { // IntegerNode is included here.
+            visitChild(node.getChildren().get(childIndex));
         }
     }
 
@@ -513,7 +507,7 @@ public class CodeGenVisitor implements NodeVisitor {
     public void visit(ForNode node) {
         this.symbolTable.enterScope(node.getNodeHash());
         stringBuilder.append(javaE.FOR.getValue()).append("(");
-        //check if the second child is a compare expression and the third child is an assign node
+        //check if the second child is a compare expression and the third child is an assign node or sendMessage node
         if (node.getChildren().get(1) instanceof CompareExpNode &&
             node.getChildren().get(2) instanceof AssignNode ||
             node.getChildren().get(2) instanceof SendMsgNode) {
