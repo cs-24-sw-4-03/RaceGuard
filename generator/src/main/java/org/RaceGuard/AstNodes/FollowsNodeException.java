@@ -1,4 +1,4 @@
-package org.RaceGuard.Exceptions;
+package org.RaceGuard.AstNodes;
 
 public class FollowsNodeException extends RuntimeException{
     public FollowsNodeException(String message){
