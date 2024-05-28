@@ -21,3 +21,13 @@ To install P4-ParserGenerator, follow these steps:
 ```
 git clone https://github.com/cs-24-sw-4-03/P4-ParserGenerator.git
 ```
+2. Navigate to ```./generator```
+3. Install Maven dependencies and package the project
+```
+mvn clean package
+```
+4. Run RaceGuard Compiler and specify FILE PATH. Default path is ```./generator/input``` and does not have to be specified. Example of path could be ```test/non-sequential/MatrixMult.par```
+```
+java -cp target/RaceGuard-1.0-jar-with-dependencies.jar org.RaceGuard.RaceGuard <FILE PATH>
+```
+5. 
