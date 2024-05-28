@@ -2,7 +2,7 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>akka-factorial</groupId>
+    <groupId>RaceGuardOutput</groupId>
     <artifactId>app</artifactId>
     <version>1.0</version>
 
@@ -61,7 +61,7 @@
                     <arguments>
                         <argument>-classpath</argument>
                         <classpath />
-                        <argument>com.example.AkkaQuickstart</argument>
+                        <argument>output.Main</argument>
                     </arguments>
                 </configuration>
             </plugin>
