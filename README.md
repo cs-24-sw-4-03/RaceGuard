@@ -1,4 +1,4 @@
-﻿# P4-RaceGuard-ParserGenerator
+﻿# RaceGuard
 
 This project involves designing and developing a compiler for a new programming language, RaceGuard, 
 that aims to guarantee the avoidance of race conditions. 
@@ -19,7 +19,7 @@ To install P4-ParserGenerator, follow these steps:
 
 **1.** Clone the repository:
 ```
-git clone https://github.com/cs-24-sw-4-03/P4-ParserGenerator.git
+git clone https://github.com/cs-24-sw-4-03/RaceGuard.git
 ```
 **2.** Navigate to ```./generator``` and package the Maven project with the command below.
 ```
@@ -35,3 +35,5 @@ You should now have target files in ```./output```. <br>
 ```
 mvn exec:exec
 ```
+---
+The use of RaceGuard is at your own risk, and we assume no responsibility for any consequences of its use.
