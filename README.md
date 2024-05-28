@@ -20,7 +20,6 @@ To install P4-ParserGenerator, follow these steps:
 **1.** Clone the repository:
 ```
 git clone https://github.com/cs-24-sw-4-03/RaceGuard.git
-
 ```
 **2.** Navigate to ```./generator``` and package the Maven project with the command below.
 ```
